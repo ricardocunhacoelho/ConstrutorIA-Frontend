@@ -1,0 +1,181 @@
+<form class="form-horizontal" autocomplete="off" #createObraModal="ngForm" (ngSubmit)="save()">
+    <abp-modal-header [title]="'CreateObra' | localize" (onCloseClick)="bsModalRef.hide()"></abp-modal-header>
+    <div class="modal-body">
+        <tabset>
+            <tab [heading]="'ObraDetails' | localize" class="pt-3 px-2">
+                <div class="form-group row required">
+                    <label class="col-md-3 col-form-label" for="nome">
+                        Nome
+                    </label>
+                    <div class="col-md-9">
+                        <input type="text" class="form-control" name="nome" id="nome" required maxlength="64"
+                            [(ngModel)]="obra.nome" #nomeModel="ngModel" #nomeEl />
+                        <abp-validation-summary [control]="nomeModel" [controlEl]="nomeEl"></abp-validation-summary>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label class="col-md-3 col-form-label" for="descricao">
+                        Descrição
+                    </label>
+                    <div class="col-md-9">
+                        <textarea class="form-control" name="descricao" id="descricao" maxlength="256"
+                            [(ngModel)]="obra.descricao" #descricaoModel="ngModel" #descricaoEl></textarea>
+                        <abp-validation-summary [control]="descricaoModel"
+                            [controlEl]="descricaoEl"></abp-validation-summary>
+                    </div>
+                </div>
+                <div class="form-group row required">
+                    <label class="col-md-3 col-form-label" for="dataInicio">
+                        Data de Início
+                    </label>
+                    <div class="col-md-9">
+                        <input type="date" class="form-control" name="dataInicio" id="dataInicio" required
+                            [(ngModel)]="obra.dataInicio" #dataInicioModel="ngModel" #dataInicioEl />
+                        <abp-validation-summary [control]="dataInicioModel"
+                            [controlEl]="dataInicioEl"></abp-validation-summary>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label class="col-md-3 col-form-label" for="dataPrevistaTermino">
+                        Data Prevista de Término
+                    </label>
+                    <div class="col-md-9">
+                        <input type="date" class="form-control" name="dataPrevistaTermino" id="dataPrevistaTermino"
+                            [(ngModel)]="obra.dataPrevistaTermino" #dataPrevistaTerminoModel="ngModel"
+                            #dataPrevistaTerminoEl />
+                        <abp-validation-summary [control]="dataPrevistaTerminoModel"
+                            [controlEl]="dataPrevistaTerminoEl"></abp-validation-summary>
+                    </div>
+                </div>
+                <!-- <div class="form-group row required">
+                    <label class="col-md-3 col-form-label" for="status">
+                        Status
+                    </label>
+                    <div class="col-md-9">
+                        <select class="form-control" name="status" id="status" required [(ngModel)]="obra.status"
+                            #statusModel="ngModel" #statusEl>
+                            <option *ngFor="let s of obraStatusOptions" [value]="s.value">{{ s.label }}</option>
+                        </select>
+                        <abp-validation-summary [control]="statusModel" [controlEl]="statusEl"></abp-validation-summary>
+                    </div>
+                </div> -->
+            </tab>
+            <tab [heading]="'Endereco' | localize" class="pt-3 px-2">
+                <div class="form-group row">
+                    <label class="col-md-3 col-form-label" for="rua">Rua</label>
+                    <div class="col-md-9">
+                        <input type="text" class="form-control" id="rua" name="rua" maxlength="128"
+                            [(ngModel)]="obra.endereco.rua" required />
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label class="col-md-3 col-form-label" for="numero">Número</label>
+                    <div class="col-md-9">
+                        <input type="text" class="form-control" id="numero" name="numero" maxlength="16"
+                            [(ngModel)]="obra.endereco.numero" required />
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label class="col-md-3 col-form-label" for="bairro">Bairro</label>
+                    <div class="col-md-9">
+                        <input type="text" class="form-control" id="bairro" name="bairro" maxlength="64"
+                            [(ngModel)]="obra.endereco.bairro" required />
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label class="col-md-3 col-form-label" for="cidade">Cidade</label>
+                    <div class="col-md-9">
+                        <input type="text" class="form-control" id="cidade" name="cidade" maxlength="64"
+                            [(ngModel)]="obra.endereco.cidade" required />
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label class="col-md-3 col-form-label" for="uf">UF</label>
+                    <div class="col-md-9">
+                        <input type="text" class="form-control" id="uf" name="uf" maxlength="2"
+                            [(ngModel)]="obra.endereco.uf" required />
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label class="col-md-3 col-form-label" for="cep">CEP</label>
+                    <div class="col-md-9">
+                        <input type="text" class="form-control" id="cep" name="cep" maxlength="10"
+                            [(ngModel)]="obra.endereco.cep" required />
+                    </div>
+                </div>
+            </tab>
+            <tab [heading]="'Proprietarios' | localize" class="pt-3 px-2">
+                <div *ngFor="let proprietario of proprietarios; let i = index"
+                    class="border rounded p-3 mb-3 position-relative">
+                    <div class="form-group row">
+                        <label class="col-md-3 col-form-label" for="proprietario_nome_{{ i }}">Nome</label>
+                        <div class="col-md-9">
+                            <input type="text" class="form-control" id="proprietario_nome_{{ i }}"
+                                name="proprietario_nome_{{ i }}" [(ngModel)]="proprietario.nome" required
+                                maxlength="128" />
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <label class="col-md-3 col-form-label" for="proprietario_cpf_{{ i }}">CPF/CNPJ</label>
+                        <div class="col-md-9">
+                            <input type="text" class="form-control" id="proprietario_cpf_{{ i }}"
+                                name="proprietario_cpf_{{ i }}" [(ngModel)]="proprietario.cpfOrCnpj" required
+                                maxlength="18" />
+                        </div>
+                    </div>
+
+                    <div class="text-end">
+                        <button type="button" class="btn btn-danger btn-sm" (click)="removerProprietario(i)">
+                            Remover Proprietário
+                        </button>
+                    </div>
+                </div>
+
+                <div class="text-start mt-2">
+                    <button type="button" class="btn btn-primary" (click)="adicionarProprietario()">
+                        + Adicionar Proprietário
+                    </button>
+                </div>
+            </tab>
+            <tab [heading]="'Encarregados' | localize" class="pt-3 px-2">
+                <div *ngFor="let encarregado of encarregados; let i = index"
+                    class="border rounded p-3 mb-3 position-relative">
+
+                    <div class="form-group row">
+                        <label class="col-md-3 col-form-label" for="encarregado_nome_{{ i }}">Nome</label>
+                        <div class="col-md-9">
+                            <input type="text" class="form-control" id="encarregado_nome_{{ i }}"
+                                name="encarregado_nome_{{ i }}" [(ngModel)]="encarregado.nome" required
+                                maxlength="128" />
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <label class="col-md-3 col-form-label" for="encarregado_cpf_{{ i }}">CPF/CNPJ</label>
+                        <div class="col-md-9">
+                            <input type="text" class="form-control" id="encarregado_cpf_{{ i }}"
+                                name="encarregado_cpf_{{ i }}" [(ngModel)]="encarregado.cpfOrCnpj" required
+                                maxlength="18" />
+                        </div>
+                    </div>
+
+                    <div class="text-end">
+                        <button type="button" class="btn btn-danger btn-sm" (click)="removerEncarregado(i)">
+                            Remover Encarregado
+                        </button>
+                    </div>
+                </div>
+
+                <div class="text-start mt-2">
+                    <button type="button" class="btn btn-primary" (click)="adicionarEncarregado()">
+                        + Adicionar Encarregado
+                    </button>
+                </div>
+            </tab>
+
+        </tabset>
+    </div>
+    <abp-modal-footer [cancelDisabled]="saving" [saveDisabled]="!createObraModal.form.valid || saving"
+        (onCancelClick)="bsModalRef.hide()"></abp-modal-footer>
+</form>

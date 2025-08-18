@@ -206,6 +206,304 @@ export class ConfigurationServiceProxy {
 }
 
 @Injectable()
+export class ObraServiceProxy {
+    private http: HttpClient;
+    private baseUrl: string;
+    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+
+    constructor(@Inject(HttpClient) http: HttpClient, @Optional() @Inject(API_BASE_URL) baseUrl?: string) {
+        this.http = http;
+        this.baseUrl = baseUrl ?? "";
+    }
+
+    /**
+     * @param id (optional) 
+     * @return OK
+     */
+    get(id: string | undefined): Observable<ObraDto> {
+        let url_ = this.baseUrl + "/api/services/app/Obra/Get?";
+        if (id === null)
+            throw new Error("The parameter 'id' cannot be null.");
+        else if (id !== undefined)
+            url_ += "Id=" + encodeURIComponent("" + id) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGet(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGet(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<ObraDto>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<ObraDto>;
+        }));
+    }
+
+    protected processGet(response: HttpResponseBase): Observable<ObraDto> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = ObraDto.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param keyword (optional) 
+     * @param skipCount (optional) 
+     * @param maxResultCount (optional) 
+     * @return OK
+     */
+    getAll(keyword: string | undefined, skipCount: number | undefined, maxResultCount: number | undefined): Observable<ObraDtoPagedResultDto> {
+        let url_ = this.baseUrl + "/api/services/app/Obra/GetAll?";
+        if (keyword === null)
+            throw new Error("The parameter 'keyword' cannot be null.");
+        else if (keyword !== undefined)
+            url_ += "Keyword=" + encodeURIComponent("" + keyword) + "&";
+        if (skipCount === null)
+            throw new Error("The parameter 'skipCount' cannot be null.");
+        else if (skipCount !== undefined)
+            url_ += "SkipCount=" + encodeURIComponent("" + skipCount) + "&";
+        if (maxResultCount === null)
+            throw new Error("The parameter 'maxResultCount' cannot be null.");
+        else if (maxResultCount !== undefined)
+            url_ += "MaxResultCount=" + encodeURIComponent("" + maxResultCount) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetAll(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetAll(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<ObraDtoPagedResultDto>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<ObraDtoPagedResultDto>;
+        }));
+    }
+
+    protected processGetAll(response: HttpResponseBase): Observable<ObraDtoPagedResultDto> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = ObraDtoPagedResultDto.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param body (optional) 
+     * @return OK
+     */
+    create(body: CreateObraDto | undefined): Observable<ObraDto> {
+        let url_ = this.baseUrl + "/api/services/app/Obra/Create";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processCreate(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processCreate(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<ObraDto>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<ObraDto>;
+        }));
+    }
+
+    protected processCreate(response: HttpResponseBase): Observable<ObraDto> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = ObraDto.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param body (optional) 
+     * @return OK
+     */
+    update(body: UpdateObraDto | undefined): Observable<ObraDto> {
+        let url_ = this.baseUrl + "/api/services/app/Obra/Update";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("put", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processUpdate(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processUpdate(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<ObraDto>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<ObraDto>;
+        }));
+    }
+
+    protected processUpdate(response: HttpResponseBase): Observable<ObraDto> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = ObraDto.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param id (optional) 
+     * @return OK
+     */
+    delete(id: string | undefined): Observable<void> {
+        let url_ = this.baseUrl + "/api/services/app/Obra/Delete?";
+        if (id === null)
+            throw new Error("The parameter 'id' cannot be null.");
+        else if (id !== undefined)
+            url_ += "Id=" + encodeURIComponent("" + id) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+            })
+        };
+
+        return this.http.request("delete", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processDelete(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processDelete(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<void>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<void>;
+        }));
+    }
+
+    protected processDelete(response: HttpResponseBase): Observable<void> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return _observableOf(null as any);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+}
+
+@Injectable()
 export class RoleServiceProxy {
     private http: HttpClient;
     private baseUrl: string;
@@ -2041,6 +2339,262 @@ export interface IChangeUserLanguageDto {
     languageName: string;
 }
 
+export class CreateEncarregadoDto implements ICreateEncarregadoDto {
+    nome: string;
+    cpfOrCnpj: string;
+    obraId: string | undefined;
+    telefone: CreateTelefoneDto;
+
+    constructor(data?: ICreateEncarregadoDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.nome = _data["nome"];
+            this.cpfOrCnpj = _data["cpfOrCnpj"];
+            this.obraId = _data["obraId"];
+            this.telefone = _data["telefone"] ? CreateTelefoneDto.fromJS(_data["telefone"]) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): CreateEncarregadoDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new CreateEncarregadoDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["nome"] = this.nome;
+        data["cpfOrCnpj"] = this.cpfOrCnpj;
+        data["obraId"] = this.obraId;
+        data["telefone"] = this.telefone ? this.telefone.toJSON() : <any>undefined;
+        return data;
+    }
+
+    clone(): CreateEncarregadoDto {
+        const json = this.toJSON();
+        let result = new CreateEncarregadoDto();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface ICreateEncarregadoDto {
+    nome: string;
+    cpfOrCnpj: string;
+    obraId: string | undefined;
+    telefone: CreateTelefoneDto;
+}
+
+export class CreateEnderecoDto implements ICreateEnderecoDto {
+    rua: string | undefined;
+    numero: string | undefined;
+    bairro: string | undefined;
+    cidade: string | undefined;
+    uf: string | undefined;
+    cep: string | undefined;
+
+    constructor(data?: ICreateEnderecoDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.rua = _data["rua"];
+            this.numero = _data["numero"];
+            this.bairro = _data["bairro"];
+            this.cidade = _data["cidade"];
+            this.uf = _data["uf"];
+            this.cep = _data["cep"];
+        }
+    }
+
+    static fromJS(data: any): CreateEnderecoDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new CreateEnderecoDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["rua"] = this.rua;
+        data["numero"] = this.numero;
+        data["bairro"] = this.bairro;
+        data["cidade"] = this.cidade;
+        data["uf"] = this.uf;
+        data["cep"] = this.cep;
+        return data;
+    }
+
+    clone(): CreateEnderecoDto {
+        const json = this.toJSON();
+        let result = new CreateEnderecoDto();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface ICreateEnderecoDto {
+    rua: string | undefined;
+    numero: string | undefined;
+    bairro: string | undefined;
+    cidade: string | undefined;
+    uf: string | undefined;
+    cep: string | undefined;
+}
+
+export class CreateObraDto implements ICreateObraDto {
+    nome: string | undefined;
+    descricao: string | undefined;
+    dataInicio: moment.Moment;
+    dataPrevistaTermino: moment.Moment | undefined;
+    status: ObraStatus;
+    endereco: CreateEnderecoDto;
+    proprietarios: CreateProprietarioDto[] | undefined;
+    encarregados: CreateEncarregadoDto[] | undefined;
+
+    constructor(data?: ICreateObraDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.nome = _data["nome"];
+            this.descricao = _data["descricao"];
+            this.dataInicio = _data["dataInicio"] ? moment(_data["dataInicio"].toString()) : <any>undefined;
+            this.dataPrevistaTermino = _data["dataPrevistaTermino"] ? moment(_data["dataPrevistaTermino"].toString()) : <any>undefined;
+            this.status = _data["status"];
+            this.endereco = _data["endereco"] ? CreateEnderecoDto.fromJS(_data["endereco"]) : <any>undefined;
+            if (Array.isArray(_data["proprietarios"])) {
+                this.proprietarios = [] as any;
+                for (let item of _data["proprietarios"])
+                    this.proprietarios.push(CreateProprietarioDto.fromJS(item));
+            }
+            if (Array.isArray(_data["encarregados"])) {
+                this.encarregados = [] as any;
+                for (let item of _data["encarregados"])
+                    this.encarregados.push(CreateEncarregadoDto.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): CreateObraDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new CreateObraDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["nome"] = this.nome;
+        data["descricao"] = this.descricao;
+        data["dataInicio"] = this.dataInicio ? this.dataInicio.toISOString() : <any>undefined;
+        data["dataPrevistaTermino"] = this.dataPrevistaTermino ? this.dataPrevistaTermino.toISOString() : <any>undefined;
+        data["status"] = this.status;
+        data["endereco"] = this.endereco ? this.endereco.toJSON() : <any>undefined;
+        if (Array.isArray(this.proprietarios)) {
+            data["proprietarios"] = [];
+            for (let item of this.proprietarios)
+                data["proprietarios"].push(item.toJSON());
+        }
+        if (Array.isArray(this.encarregados)) {
+            data["encarregados"] = [];
+            for (let item of this.encarregados)
+                data["encarregados"].push(item.toJSON());
+        }
+        return data;
+    }
+
+    clone(): CreateObraDto {
+        const json = this.toJSON();
+        let result = new CreateObraDto();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface ICreateObraDto {
+    nome: string | undefined;
+    descricao: string | undefined;
+    dataInicio: moment.Moment;
+    dataPrevistaTermino: moment.Moment | undefined;
+    status: ObraStatus;
+    endereco: CreateEnderecoDto;
+    proprietarios: CreateProprietarioDto[] | undefined;
+    encarregados: CreateEncarregadoDto[] | undefined;
+}
+
+export class CreateProprietarioDto implements ICreateProprietarioDto {
+    id: string;
+    nome: string;
+    cpfOrCnpj: string;
+
+    constructor(data?: ICreateProprietarioDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.nome = _data["nome"];
+            this.cpfOrCnpj = _data["cpfOrCnpj"];
+        }
+    }
+
+    static fromJS(data: any): CreateProprietarioDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new CreateProprietarioDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["nome"] = this.nome;
+        data["cpfOrCnpj"] = this.cpfOrCnpj;
+        return data;
+    }
+
+    clone(): CreateProprietarioDto {
+        const json = this.toJSON();
+        let result = new CreateProprietarioDto();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface ICreateProprietarioDto {
+    id: string;
+    nome: string;
+    cpfOrCnpj: string;
+}
+
 export class CreateRoleDto implements ICreateRoleDto {
     name: string;
     displayName: string;
@@ -2106,6 +2660,61 @@ export interface ICreateRoleDto {
     normalizedName: string | undefined;
     description: string | undefined;
     grantedPermissions: string[] | undefined;
+}
+
+export class CreateTelefoneDto implements ICreateTelefoneDto {
+    numero: string | undefined;
+    ddd: string | undefined;
+    idd: string | undefined;
+    internacional: boolean;
+
+    constructor(data?: ICreateTelefoneDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.numero = _data["numero"];
+            this.ddd = _data["ddd"];
+            this.idd = _data["idd"];
+            this.internacional = _data["internacional"];
+        }
+    }
+
+    static fromJS(data: any): CreateTelefoneDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new CreateTelefoneDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["numero"] = this.numero;
+        data["ddd"] = this.ddd;
+        data["idd"] = this.idd;
+        data["internacional"] = this.internacional;
+        return data;
+    }
+
+    clone(): CreateTelefoneDto {
+        const json = this.toJSON();
+        let result = new CreateTelefoneDto();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface ICreateTelefoneDto {
+    numero: string | undefined;
+    ddd: string | undefined;
+    idd: string | undefined;
+    internacional: boolean;
 }
 
 export class CreateTenantDto implements ICreateTenantDto {
@@ -2240,6 +2849,156 @@ export interface ICreateUserDto {
     isActive: boolean;
     roleNames: string[] | undefined;
     password: string;
+}
+
+export class EncarregadoDto implements IEncarregadoDto {
+    id: string;
+    nome: string | undefined;
+    cpfOrCnpj: string | undefined;
+    telefone: TelefoneDto;
+    obraId: string | undefined;
+    mensagens: MensagemDto[] | undefined;
+    sessoesIA: SessaoIADto[] | undefined;
+
+    constructor(data?: IEncarregadoDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.nome = _data["nome"];
+            this.cpfOrCnpj = _data["cpfOrCnpj"];
+            this.telefone = _data["telefone"] ? TelefoneDto.fromJS(_data["telefone"]) : <any>undefined;
+            this.obraId = _data["obraId"];
+            if (Array.isArray(_data["mensagens"])) {
+                this.mensagens = [] as any;
+                for (let item of _data["mensagens"])
+                    this.mensagens.push(MensagemDto.fromJS(item));
+            }
+            if (Array.isArray(_data["sessoesIA"])) {
+                this.sessoesIA = [] as any;
+                for (let item of _data["sessoesIA"])
+                    this.sessoesIA.push(SessaoIADto.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): EncarregadoDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new EncarregadoDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["nome"] = this.nome;
+        data["cpfOrCnpj"] = this.cpfOrCnpj;
+        data["telefone"] = this.telefone ? this.telefone.toJSON() : <any>undefined;
+        data["obraId"] = this.obraId;
+        if (Array.isArray(this.mensagens)) {
+            data["mensagens"] = [];
+            for (let item of this.mensagens)
+                data["mensagens"].push(item.toJSON());
+        }
+        if (Array.isArray(this.sessoesIA)) {
+            data["sessoesIA"] = [];
+            for (let item of this.sessoesIA)
+                data["sessoesIA"].push(item.toJSON());
+        }
+        return data;
+    }
+
+    clone(): EncarregadoDto {
+        const json = this.toJSON();
+        let result = new EncarregadoDto();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IEncarregadoDto {
+    id: string;
+    nome: string | undefined;
+    cpfOrCnpj: string | undefined;
+    telefone: TelefoneDto;
+    obraId: string | undefined;
+    mensagens: MensagemDto[] | undefined;
+    sessoesIA: SessaoIADto[] | undefined;
+}
+
+export class EnderecoDto implements IEnderecoDto {
+    id: string;
+    rua: string | undefined;
+    numero: string | undefined;
+    bairro: string | undefined;
+    cidade: string | undefined;
+    uf: string | undefined;
+    cep: string | undefined;
+
+    constructor(data?: IEnderecoDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.rua = _data["rua"];
+            this.numero = _data["numero"];
+            this.bairro = _data["bairro"];
+            this.cidade = _data["cidade"];
+            this.uf = _data["uf"];
+            this.cep = _data["cep"];
+        }
+    }
+
+    static fromJS(data: any): EnderecoDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new EnderecoDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["rua"] = this.rua;
+        data["numero"] = this.numero;
+        data["bairro"] = this.bairro;
+        data["cidade"] = this.cidade;
+        data["uf"] = this.uf;
+        data["cep"] = this.cep;
+        return data;
+    }
+
+    clone(): EnderecoDto {
+        const json = this.toJSON();
+        let result = new EnderecoDto();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IEnderecoDto {
+    id: string;
+    rua: string | undefined;
+    numero: string | undefined;
+    bairro: string | undefined;
+    cidade: string | undefined;
+    uf: string | undefined;
+    cep: string | undefined;
 }
 
 export class FlatPermissionDto implements IFlatPermissionDto {
@@ -2544,6 +3303,225 @@ export interface IIsTenantAvailableOutput {
     tenantId: number | undefined;
 }
 
+export class MensagemDto implements IMensagemDto {
+    id: string;
+    texto: string | undefined;
+    dataHora: moment.Moment;
+    sentidoMensagem: SentidoMensagem;
+    sessaoIAId: string | undefined;
+    encarregadoId: string | undefined;
+
+    constructor(data?: IMensagemDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.texto = _data["texto"];
+            this.dataHora = _data["dataHora"] ? moment(_data["dataHora"].toString()) : <any>undefined;
+            this.sentidoMensagem = _data["sentidoMensagem"];
+            this.sessaoIAId = _data["sessaoIAId"];
+            this.encarregadoId = _data["encarregadoId"];
+        }
+    }
+
+    static fromJS(data: any): MensagemDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new MensagemDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["texto"] = this.texto;
+        data["dataHora"] = this.dataHora ? this.dataHora.toISOString() : <any>undefined;
+        data["sentidoMensagem"] = this.sentidoMensagem;
+        data["sessaoIAId"] = this.sessaoIAId;
+        data["encarregadoId"] = this.encarregadoId;
+        return data;
+    }
+
+    clone(): MensagemDto {
+        const json = this.toJSON();
+        let result = new MensagemDto();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IMensagemDto {
+    id: string;
+    texto: string | undefined;
+    dataHora: moment.Moment;
+    sentidoMensagem: SentidoMensagem;
+    sessaoIAId: string | undefined;
+    encarregadoId: string | undefined;
+}
+
+export class ObraDto implements IObraDto {
+    id: string;
+    nome: string | undefined;
+    descricao: string | undefined;
+    dataInicio: moment.Moment;
+    dataPrevistaTermino: moment.Moment | undefined;
+    status: ObraStatus;
+    enderecoId: string;
+    endereco: EnderecoDto;
+    proprietarios: ProprietarioDto[] | undefined;
+    encarregados: EncarregadoDto[] | undefined;
+
+    constructor(data?: IObraDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.nome = _data["nome"];
+            this.descricao = _data["descricao"];
+            this.dataInicio = _data["dataInicio"] ? moment(_data["dataInicio"].toString()) : <any>undefined;
+            this.dataPrevistaTermino = _data["dataPrevistaTermino"] ? moment(_data["dataPrevistaTermino"].toString()) : <any>undefined;
+            this.status = _data["status"];
+            this.enderecoId = _data["enderecoId"];
+            this.endereco = _data["endereco"] ? EnderecoDto.fromJS(_data["endereco"]) : <any>undefined;
+            if (Array.isArray(_data["proprietarios"])) {
+                this.proprietarios = [] as any;
+                for (let item of _data["proprietarios"])
+                    this.proprietarios.push(ProprietarioDto.fromJS(item));
+            }
+            if (Array.isArray(_data["encarregados"])) {
+                this.encarregados = [] as any;
+                for (let item of _data["encarregados"])
+                    this.encarregados.push(EncarregadoDto.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): ObraDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new ObraDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["nome"] = this.nome;
+        data["descricao"] = this.descricao;
+        data["dataInicio"] = this.dataInicio ? this.dataInicio.toISOString() : <any>undefined;
+        data["dataPrevistaTermino"] = this.dataPrevistaTermino ? this.dataPrevistaTermino.toISOString() : <any>undefined;
+        data["status"] = this.status;
+        data["enderecoId"] = this.enderecoId;
+        data["endereco"] = this.endereco ? this.endereco.toJSON() : <any>undefined;
+        if (Array.isArray(this.proprietarios)) {
+            data["proprietarios"] = [];
+            for (let item of this.proprietarios)
+                data["proprietarios"].push(item.toJSON());
+        }
+        if (Array.isArray(this.encarregados)) {
+            data["encarregados"] = [];
+            for (let item of this.encarregados)
+                data["encarregados"].push(item.toJSON());
+        }
+        return data;
+    }
+
+    clone(): ObraDto {
+        const json = this.toJSON();
+        let result = new ObraDto();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IObraDto {
+    id: string;
+    nome: string | undefined;
+    descricao: string | undefined;
+    dataInicio: moment.Moment;
+    dataPrevistaTermino: moment.Moment | undefined;
+    status: ObraStatus;
+    enderecoId: string;
+    endereco: EnderecoDto;
+    proprietarios: ProprietarioDto[] | undefined;
+    encarregados: EncarregadoDto[] | undefined;
+}
+
+export class ObraDtoPagedResultDto implements IObraDtoPagedResultDto {
+    items: ObraDto[] | undefined;
+    totalCount: number;
+
+    constructor(data?: IObraDtoPagedResultDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            if (Array.isArray(_data["items"])) {
+                this.items = [] as any;
+                for (let item of _data["items"])
+                    this.items.push(ObraDto.fromJS(item));
+            }
+            this.totalCount = _data["totalCount"];
+        }
+    }
+
+    static fromJS(data: any): ObraDtoPagedResultDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new ObraDtoPagedResultDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        if (Array.isArray(this.items)) {
+            data["items"] = [];
+            for (let item of this.items)
+                data["items"].push(item.toJSON());
+        }
+        data["totalCount"] = this.totalCount;
+        return data;
+    }
+
+    clone(): ObraDtoPagedResultDto {
+        const json = this.toJSON();
+        let result = new ObraDtoPagedResultDto();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IObraDtoPagedResultDto {
+    items: ObraDto[] | undefined;
+    totalCount: number;
+}
+
+export enum ObraStatus {
+    COMECAR = "COMECAR",
+    EMPROGRESSO = "EMPROGRESSO",
+    FINALIZADA = "FINALIZADA",
+}
+
 export class PermissionDto implements IPermissionDto {
     id: number;
     name: string | undefined;
@@ -2648,6 +3626,57 @@ export class PermissionDtoListResultDto implements IPermissionDtoListResultDto {
 
 export interface IPermissionDtoListResultDto {
     items: PermissionDto[] | undefined;
+}
+
+export class ProprietarioDto implements IProprietarioDto {
+    id: string;
+    nome: string | undefined;
+    cpfOrCnpj: string | undefined;
+
+    constructor(data?: IProprietarioDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.nome = _data["nome"];
+            this.cpfOrCnpj = _data["cpfOrCnpj"];
+        }
+    }
+
+    static fromJS(data: any): ProprietarioDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new ProprietarioDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["nome"] = this.nome;
+        data["cpfOrCnpj"] = this.cpfOrCnpj;
+        return data;
+    }
+
+    clone(): ProprietarioDto {
+        const json = this.toJSON();
+        let result = new ProprietarioDto();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IProprietarioDto {
+    id: string;
+    nome: string | undefined;
+    cpfOrCnpj: string | undefined;
 }
 
 export class RegisterInput implements IRegisterInput {
@@ -3157,6 +4186,137 @@ export interface IRoleListDtoListResultDto {
     items: RoleListDto[] | undefined;
 }
 
+export enum SentidoMensagem {
+    ENVIADO = "ENVIADO",
+    RECEBIDO = "RECEBIDO",
+}
+
+export class SessaoIADto implements ISessaoIADto {
+    id: string;
+    tratamento: string | undefined;
+    threadStatus: ThreadStatus;
+    assistantId: string | undefined;
+    mensagens: MensagemDto[] | undefined;
+
+    constructor(data?: ISessaoIADto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.tratamento = _data["tratamento"];
+            this.threadStatus = _data["threadStatus"];
+            this.assistantId = _data["assistantId"];
+            if (Array.isArray(_data["mensagens"])) {
+                this.mensagens = [] as any;
+                for (let item of _data["mensagens"])
+                    this.mensagens.push(MensagemDto.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): SessaoIADto {
+        data = typeof data === 'object' ? data : {};
+        let result = new SessaoIADto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["tratamento"] = this.tratamento;
+        data["threadStatus"] = this.threadStatus;
+        data["assistantId"] = this.assistantId;
+        if (Array.isArray(this.mensagens)) {
+            data["mensagens"] = [];
+            for (let item of this.mensagens)
+                data["mensagens"].push(item.toJSON());
+        }
+        return data;
+    }
+
+    clone(): SessaoIADto {
+        const json = this.toJSON();
+        let result = new SessaoIADto();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface ISessaoIADto {
+    id: string;
+    tratamento: string | undefined;
+    threadStatus: ThreadStatus;
+    assistantId: string | undefined;
+    mensagens: MensagemDto[] | undefined;
+}
+
+export class TelefoneDto implements ITelefoneDto {
+    id: string;
+    numero: string | undefined;
+    ddd: string | undefined;
+    idd: string | undefined;
+    internacional: boolean;
+
+    constructor(data?: ITelefoneDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.numero = _data["numero"];
+            this.ddd = _data["ddd"];
+            this.idd = _data["idd"];
+            this.internacional = _data["internacional"];
+        }
+    }
+
+    static fromJS(data: any): TelefoneDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new TelefoneDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["numero"] = this.numero;
+        data["ddd"] = this.ddd;
+        data["idd"] = this.idd;
+        data["internacional"] = this.internacional;
+        return data;
+    }
+
+    clone(): TelefoneDto {
+        const json = this.toJSON();
+        let result = new TelefoneDto();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface ITelefoneDto {
+    id: string;
+    numero: string | undefined;
+    ddd: string | undefined;
+    idd: string | undefined;
+    internacional: boolean;
+}
+
 export enum TenantAvailabilityState {
     _1 = 1,
     _2 = 2,
@@ -3322,6 +4482,102 @@ export interface ITenantLoginInfoDto {
     id: number;
     tenancyName: string | undefined;
     name: string | undefined;
+}
+
+export enum ThreadStatus {
+    ABERTA = "ABERTA",
+    FECHADA = "FECHADA",
+}
+
+export class UpdateObraDto implements IUpdateObraDto {
+    id: string;
+    nome: string | undefined;
+    descricao: string | undefined;
+    dataInicio: moment.Moment;
+    dataPrevistaTermino: moment.Moment | undefined;
+    status: ObraStatus;
+    endereco: CreateEnderecoDto;
+    proprietarios: CreateProprietarioDto[] | undefined;
+    encarregados: CreateEncarregadoDto[] | undefined;
+
+    constructor(data?: IUpdateObraDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.nome = _data["nome"];
+            this.descricao = _data["descricao"];
+            this.dataInicio = _data["dataInicio"] ? moment(_data["dataInicio"].toString()) : <any>undefined;
+            this.dataPrevistaTermino = _data["dataPrevistaTermino"] ? moment(_data["dataPrevistaTermino"].toString()) : <any>undefined;
+            this.status = _data["status"];
+            this.endereco = _data["endereco"] ? CreateEnderecoDto.fromJS(_data["endereco"]) : <any>undefined;
+            if (Array.isArray(_data["proprietarios"])) {
+                this.proprietarios = [] as any;
+                for (let item of _data["proprietarios"])
+                    this.proprietarios.push(CreateProprietarioDto.fromJS(item));
+            }
+            if (Array.isArray(_data["encarregados"])) {
+                this.encarregados = [] as any;
+                for (let item of _data["encarregados"])
+                    this.encarregados.push(CreateEncarregadoDto.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): UpdateObraDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new UpdateObraDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["nome"] = this.nome;
+        data["descricao"] = this.descricao;
+        data["dataInicio"] = this.dataInicio ? this.dataInicio.toISOString() : <any>undefined;
+        data["dataPrevistaTermino"] = this.dataPrevistaTermino ? this.dataPrevistaTermino.toISOString() : <any>undefined;
+        data["status"] = this.status;
+        data["endereco"] = this.endereco ? this.endereco.toJSON() : <any>undefined;
+        if (Array.isArray(this.proprietarios)) {
+            data["proprietarios"] = [];
+            for (let item of this.proprietarios)
+                data["proprietarios"].push(item.toJSON());
+        }
+        if (Array.isArray(this.encarregados)) {
+            data["encarregados"] = [];
+            for (let item of this.encarregados)
+                data["encarregados"].push(item.toJSON());
+        }
+        return data;
+    }
+
+    clone(): UpdateObraDto {
+        const json = this.toJSON();
+        let result = new UpdateObraDto();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IUpdateObraDto {
+    id: string;
+    nome: string | undefined;
+    descricao: string | undefined;
+    dataInicio: moment.Moment;
+    dataPrevistaTermino: moment.Moment | undefined;
+    status: ObraStatus;
+    endereco: CreateEnderecoDto;
+    proprietarios: CreateProprietarioDto[] | undefined;
+    encarregados: CreateEncarregadoDto[] | undefined;
 }
 
 export class UserDto implements IUserDto {

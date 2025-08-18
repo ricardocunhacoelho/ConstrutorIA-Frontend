@@ -27,6 +27,12 @@ import { AppComponent } from './app.component';
                         canActivate: [AppRouteGuard],
                     },
                     {
+                        path: 'obras',
+                        loadChildren: () => import('./obras/obras.module').then((m) => m.ObrasModule),
+                        data: { permission: 'Pages.Obras' },
+                        canActivate: [AppRouteGuard],
+                    },
+                    {
                         path: 'roles',
                         loadChildren: () => import('./roles/roles.module').then((m) => m.RolesModule),
                         data: { permission: 'Pages.Roles' },
@@ -49,4 +55,4 @@ import { AppComponent } from './app.component';
     ],
     exports: [RouterModule],
 })
-export class AppRoutingModule {}
+export class AppRoutingModule { }
