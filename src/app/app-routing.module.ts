@@ -33,6 +33,12 @@ import { AppComponent } from './app.component';
                         canActivate: [AppRouteGuard],
                     },
                     {
+                        path: 'solicitacoes-materiais',
+                        loadChildren: () => import('./solicitacoes-materiais/solicitacoes-materiais.module').then((m) => m.SolicitacoesMateriaisModule),
+                        data: { permission: 'Pages.SolicitacoesMateriais' },
+                        canActivate: [AppRouteGuard],
+                    },
+                    {
                         path: 'roles',
                         loadChildren: () => import('./roles/roles.module').then((m) => m.RolesModule),
                         data: { permission: 'Pages.Roles' },

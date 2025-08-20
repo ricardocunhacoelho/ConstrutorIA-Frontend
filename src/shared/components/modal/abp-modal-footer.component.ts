@@ -13,7 +13,8 @@ export class AbpModalFooterComponent extends AppComponentBase {
     saveLabel = input(this.l('Save'));
     saveDisabled = input<boolean>();
 
-    onCancelClick = output<EventEmitter<number>>();
+    onCancelClick = output<void>();
+    onSaveClick = output<void>();
 
     constructor(injector: Injector) {
         super(injector);
