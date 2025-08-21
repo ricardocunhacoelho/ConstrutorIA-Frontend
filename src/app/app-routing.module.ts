@@ -38,6 +38,12 @@ import { AppComponent } from './app.component';
                         data: { permission: 'Pages.SolicitacoesMateriais' },
                         canActivate: [AppRouteGuard],
                     },
+                                        {
+                        path: 'problemas-impedimentos',
+                        loadChildren: () => import('./problemas-impedimentos/problemas-impedimentos.module').then((m) => m.ProblemasImpedimentosModule),
+                        data: { permission: 'Pages.ProblemasImpedimentos' },
+                        canActivate: [AppRouteGuard],
+                    },
                     {
                         path: 'roles',
                         loadChildren: () => import('./roles/roles.module').then((m) => m.RolesModule),
