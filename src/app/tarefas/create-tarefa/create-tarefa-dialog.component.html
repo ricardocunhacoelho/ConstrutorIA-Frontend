@@ -1,0 +1,39 @@
+<form class="form-horizontal" autocomplete="off" #createTarefaModal="ngForm" (ngSubmit)="save()">
+    <abp-modal-header [title]="'CreateTarefa' | localize" (onCloseClick)="bsModalRef.hide()">
+    </abp-modal-header>
+
+    <div class="modal-body">
+        <tabset>
+            <!-- Aba Detalhes da Tarefa -->
+            <tab [heading]="'Detalhes da Tarefa' | localize" class="pt-3 px-2">
+                <div class="form-group row">
+                    <label class="col-md-3 col-form-label" for="descricao">Descrição</label>
+                    <div class="col-md-9">
+                        <textarea class="form-control" id="descricao" name="descricao" [(ngModel)]="tarefa.descricao"
+                            maxlength="256" placeholder="Digite aqui a descrição da tarefa">
+            </textarea>
+                    </div>
+                </div>
+            </tab>
+
+            <!-- Aba Obra/Encarregado -->
+            <tab [heading]="'Obra/Encarregado' | localize" class="pt-3 px-2">
+                <div class="form-group row">
+                    <label class="col-md-3 col-form-label">Obra / Encarregado</label>
+                    <div class="col-md-9">
+                        <select class="form-control" [(ngModel)]="selectedEncarregado"
+                            (ngModelChange)="onEncarregadoChange()" name="encarregadoSelect">
+                            <option *ngFor="let e of encarregadosComObras" [ngValue]="e">
+                                {{ e.nomeObra }} (Encarregado: {{ e.nomeEncarregado }})
+                            </option>
+                        </select>
+                    </div>
+                </div>
+            </tab>
+        </tabset>
+    </div>
+
+    <abp-modal-footer [cancelDisabled]="saving" [saveDisabled]="!createTarefaModal.form.valid || saving"
+        (onCancelClick)="bsModalRef.hide()">
+    </abp-modal-footer>
+</form>

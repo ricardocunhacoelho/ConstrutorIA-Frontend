@@ -38,10 +38,16 @@ import { AppComponent } from './app.component';
                         data: { permission: 'Pages.SolicitacoesMateriais' },
                         canActivate: [AppRouteGuard],
                     },
-                                        {
+                    {
                         path: 'problemas-impedimentos',
                         loadChildren: () => import('./problemas-impedimentos/problemas-impedimentos.module').then((m) => m.ProblemasImpedimentosModule),
                         data: { permission: 'Pages.ProblemasImpedimentos' },
+                        canActivate: [AppRouteGuard],
+                    },
+                    {
+                        path: 'tarefas',
+                        loadChildren: () => import('./tarefas/tarefas.module').then((m) => m.TarefasModule),
+                        data: { permission: 'Pages.Tarefas' },
                         canActivate: [AppRouteGuard],
                     },
                     {

@@ -12,21 +12,21 @@ import { CommonModule, NgIf } from '@angular/common';
 import { LocalizePipe } from '@shared/pipes/localize.pipe';
 import {
     ObraServiceProxy,
-    SolicitacaoMaterialDto,
-    SolicitacaoMaterialDtoPagedResultDto,
-    SolicitacaoMaterialServiceProxy,
-    SolicitacaoMaterialStatus,
+    TarefaDto,
+    TarefaDtoPagedResultDto,
+    TarefaServiceProxy,
+    TarefaStatus,
 } from '../../shared/service-proxies/service-proxies';
-import { CreateSolicitacaoMaterialDialogComponent } from './create-solicitacao-material/create-solicitacao-material-dialog.component';
-import { EditSolicitacaoMaterialDialogComponent } from './edit-solicitacao-material/edit-solicitacao-material-dialog.component';
+import { CreateTarefaDialogComponent } from './create-tarefa/create-tarefa-dialog.component';
+import { EditTarefaDialogComponent } from './edit-tarefa/edit-tarefa-dialog.component';
 
 @Component({
-    templateUrl: './solicitacoes-materiais.component.html',
+    templateUrl: './tarefas.component.html',
     animations: [appModuleAnimation()],
     standalone: true,
     imports: [CommonModule, FormsModule, TableModule, PrimeTemplate, NgIf, PaginatorModule, LocalizePipe],
 })
-export class SolicitacoesMateriaisComponent extends PagedListingComponentBase<SolicitacaoMaterialDto> implements OnInit {
+export class TarefasComponent extends PagedListingComponentBase<TarefaDto> implements OnInit {
 
     @ViewChild('dataTable', { static: true }) dataTable: Table;
     @ViewChild('paginator', { static: true }) paginator: Paginator;
@@ -37,14 +37,14 @@ export class SolicitacoesMateriaisComponent extends PagedListingComponentBase<So
     obras: any[] = [];
     encarregados: any[] = [];
 
-    solicitacoesMateriais: SolicitacaoMaterialDto[] = [];
+    tarefas: TarefaDto[] = [];
     keyword = '';
-    status: SolicitacaoMaterialStatus | null | undefined;
+    status: TarefaStatus | null | undefined;
     advancedFiltersVisible = false;
 
     constructor(
         injector: Injector,
-        private _solicitacoesMateriaisService: SolicitacaoMaterialServiceProxy,
+        private _tarefasService: TarefaServiceProxy,
         private _obraService: ObraServiceProxy,
         private _modalService: BsModalService,
         private _activatedRoute: ActivatedRoute,
@@ -73,21 +73,21 @@ export class SolicitacoesMateriaisComponent extends PagedListingComponentBase<So
             });
     }
 
-    createSolicitacaoMaterial(): void {
+    createTarefa(): void {
         this.showCreateOrEditDialog();
     }
 
-    editSolicitacaoMaterial(solicitacao: SolicitacaoMaterialDto): void {
-        this.showCreateOrEditDialog(solicitacao.id);
+    editTarefa(tarefa: TarefaDto): void {
+        this.showCreateOrEditDialog(tarefa.id);
     }
 
-    deleteSolicitacaoMaterial(solicitacao: SolicitacaoMaterialDto): void {
+    deleteTarefa(tarefa: TarefaDto): void {
         abp.message.confirm(
-            this.l('SolicitacaoMaterialDeleteWarningMessage', solicitacao.obra?.nome, solicitacao.encarregado?.nome),
+            this.l('TarefaDeleteWarningMessage', tarefa.obra?.nome, tarefa.encarregado?.nome),
             undefined,
             (result: boolean) => {
                 if (result) {
-                    this._solicitacoesMateriaisService.delete(solicitacao.id).subscribe(() => {
+                    this._tarefasService.delete(tarefa.id).subscribe(() => {
                         abp.notify.success(this.l('SuccessfullyDeleted'));
                         this.refresh();
                     });
@@ -114,7 +114,7 @@ export class SolicitacoesMateriaisComponent extends PagedListingComponentBase<So
 
         this.primengTableHelper.showLoadingIndicator();
 
-        this._solicitacoesMateriaisService
+        this._tarefasService
             .getAll(
                 this.keyword,
                 this.obraId,
@@ -124,7 +124,7 @@ export class SolicitacoesMateriaisComponent extends PagedListingComponentBase<So
                 this.primengTableHelper.getMaxResultCount(this.paginator, event)
             )
             .pipe(finalize(() => this.primengTableHelper.hideLoadingIndicator()))
-            .subscribe((result: SolicitacaoMaterialDtoPagedResultDto) => {
+            .subscribe((result: TarefaDtoPagedResultDto) => {
                 this.primengTableHelper.records = result.items;
                 this.primengTableHelper.totalRecordsCount = result.totalCount;
                 this.cd.detectChanges();
@@ -134,9 +134,9 @@ export class SolicitacoesMateriaisComponent extends PagedListingComponentBase<So
     private showCreateOrEditDialog(id?: string): void {
         let ref: BsModalRef;
         if (!id) {
-            ref = this._modalService.show(CreateSolicitacaoMaterialDialogComponent, { class: 'modal-lg' });
+            ref = this._modalService.show(CreateTarefaDialogComponent, { class: 'modal-lg' });
         } else {
-            ref = this._modalService.show(EditSolicitacaoMaterialDialogComponent, {
+            ref = this._modalService.show(EditTarefaDialogComponent, {
                 class: 'modal-lg',
                 initialState: { id },
             });
@@ -144,7 +144,7 @@ export class SolicitacoesMateriaisComponent extends PagedListingComponentBase<So
         ref.content.onSave.subscribe(() => this.refresh());
     }
 
-    protected delete(entity: SolicitacaoMaterialDto): void {
+    protected delete(entity: TarefaDto): void {
         throw new Error('Method not implemented.');
     }
 }

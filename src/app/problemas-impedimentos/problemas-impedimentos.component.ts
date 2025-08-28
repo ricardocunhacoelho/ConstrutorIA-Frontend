@@ -14,7 +14,8 @@ import {
     ProblemaImpedimentoDto,
     ProblemaImpedimentoServiceProxy,
     ProblemaImpedimentoDtoPagedResultDto,
-    ProblemaImpedimentoStatus
+    ProblemaImpedimentoStatus,
+    ObraServiceProxy
 } from '../../shared/service-proxies/service-proxies';
 import { CreateProblemaImpedimentoDialogComponent } from './create-problema-impedimento/create-problema-impedimento-dialog.component';
 import { EditProblemaImpedimentoDialogComponent } from './edit-problema-impedimento/edit-problema-impedimento-dialog.component';
@@ -32,18 +33,44 @@ export class ProblemasImpedimentosComponent extends PagedListingComponentBase<Pr
 
     problemasImpedimentos: ProblemaImpedimentoDto[] = [];
     keyword = '';
-    status: ProblemaImpedimentoStatus | undefined;
+    status: ProblemaImpedimentoStatus | null | undefined;
     advancedFiltersVisible = false;
+
+    obraId: string | undefined;
+    encarregadoId: string | undefined;
+
+    obras: any[] = [];
+    encarregados: any[] = [];
 
     constructor(
         injector: Injector,
         private _problemasService: ProblemaImpedimentoServiceProxy,
         private _modalService: BsModalService,
         private _activatedRoute: ActivatedRoute,
+        private _obraService: ObraServiceProxy,
         cd: ChangeDetectorRef
     ) {
         super(injector, cd);
         this.keyword = this._activatedRoute.snapshot.queryParams['filterText'] || '';
+    }
+
+    ngOnInit(): void {
+        this.getObras();
+        this.getEncarregados();
+    }
+
+    getObras(): void {
+        this._obraService.getObras()
+            .subscribe(result => {
+                this.obras = result;
+            });
+    }
+
+    getEncarregados(): void {
+        this._obraService.getEncarregados()
+            .subscribe(result => {
+                this.encarregados = result;
+            });
     }
 
     createProblema(): void {
@@ -56,7 +83,7 @@ export class ProblemasImpedimentosComponent extends PagedListingComponentBase<Pr
 
     deleteProblema(problema: ProblemaImpedimentoDto): void {
         abp.message.confirm(
-            this.l('ProblemaImpedimentoDeleteWarningMessage', problema.id),
+            this.l('ProblemaImpedimentoDeleteWarningMessage', problema.obra?.nome, problema.encarregado?.nome),
             undefined,
             (result: boolean) => {
                 if (result) {
@@ -72,6 +99,9 @@ export class ProblemasImpedimentosComponent extends PagedListingComponentBase<Pr
     clearFilters(): void {
         this.keyword = '';
         this.status = undefined;
+        this.obraId = undefined;
+        this.encarregadoId = undefined;
+        this.refresh();
     }
 
     list(event?: LazyLoadEvent): void {
@@ -87,6 +117,9 @@ export class ProblemasImpedimentosComponent extends PagedListingComponentBase<Pr
         this._problemasService
             .getAll(
                 this.keyword,
+                this.obraId,
+                this.encarregadoId,
+                this.status,
                 this.primengTableHelper.getSkipCount(this.paginator, event),
                 this.primengTableHelper.getMaxResultCount(this.paginator, event))
             .pipe(finalize(() => this.primengTableHelper.hideLoadingIndicator()))

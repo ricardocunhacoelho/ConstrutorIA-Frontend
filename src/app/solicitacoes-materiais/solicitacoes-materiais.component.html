@@ -55,7 +55,7 @@
                                             <div class="col-md-9 pt-2">
                                                 <div class="custom-control custom-radio d-inline">
                                                     <input type="radio" class="custom-control-input" id="statusAll"
-                                                        name="status" [(ngModel)]="status" [value]="undefined"
+                                                        name="statusTodos" [(ngModel)]="status" [value]="undefined"
                                                         checked />
                                                     <label class="custom-control-label" for="statusAll">
                                                         {{ 'All' | localize }}
@@ -63,23 +63,55 @@
                                                 </div>
                                                 <div class="custom-control custom-radio d-inline mx-3">
                                                     <input type="radio" class="custom-control-input" id="statusAberta"
-                                                        name="status" [(ngModel)]="status" [value]="'ABERTA'" />
+                                                        name="statusAberto" [(ngModel)]="status" [value]="'ABERTA'" />
                                                     <label class="custom-control-label" for="statusAberta">
-                                                        {{ 'Open' | localize }}
+                                                        {{ 'Aberta' | localize }}
                                                     </label>
                                                 </div>
                                                 <div class="custom-control custom-radio d-inline">
                                                     <input type="radio" class="custom-control-input"
-                                                        id="statusConcluida" name="status" [(ngModel)]="status"
+                                                        id="statusConcluida" name="statusConcluido" [(ngModel)]="status"
                                                         [value]="'CONCLUIDA'" />
                                                     <label class="custom-control-label" for="statusConcluida">
-                                                        {{ 'Closed' | localize }}
+                                                        {{ 'Concluida' | localize }}
                                                     </label>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
+                                <div class="row mt-2">
+                                    <div class="col-md-6">
+                                        <div class="form-group row mb-0">
+                                            <label class="col-md-1 col-form-label">
+                                                {{ 'Obra' | localize }}
+                                            </label>
+                                            <div class="col-md-9">
+                                                <select class="form-control" [(ngModel)]="obraId" name="obraId">
+                                                    <option [ngValue]="undefined">{{ 'All' | localize }}</option>
+                                                    <option *ngFor="let obra of obras" [ngValue]="obra.id">{{ obra.nome
+                                                        }}</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <div class="form-group row mb-0">
+                                            <label class="col-md-2 col-form-label">
+                                                {{ 'Encarregado' | localize }}
+                                            </label>
+                                            <div class="col-md-9">
+                                                <select class="form-control" [(ngModel)]="encarregadoId" name="encarregadoId">
+                                                    <option [ngValue]="undefined">{{ 'All' | localize }}</option>
+                                                    <option *ngFor="let enc of encarregados" [ngValue]="enc.id">{{
+                                                        enc.nome }}</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
                             </form>
                         </div>
                         <div class="card-footer">
@@ -87,7 +119,7 @@
                                 {{ 'Search' | localize }}
                             </button>
                             <button type="button" class="btn btn-default float-right" (click)="clearFilters()">
-                                {{ 'Clear' | localize }}
+                                {{ 'Limpar' | localize }}
                             </button>
                         </div>
                     </div>
