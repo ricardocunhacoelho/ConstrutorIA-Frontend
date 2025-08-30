@@ -101,7 +101,8 @@
                                                 {{ 'Encarregado' | localize }}
                                             </label>
                                             <div class="col-md-9">
-                                                <select class="form-control" [(ngModel)]="encarregadoId" name="encarregadoId">
+                                                <select class="form-control" [(ngModel)]="encarregadoId"
+                                                    name="encarregadoId">
                                                     <option [ngValue]="undefined">{{ 'All' | localize }}</option>
                                                     <option *ngFor="let enc of encarregados" [ngValue]="enc.id">{{
                                                         enc.nome }}</option>
@@ -132,7 +133,7 @@
 
                             <ng-template pTemplate="header">
                                 <tr>
-                                    <th>{{ 'DataHora' | localize }}</th>
+                                    <th>{{ 'Ultima Atualização' | localize }}</th>
                                     <th pSortableColumn="obra">
                                         {{ 'Obra' | localize }}
                                         <p-sortIcon field="obra"></p-sortIcon>
@@ -148,6 +149,7 @@
                                     <th>
                                         {{ 'Descrição' | localize }}
                                     </th>
+                                    <th>{{ 'Finalização Prevista' | localize }}</th>
                                     <th style="min-width: 130px">
                                         {{ 'Actions' | localize }}
                                     </th>
@@ -161,6 +163,7 @@
                                     <td>{{ record.encarregado.nome }}</td>
                                     <td>{{ record.status }}</td>
                                     <td>{{ record.descricao }}</td>
+                                    <td>{{ record.dataPrevistaFinalizacao }}</td>
                                     <td>
                                         <button type="button" class="btn btn-sm bg-secondary"
                                             (click)="editTarefa(record)">

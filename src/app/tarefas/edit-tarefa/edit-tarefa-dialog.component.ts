@@ -32,7 +32,7 @@ export class EditTarefaDialogComponent extends AppComponentBase implements OnIni
 
   saving = false;
   tarefa = new UpdateTarefaDto();
-  resolucao = '';
+  observacao = '';
   id?: string;
 
   encarregadosComObras: EncarregadoComObraDto[] = [];
@@ -54,7 +54,7 @@ export class EditTarefaDialogComponent extends AppComponentBase implements OnIni
         this._tarefaService.getEncarregadosComObras()
       ]).subscribe(([tarefa, encarregados]) => {
         this.tarefa = UpdateTarefaDto.fromJS(tarefa);
-        this.resolucao = this.tarefa.observacoes ?? '';
+        this.observacao = this.tarefa.observacoes ?? '';
 
         this.encarregadosComObras = encarregados;
 
@@ -86,12 +86,12 @@ export class EditTarefaDialogComponent extends AppComponentBase implements OnIni
   }
 
   fecharTarefa(): void {
-    if (!this.resolucao || this.resolucao.trim() === '') {
+    if (!this.observacao || this.observacao.trim() === '') {
       this.notify.error('Informe a resolução antes de fechar a tarefa.');
       return;
     }
 
-    this.tarefa.observacoes = this.resolucao;
+    this.tarefa.observacoes = this.observacao;
     this.tarefa.status = TarefaStatus.FINALIZADA;
 
     this._tarefaService.update(this.tarefa).subscribe(() => {

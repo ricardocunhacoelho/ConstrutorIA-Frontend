@@ -12,6 +12,7 @@ import { CommonModule, NgIf } from '@angular/common';
 import { LocalizePipe } from '@shared/pipes/localize.pipe';
 import {
     ObraServiceProxy,
+    PagedSolicitacaoMaterialResultRequestDto,
     SolicitacaoMaterialDto,
     SolicitacaoMaterialDtoPagedResultDto,
     SolicitacaoMaterialServiceProxy,
@@ -146,5 +147,52 @@ export class SolicitacoesMateriaisComponent extends PagedListingComponentBase<So
 
     protected delete(entity: SolicitacaoMaterialDto): void {
         throw new Error('Method not implemented.');
+    }
+
+    public exportarParaPdf() {
+        abp.message.info("Exportar para PDF ainda não implementado.");
+    }
+
+    public exportarParaExcel() {
+        abp.ui.setBusy();
+
+        var pagedResultRequest = new PagedSolicitacaoMaterialResultRequestDto();
+        pagedResultRequest.keyword = this.keyword;
+        pagedResultRequest.obraId = this.obraId;
+        pagedResultRequest.encarregadoId = this.encarregadoId;
+        pagedResultRequest.status = this.status;
+        pagedResultRequest.skipCount = 0;
+        pagedResultRequest.maxResultCount = 100000;
+
+        this._solicitacoesMateriaisService
+            .exportarParaExcel(pagedResultRequest)
+            .pipe(finalize(() => abp.ui.clearBusy()))
+            .subscribe((result) => {
+                FileSaver.saveAs(
+                    this.base64ToBlob(result, "application/vnd.ms-excel"),
+                    "relatorio_solicitacoes_materiais.xlsx"
+                );
+            });
+    }
+
+
+    private base64ToBlob(b64Data: string, contentType: string, sliceSize = 512) {
+        const byteCharacters = atob(b64Data);
+        const byteArrays = [];
+
+        for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+            const slice = byteCharacters.slice(offset, offset + sliceSize);
+
+            const byteNumbers = new Array(slice.length);
+            for (let i = 0; i < slice.length; i++) {
+                byteNumbers[i] = slice.charCodeAt(i);
+            }
+
+            const byteArray = new Uint8Array(byteNumbers);
+            byteArrays.push(byteArray);
+        }
+
+        const blob = new Blob(byteArrays, { type: contentType });
+        return blob;
     }
 }

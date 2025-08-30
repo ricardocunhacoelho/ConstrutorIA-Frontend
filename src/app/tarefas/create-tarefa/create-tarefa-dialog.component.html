@@ -14,6 +14,15 @@
             </textarea>
                     </div>
                 </div>
+
+                <div class="form-group row">
+                    <label class="col-md-3 col-form-label" for="resolucao">Observação</label>
+                    <div class="col-md-9">
+                        <textarea class="form-control" id="resolucao" name="resolucao" [(ngModel)]="tarefa.observacoes"
+                            maxlength="512" placeholder="Digite aqui alguma observação sobre a tarefa"
+                            [disabled]="tarefa.status === 'FINALIZADA'"></textarea>
+                    </div>
+                </div>
             </tab>
 
             <!-- Aba Obra/Encarregado -->
