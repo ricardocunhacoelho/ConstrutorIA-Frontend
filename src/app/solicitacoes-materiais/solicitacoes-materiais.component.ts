@@ -20,12 +20,14 @@ import {
 } from '../../shared/service-proxies/service-proxies';
 import { CreateSolicitacaoMaterialDialogComponent } from './create-solicitacao-material/create-solicitacao-material-dialog.component';
 import { EditSolicitacaoMaterialDialogComponent } from './edit-solicitacao-material/edit-solicitacao-material-dialog.component';
+import { BsDropdownDirective, BsDropdownToggleDirective, BsDropdownMenuDirective } from 'ngx-bootstrap/dropdown';
+import * as FileSaver from 'file-saver';
 
 @Component({
     templateUrl: './solicitacoes-materiais.component.html',
     animations: [appModuleAnimation()],
     standalone: true,
-    imports: [CommonModule, FormsModule, TableModule, PrimeTemplate, NgIf, PaginatorModule, LocalizePipe],
+    imports: [LocalizePipe, BsDropdownDirective, BsDropdownToggleDirective, BsDropdownMenuDirective, CommonModule, FormsModule, TableModule, PrimeTemplate, NgIf, PaginatorModule, LocalizePipe],
 })
 export class SolicitacoesMateriaisComponent extends PagedListingComponentBase<SolicitacaoMaterialDto> implements OnInit {
 

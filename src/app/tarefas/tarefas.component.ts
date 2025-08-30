@@ -19,12 +19,14 @@ import {
 } from '../../shared/service-proxies/service-proxies';
 import { CreateTarefaDialogComponent } from './create-tarefa/create-tarefa-dialog.component';
 import { EditTarefaDialogComponent } from './edit-tarefa/edit-tarefa-dialog.component';
+import { BsDropdownDirective, BsDropdownToggleDirective, BsDropdownMenuDirective } from 'ngx-bootstrap/dropdown';
+import * as FileSaver from 'file-saver';
 
 @Component({
     templateUrl: './tarefas.component.html',
     animations: [appModuleAnimation()],
     standalone: true,
-    imports: [CommonModule, FormsModule, TableModule, PrimeTemplate, NgIf, PaginatorModule, LocalizePipe],
+    imports: [CommonModule, BsDropdownDirective, BsDropdownToggleDirective, BsDropdownMenuDirective, FormsModule, TableModule, PrimeTemplate, NgIf, PaginatorModule, LocalizePipe],
 })
 export class TarefasComponent extends PagedListingComponentBase<TarefaDto> implements OnInit {
 
@@ -146,5 +148,51 @@ export class TarefasComponent extends PagedListingComponentBase<TarefaDto> imple
 
     protected delete(entity: TarefaDto): void {
         throw new Error('Method not implemented.');
+    }
+
+    public exportarParaPdf() {
+        abp.message.info("Exportar para PDF ainda não implementado.");
+    }
+
+    public exportarParaExcel() {
+        abp.ui.setBusy();
+
+        var pagedResultRequest = new PagedTarefaResultRequestDto();
+        pagedResultRequest.keyword = this.keyword;
+        pagedResultRequest.obraId = this.obraId;
+        pagedResultRequest.encarregadoId = this.encarregadoId;
+        pagedResultRequest.status = this.status;
+        pagedResultRequest.skipCount = 0;
+        pagedResultRequest.maxResultCount = 100000;
+
+        this._tarefasService
+            .exportarParaExcel(pagedResultRequest)
+            .pipe(finalize(() => abp.ui.clearBusy()))
+            .subscribe((result) => {
+                FileSaver.saveAs(
+                    this.base64ToBlob(result, "application/vnd.ms-excel"),
+                    "relatorio_tarefas.xlsx"
+                );
+            });
+    }
+
+    private base64ToBlob(b64Data: string, contentType: string, sliceSize = 512) {
+        const byteCharacters = atob(b64Data);
+        const byteArrays = [];
+
+        for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+            const slice = byteCharacters.slice(offset, offset + sliceSize);
+
+            const byteNumbers = new Array(slice.length);
+            for (let i = 0; i < slice.length; i++) {
+                byteNumbers[i] = slice.charCodeAt(i);
+            }
+
+            const byteArray = new Uint8Array(byteNumbers);
+            byteArrays.push(byteArray);
+        }
+
+        const blob = new Blob(byteArrays, { type: contentType });
+        return blob;
     }
 }
