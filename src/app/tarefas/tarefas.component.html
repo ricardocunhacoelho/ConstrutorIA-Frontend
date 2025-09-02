@@ -6,10 +6,33 @@
                     <h1>{{ 'Tarefas' | localize }}</h1>
                 </div>
                 <div class="col-6 text-right">
-                    <a href="javascript:;" class="btn bg-blue" (click)="createTarefa()">
-                        <i class="fa fa-plus-square"></i>
-                        {{ 'Create' | localize }}
-                    </a>
+                    <div class="btn-group">
+                        <!-- Botão Criar -->
+                        <a href="javascript:;" class="btn bg-blue" (click)="createTarefa()">
+                            <i class="fa fa-plus-square"></i>
+                            {{ 'Create' | localize }}
+                        </a>
+
+                        <!-- Botão Exportar com ngx-bootstrap -->
+                        <div class="btn-group" dropdown>
+                            <button id="btn-exportar" dropdownToggle type="button" class="btn bg-green dropdown-toggle">
+                                <i class="fa fa-download"></i>
+                                {{ 'Exportar' | localize }}
+                            </button>
+                            <ul *dropdownMenu class="dropdown-menu dropdown-menu-right" role="menu" aria-labelledby="btn-exportar">
+                                <li role="menuitem">
+                                    <a class="dropdown-item" href="javascript:;" (click)="exportarParaExcel()">
+                                        <i class="fa fa-file-excel text-success"></i> Excel
+                                    </a>
+                                </li>
+                                <li role="menuitem">
+                                    <a class="dropdown-item" href="javascript:;" (click)="exportarParaPdf()">
+                                        <i class="fa fa-file-pdf text-danger"></i> PDF
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

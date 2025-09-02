@@ -152,7 +152,24 @@ export class SolicitacoesMateriaisComponent extends PagedListingComponentBase<So
     }
 
     public exportarParaPdf() {
-        abp.message.info("Exportar para PDF ainda não implementado.");
+        abp.ui.setBusy();
+
+        const pagedResultRequest = new PagedSolicitacaoMaterialResultRequestDto();
+        pagedResultRequest.keyword = this.keyword;
+        pagedResultRequest.obraId = this.obraId;
+        pagedResultRequest.encarregadoId = this.encarregadoId;
+        pagedResultRequest.status = this.status;
+        pagedResultRequest.skipCount = 0;
+        pagedResultRequest.maxResultCount = 100000;
+
+        this._solicitacoesMateriaisService
+            .exportarParaPdf(pagedResultRequest)
+            .pipe(finalize(() => abp.ui.clearBusy()))
+            .subscribe((result) => {
+                const blob = this.base64ToBlob(result, "application/pdf");
+
+                FileSaver.saveAs(blob, "relatorio_solicitacoes_materiais.pdf");
+            });
     }
 
     public exportarParaExcel() {

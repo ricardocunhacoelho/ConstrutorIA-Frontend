@@ -1,0 +1,55 @@
+.card-header p, .card-body p {
+  color: #6c757d; // cinza claro
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+
+.badge {
+  font-size: 0.8rem;
+  padding: 0.35em 0.6em;
+  border-radius: 0.4rem;
+}
+
+.card-header button.btn-link {
+  color: #6c757d;
+  text-decoration: none;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap; // evita quebra de linha
+}
+
+.card-header button.btn-link:hover {
+  color: #495057;
+  text-decoration: none;
+}
+
+.card-header.bg-primary {
+  background-color: #f8f9fa !important;
+  color: #495057 !important;
+}
+
+.card-header-gray {
+  background-color: #6e6d6d; // cinza suave
+  color: #ffffff;
+}
+
+.text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: block;
+}
+
+.card-title-sm {
+  font-size: 1rem; // diminui o tamanho do texto
+}
+
+.card-header.p-2.bg-light {
+  cursor: pointer;
+}
+
+.card-header.p-2.bg-light:hover {
+  background-color: #f1f3f5; // leve efeito visual de hover opcional
+  cursor: pointer;
+}

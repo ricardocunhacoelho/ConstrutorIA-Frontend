@@ -12,6 +12,7 @@ import { CommonModule, NgIf } from '@angular/common';
 import { LocalizePipe } from '@shared/pipes/localize.pipe';
 import {
     ObraServiceProxy,
+    PagedTarefaResultRequestDto,
     TarefaDto,
     TarefaDtoPagedResultDto,
     TarefaServiceProxy,
@@ -151,7 +152,24 @@ export class TarefasComponent extends PagedListingComponentBase<TarefaDto> imple
     }
 
     public exportarParaPdf() {
-        abp.message.info("Exportar para PDF ainda não implementado.");
+        abp.ui.setBusy();
+
+        const pagedResultRequest = new PagedTarefaResultRequestDto();
+        pagedResultRequest.keyword = this.keyword;
+        pagedResultRequest.obraId = this.obraId;
+        pagedResultRequest.encarregadoId = this.encarregadoId;
+        pagedResultRequest.status = this.status;
+        pagedResultRequest.skipCount = 0;
+        pagedResultRequest.maxResultCount = 100000;
+
+        this._tarefasService
+            .exportarParaPdf(pagedResultRequest)
+            .pipe(finalize(() => abp.ui.clearBusy()))
+            .subscribe((result) => {
+                const blob = this.base64ToBlob(result, "application/pdf");
+
+                FileSaver.saveAs(blob, "relatorio_tarefas.pdf");
+            });
     }
 
     public exportarParaExcel() {
