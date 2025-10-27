@@ -23,6 +23,19 @@
                             [disabled]="tarefa.status === 'FINALIZADA'"></textarea>
                     </div>
                 </div>
+
+                <div class="form-group row">
+                    <label class="col-md-3 col-form-label" for="dataPrevistaTermino">
+                        Data Prevista de Término
+                    </label>
+                    <div class="col-md-9">
+                        <input type="date" class="form-control" name="dataPrevistaTermino" id="dataPrevistaTermino"
+                            [(ngModel)]="dataPrevistaTermino" #dataPrevistaTerminoModel="ngModel"
+                            #dataPrevistaTerminoEl />
+                        <abp-validation-summary [control]="dataPrevistaTerminoModel"
+                            [controlEl]="dataPrevistaTerminoEl"></abp-validation-summary>
+                    </div>
+                </div>
             </tab>
 
             <!-- Aba Obra/Encarregado -->

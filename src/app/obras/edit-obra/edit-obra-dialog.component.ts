@@ -31,6 +31,8 @@ export class EditObraDialogComponent extends AppComponentBase implements OnInit 
 
     saving = false;
     obra = new UpdateObraDto();
+    dataInicio: string | undefined;
+    dataPrevistaTermino: string | undefined;
     proprietarios: CreateProprietarioDto[] = [];
     encarregados: CreateEncarregadoDto[] = [];
     roles: RoleDto[] = [];
@@ -52,6 +54,13 @@ export class EditObraDialogComponent extends AppComponentBase implements OnInit 
 
         this._obraService.get(this.id).subscribe((result) => {
             this.obra = UpdateObraDto.fromJS(result);
+
+            if (this.obra.dataInicio) {
+                this.dataInicio = moment(this.obra.dataInicio).format('YYYY-MM-DD');
+            }
+            if (this.obra.dataPrevistaTermino) {
+                this.dataPrevistaTermino = moment(this.obra.dataPrevistaTermino).format('YYYY-MM-DD');
+            }
 
             if (!this.obra.endereco) {
                 this.obra.endereco = new CreateEnderecoDto();
@@ -124,11 +133,11 @@ export class EditObraDialogComponent extends AppComponentBase implements OnInit 
             }
         }
 
-        if (this.obra.dataInicio && typeof (this.obra.dataInicio as any).toISOString !== 'function') {
-            this.obra.dataInicio = moment(this.obra.dataInicio);
+        if (this.dataInicio) {
+            this.obra.dataInicio = moment(this.dataInicio, 'YYYY-MM-DD');
         }
-        if (this.obra.dataPrevistaTermino && typeof (this.obra.dataPrevistaTermino as any).toISOString !== 'function') {
-            this.obra.dataPrevistaTermino = moment(this.obra.dataPrevistaTermino);
+        if (this.dataPrevistaTermino) {
+            this.obra.dataPrevistaTermino = moment(this.dataPrevistaTermino, 'YYYY-MM-DD');
         }
 
         this.obra.proprietarios = this.proprietarios;

@@ -1,4 +1,11 @@
-.card-header p, .card-body p {
+.card-body.p-0 {
+  max-height: 500px; // altura máxima do box
+  overflow-y: auto; // rolagem vertical se passar do limite
+  padding: 0.5rem; // espaço interno
+}
+
+.card-header p,
+.card-body p {
   color: #6c757d; // cinza claro
   font-size: 0.9rem;
   margin-bottom: 0.5rem;
@@ -53,3 +60,20 @@
   background-color: #f1f3f5; // leve efeito visual de hover opcional
   cursor: pointer;
 }
+
+.custom-sizedd {
+  height: 400px;
+}
+
+.chart-wrap {
+  position: relative;
+  width: 100%;
+  height: 280px; /* ajuste a altura que você quiser */
+}
+
+.chart-wrap-top-materiais{
+  position: relative;
+  width: 100%;
+  height: 300px; /* ajuste a altura que você quiser */
+}
+

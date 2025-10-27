@@ -1,9 +1,9 @@
 ﻿<div [@routerTransition]>
-    <section class="content-header">
+    <section class="content-header mb-3">
         <div class="container-fluid">
             <div class="row">
                 <div class="col-12">
-                    <h1>{{ 'HomePage' | localize }}</h1>
+                    <h1>{{ 'Dashboard (Gráficos)' | localize }}</h1>
                 </div>
             </div>
         </div>
@@ -11,6 +11,11 @@
 
     <section class="content px-2">
         <div class="container-fluid">
+            <div class="row mb-3">
+                <div class="col-12">
+                    <h2>{{ 'Solicitações Materiais' | localize }}</h2>
+                </div>
+            </div>
             <div class="row">
                 <!-- Box de últimas solicitações -->
                 <div class="col-6">
@@ -23,7 +28,7 @@
                             <div class="accordion" id="accordionSolicitacoes">
                                 <div class="card mb-0 border-0 border-bottom"
                                     *ngFor="let s of ultimasSolicitacoes; let i = index">
-                                    <div class="card-header p-2 bg-light" (click)="toggleCollapse(i)">
+                                    <div class="card-header p-2 bg-light" (click)="toggleCollapseSolic(i)">
                                         <h2 class="mb-0 d-flex justify-content-between align-items-center">
                                             <span class="text-start flex-grow-1 text-truncate card-title-sm">
                                                 <strong>{{ s.obra?.nome || '-' }}</strong> / {{ s.encarregado?.nome ||
@@ -36,7 +41,7 @@
                                         </h2>
                                     </div>
 
-                                    <div [collapse]="!collapseStates[i]">
+                                    <div [collapse]="!collapseStatesSolic[i]">
                                         <div class="card-body">
                                             <p><strong>Data:</strong> {{ s.dataHora | date:'dd/MM/yyyy HH:mm' }}</p>
                                             <p><strong>Descrição:</strong> {{ s.descricao || '-' }}</p>
@@ -53,9 +58,145 @@
 
                 <!-- Box para gráfico -->
                 <div class="col-6">
-                    <!-- Aqui entra o gráfico depois -->
+                    <div class="card shadow custom-sizedd">
+                        <div class="card-header card-header-gray">
+                            <h5 class="mb-0">Solicitações por Status (mês atual)</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-wrap">
+                                <canvas #donutChart baseChart [data]="donutChartData" [type]="donutChartType"
+                                    [options]="donutChartOptions">
+                                </canvas>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
+            <div class="row">
+                <div class="col-12 mt-3">
+                    <div class="card shadow">
+                        <div class="card-header card-header-gray">
+                            <h5 class="mb-0">Top 10 Materiais Mais Solicitados</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-wrap-top-materiais">
+                                <canvas #topMateriaisChart baseChart [data]="topMateriaisChartData"
+                                    [type]="topMateriaisChartType" [options]="topMateriaisChartOptions">
+                                </canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-3 mb-5">
+                <div class="col-12">
+                    <div class="card shadow custom-sizedd">
+                        <div class="card-header card-header-gray">
+                            <h5 class="mb-0">{{ 'Solicitações por Obra' | localize }}</h5>
+                        </div>
+                        <div class="card-body d-flex justify-content-center" style="height:400px">
+                            <canvas #obrasChart baseChart [data]="obrasChartData" [type]="obrasChartType"
+                                [options]="obrasChartOptions">
+                            </canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-12">
+                    <h2>{{ 'Tarefas' | localize }}</h2>
+                </div>
+            </div>
+            <div class="row">
+                <!-- Cards de tarefas -->
+                <div class="col-6">
+                    <div class="card shadow">
+                        <div class="card-header card-header-gray">
+                            <h5 class="mb-0">{{ 'Tarefas por Obra' | localize }}</h5>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="accordion" id="accordionObras">
+                                <div class="card mb-0 border-0 border-bottom"
+                                    *ngFor="let o of obrasComTarefas; let i = index">
+                                    <!-- Cabeçalho -->
+                                    <div class="card-header p-2 bg-light" (click)="toggleCollapseTarefas(i)">
+                                        <h2 class="mb-0 d-flex justify-content-between align-items-center">
+                                            <span class="text-start flex-grow-1 text-truncate card-title-sm">
+                                                <strong>{{ o.nomeObra }}</strong>
+                                            </span>
+
+                                            <span class="ms-3">
+                                                <span class="badge bg-danger me-1 mr-1">Pendentes: {{
+                                                    o.quantidadePendentes
+                                                    }}</span>
+                                                <span class="badge bg-success">Concluídas: {{ o.quantidadeConcluidas
+                                                    }}</span>
+                                            </span>
+                                        </h2>
+                                    </div>
+
+                                    <!-- Corpo expandido -->
+                                    <div [collapse]="!collapseStatesTarefas[i]">
+                                        <div class="card-body">
+                                            <h6 class="mb-2">{{ 'Ultimas tarefas cadastradas' | localize }}</h6>
+
+                                            <ul class="list-group">
+                                                <li class="list-group-item d-flex justify-content-between align-items-center"
+                                                    *ngFor="let t of o.tarefas">
+                                                    <div>
+                                                        <span>{{ t.descricao }}</span>
+                                                        <small class="text-muted ms-2">
+                                                            {{ t.dataPrevistaFinalizacao | date:'dd/MM/yyyy' }}
+                                                        </small>
+                                                    </div>
+
+                                                    <span class="badge"
+                                                        [ngClass]="t.status === 'PENDENTE' ? 'bg-danger' : 'bg-success'">
+                                                        {{ t.status }}
+                                                    </span>
+                                                </li>
+                                            </ul>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Donut de tarefas -->
+                <div class="col-6">
+                    <div class="card shadow custom-sizedd">
+                        <div class="card-header card-header-gray">
+                            <h5 class="mb-0">Tarefas por Status (mês atual)</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-wrap">
+                                <canvas #donutChartTarefas baseChart [data]="donutChartTarefasData"
+                                    [type]="donutChartTarefasType" [options]="donutChartTarefasOptions">
+                                </canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-3">
+                <div class="col-12">
+                    <div class="card shadow custom-sizedd">
+                        <div class="card-header card-header-gray">
+                            <h5 class="mb-0">Tarefas por Obra (mês atual)</h5>
+                        </div>
+                        <div class="card-body d-flex justify-content-center" style="height:400px">
+                            <canvas #tarefasPorObraChart baseChart [data]="tarefasPorObraChartData"
+                                [type]="tarefasPorObraChartType" [options]="tarefasPorObraChartOptions">
+                            </canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </section>
 </div>

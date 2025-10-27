@@ -6,9 +6,8 @@
                 <div class="form-group row">
                     <label class="col-md-3 col-form-label" for="descricao">Descrição</label>
                     <div class="col-md-9">
-                        <textarea class="form-control" id="descricao" name="descricao"
-                            [(ngModel)]="tarefa.descricao" maxlength="256"
-                            placeholder="Digite aqui a descrição da tarefa"
+                        <textarea class="form-control" id="descricao" name="descricao" [(ngModel)]="tarefa.descricao"
+                            maxlength="256" placeholder="Digite aqui a descrição da tarefa"
                             [disabled]="tarefa.status === 'FINALIZADA'"></textarea>
                     </div>
                 </div>
@@ -19,6 +18,19 @@
                         <textarea class="form-control" id="resolucao" name="resolucao" [(ngModel)]="observacao"
                             maxlength="512" placeholder="Digite aqui alguma observação sobre a tarefa"
                             [disabled]="tarefa.status === 'FINALIZADA'"></textarea>
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <label class="col-md-3 col-form-label" for="dataPrevistaTermino">
+                        Data Prevista de Término
+                    </label>
+                    <div class="col-md-9">
+                        <input type="date" class="form-control" name="dataPrevistaTermino" id="dataPrevistaTermino"
+                            [(ngModel)]="dataPrevistaTermino" #dataPrevistaTerminoModel="ngModel"
+                            #dataPrevistaTerminoEl />
+                        <abp-validation-summary [control]="dataPrevistaTerminoModel"
+                            [controlEl]="dataPrevistaTerminoEl"></abp-validation-summary>
                     </div>
                 </div>
             </tab>

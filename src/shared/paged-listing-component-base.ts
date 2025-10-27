@@ -10,6 +10,7 @@ export class EntityDto {
     template: '',
 })
 export abstract class PagedListingComponentBase<TEntityDto> extends AppComponentBase {
+    [x: string]: any;
     public pageSize = 10;
     public pageNumber = 1;
     public totalPages = 1;

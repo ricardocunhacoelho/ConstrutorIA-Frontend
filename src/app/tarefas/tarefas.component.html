@@ -85,17 +85,17 @@
                                                 </div>
                                                 <div class="custom-control custom-radio d-inline mx-3">
                                                     <input type="radio" class="custom-control-input" id="statusAberta"
-                                                        name="statusAberto" [(ngModel)]="status" [value]="'ABERTA'" />
+                                                        name="statusAberto" [(ngModel)]="status" [value]="'PENDENTE'" />
                                                     <label class="custom-control-label" for="statusAberta">
-                                                        {{ 'Aberta' | localize }}
+                                                        {{ 'PENDENTE' | localize }}
                                                     </label>
                                                 </div>
                                                 <div class="custom-control custom-radio d-inline">
                                                     <input type="radio" class="custom-control-input"
                                                         id="statusConcluida" name="statusConcluido" [(ngModel)]="status"
-                                                        [value]="'CONCLUIDA'" />
+                                                        [value]="'FINALIZADA'" />
                                                     <label class="custom-control-label" for="statusConcluida">
-                                                        {{ 'Concluida' | localize }}
+                                                        {{ 'FINALIZADA' | localize }}
                                                     </label>
                                                 </div>
                                             </div>
@@ -186,7 +186,7 @@
                                     <td>{{ record.encarregado.nome }}</td>
                                     <td>{{ record.status }}</td>
                                     <td>{{ record.descricao }}</td>
-                                    <td>{{ record.dataPrevistaFinalizacao }}</td>
+                                    <td>{{ record.dataPrevistaFinalizacao | date:'short'}}</td>
                                     <td>
                                         <button type="button" class="btn btn-sm bg-secondary"
                                             (click)="editTarefa(record)">

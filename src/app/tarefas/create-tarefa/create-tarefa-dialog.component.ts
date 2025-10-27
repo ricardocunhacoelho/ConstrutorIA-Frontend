@@ -8,12 +8,13 @@ import { AbpModalFooterComponent } from '../../../shared/components/modal/abp-mo
 import { AbpValidationSummaryComponent } from '../../../shared/components/validation/abp-validation.summary.component';
 import { LocalizePipe } from '@shared/pipes/localize.pipe';
 import { AppComponentBase } from '@shared/app-component-base';
-import { 
-    TarefaServiceProxy, 
-    CreateTarefaDto, 
-    EncarregadoComObraDto, 
-    TarefaStatus 
+import {
+    TarefaServiceProxy,
+    CreateTarefaDto,
+    EncarregadoComObraDto,
+    TarefaStatus
 } from '../../../shared/service-proxies/service-proxies';
+import moment from 'moment';
 
 @Component({
     templateUrl: './create-tarefa-dialog.component.html',
@@ -38,6 +39,7 @@ export class CreateTarefaDialogComponent extends AppComponentBase implements OnI
 
     encarregadosComObras: EncarregadoComObraDto[] = [];
     selectedEncarregado?: EncarregadoComObraDto;
+    dataPrevistaTermino: string | undefined;
 
     constructor(
         injector: Injector,
@@ -50,6 +52,7 @@ export class CreateTarefaDialogComponent extends AppComponentBase implements OnI
 
     ngOnInit(): void {
         this.loadEncarregadosComObras();
+        this.dataPrevistaTermino = '';
     }
 
     loadEncarregadosComObras() {
@@ -69,6 +72,10 @@ export class CreateTarefaDialogComponent extends AppComponentBase implements OnI
     save(): void {
         this.tarefa.status = TarefaStatus.PENDENTE;
         this.saving = true;
+
+        this.tarefa.dataPrevistaFinalizacao = this.dataPrevistaTermino
+            ? moment(this.dataPrevistaTermino, 'YYYY-MM-DD')
+            : undefined;
 
         this._tarefaService.create(this.tarefa).subscribe(() => {
             this.notify.info(this.l('TarefaCriadaComSucesso'));

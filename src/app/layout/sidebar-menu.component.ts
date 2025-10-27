@@ -1,8 +1,7 @@
-import { Component, Injector, OnInit } from '@angular/core';
+import { Component, Injector, OnInit, ChangeDetectorRef } from '@angular/core';
 import { AppComponentBase } from '@shared/app-component-base';
-import { Router, RouterEvent, NavigationEnd, PRIMARY_OUTLET, RouterLink } from '@angular/router';
+import { Router, RouterEvent, NavigationEnd, RouterLink } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
-import { filter } from 'rxjs/operators';
 import { MenuItem } from '@shared/layout/menu-item';
 import { NgTemplateOutlet } from '@angular/common';
 import { CollapseDirective } from 'ngx-bootstrap/collapse';
@@ -22,7 +21,8 @@ export class SidebarMenuComponent extends AppComponentBase implements OnInit {
 
     constructor(
         injector: Injector,
-        private router: Router
+        private router: Router,
+        private cdr: ChangeDetectorRef   // 👈 injetado
     ) {
         super(injector);
     }
@@ -31,11 +31,15 @@ export class SidebarMenuComponent extends AppComponentBase implements OnInit {
         this.menuItems = this.getMenuItems();
         this.patchMenuItems(this.menuItems);
 
-        this.router.events.subscribe((event: NavigationEnd) => {
-            const currentUrl = event.url !== '/' ? event.url : this.homeRoute;
-            const primaryUrlSegmentGroup = this.router.parseUrl(currentUrl).root.children[PRIMARY_OUTLET];
-            if (primaryUrlSegmentGroup) {
-                this.activateMenuItems('/' + primaryUrlSegmentGroup.toString());
+        // 🔹 Ativar no primeiro carregamento
+        this.activateMenuItems(this.router.url !== '/' ? this.router.url : this.homeRoute);
+
+        // 🔹 Ativar também em navegação posterior
+        this.router.events.subscribe((event) => {
+            if (event instanceof NavigationEnd) {
+                const currentUrl = event.urlAfterRedirects !== '/' ? event.urlAfterRedirects : this.homeRoute;
+                this.activateMenuItems(currentUrl);
+                this.cdr.detectChanges(); // 👈 força atualização imediata
             }
         });
     }
@@ -45,7 +49,7 @@ export class SidebarMenuComponent extends AppComponentBase implements OnInit {
             new MenuItem(this.l('HomePage'), '/app/home', 'fas fa-home'),
             new MenuItem(this.l('Obras'), '/app/obras', 'fas fa-building'),
             new MenuItem(this.l('Tarefas'), '/app/tarefas', 'fas fa-tasks'),
-            new MenuItem(this.l('Notificações Materiais'), '/app/solicitacoes-materiais', 'fa fa-shopping-bag'),
+            new MenuItem(this.l('Solicitações Materiais'), '/app/solicitacoes-materiais', 'fa fa-shopping-bag'),
             new MenuItem(this.l('Problemas/Impedimentos'), '/app/problemas-impedimentos', 'fa fa-exclamation-triangle'),
             new MenuItem(this.l('Roles'), '/app/roles', 'fas fa-theater-masks', 'Pages.Roles'),
             new MenuItem(this.l('Users'), '/app/users', 'fas fa-users', 'Pages.Users'),
@@ -88,7 +92,7 @@ export class SidebarMenuComponent extends AppComponentBase implements OnInit {
 
     findMenuItemsByUrl(url: string, items: MenuItem[], foundedItems: MenuItem[] = []): MenuItem[] {
         items.forEach((item: MenuItem) => {
-            if (item.route === url) {
+            if (url.startsWith(item.route)) {   // 👈 aceita /app/obras e /app/obras?status=abertas
                 foundedItems.push(item);
             } else if (item.children) {
                 this.findMenuItemsByUrl(url, item.children, foundedItems);

@@ -2002,6 +2002,122 @@ export class SolicitacaoMaterialServiceProxy {
         }
         return _observableOf(null as any);
     }
+
+    /**
+     * @return OK
+     */
+    getTopMateriaisSolicitados(): Observable<RankingMaterialSolicitadoDto[]> {
+        let url_ = this.baseUrl + "/api/services/app/SolicitacaoMaterial/GetTopMateriaisSolicitados";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetTopMateriaisSolicitados(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetTopMateriaisSolicitados(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<RankingMaterialSolicitadoDto[]>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<RankingMaterialSolicitadoDto[]>;
+        }));
+    }
+
+    protected processGetTopMateriaisSolicitados(response: HttpResponseBase): Observable<RankingMaterialSolicitadoDto[]> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200.push(RankingMaterialSolicitadoDto.fromJS(item));
+            }
+            else {
+                result200 = <any>null;
+            }
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @return OK
+     */
+    getSolicitacoesPorObra(): Observable<SolicitacaoPorObraDashboard[]> {
+        let url_ = this.baseUrl + "/api/services/app/SolicitacaoMaterial/GetSolicitacoesPorObra";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetSolicitacoesPorObra(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetSolicitacoesPorObra(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<SolicitacaoPorObraDashboard[]>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<SolicitacaoPorObraDashboard[]>;
+        }));
+    }
+
+    protected processGetSolicitacoesPorObra(response: HttpResponseBase): Observable<SolicitacaoPorObraDashboard[]> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200.push(SolicitacaoPorObraDashboard.fromJS(item));
+            }
+            else {
+                result200 = <any>null;
+            }
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
 }
 
 @Injectable()
@@ -2658,6 +2774,64 @@ export class TarefaServiceProxy {
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
                 result200 = resultData200 !== undefined ? resultData200 : <any>null;
     
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @return OK
+     */
+    getObrasComTarefas(): Observable<ObraComTarefasDto[]> {
+        let url_ = this.baseUrl + "/api/services/app/Tarefa/GetObrasComTarefas";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetObrasComTarefas(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetObrasComTarefas(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<ObraComTarefasDto[]>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<ObraComTarefasDto[]>;
+        }));
+    }
+
+    protected processGetObrasComTarefas(response: HttpResponseBase): Observable<ObraComTarefasDto[]> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200.push(ObraComTarefasDto.fromJS(item));
+            }
+            else {
+                result200 = <any>null;
+            }
             return _observableOf(result200);
             }));
         } else if (status !== 200 && status !== 204) {
@@ -6107,6 +6281,73 @@ export enum NivelUrgencia {
     Alta = "Alta",
 }
 
+export class ObraComTarefasDto implements IObraComTarefasDto {
+    id: string;
+    nomeObra: string | undefined;
+    quantidadePendentes: number;
+    quantidadeConcluidas: number;
+    tarefas: TarefaResumoDto[] | undefined;
+
+    constructor(data?: IObraComTarefasDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.nomeObra = _data["nomeObra"];
+            this.quantidadePendentes = _data["quantidadePendentes"];
+            this.quantidadeConcluidas = _data["quantidadeConcluidas"];
+            if (Array.isArray(_data["tarefas"])) {
+                this.tarefas = [] as any;
+                for (let item of _data["tarefas"])
+                    this.tarefas.push(TarefaResumoDto.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): ObraComTarefasDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new ObraComTarefasDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["nomeObra"] = this.nomeObra;
+        data["quantidadePendentes"] = this.quantidadePendentes;
+        data["quantidadeConcluidas"] = this.quantidadeConcluidas;
+        if (Array.isArray(this.tarefas)) {
+            data["tarefas"] = [];
+            for (let item of this.tarefas)
+                data["tarefas"].push(item.toJSON());
+        }
+        return data;
+    }
+
+    clone(): ObraComTarefasDto {
+        const json = this.toJSON();
+        let result = new ObraComTarefasDto();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IObraComTarefasDto {
+    id: string;
+    nomeObra: string | undefined;
+    quantidadePendentes: number;
+    quantidadeConcluidas: number;
+    tarefas: TarefaResumoDto[] | undefined;
+}
+
 export class ObraDto implements IObraDto {
     id: string;
     nome: string | undefined;
@@ -6915,6 +7156,57 @@ export interface IProprietarioEntity {
     nome: string | undefined;
     cpfOrCnpj: string | undefined;
     obras: ObraEntity[] | undefined;
+}
+
+export class RankingMaterialSolicitadoDto implements IRankingMaterialSolicitadoDto {
+    id: string;
+    nome: string | undefined;
+    quantidadeSolicitacoes: number;
+
+    constructor(data?: IRankingMaterialSolicitadoDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.nome = _data["nome"];
+            this.quantidadeSolicitacoes = _data["quantidadeSolicitacoes"];
+        }
+    }
+
+    static fromJS(data: any): RankingMaterialSolicitadoDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new RankingMaterialSolicitadoDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["nome"] = this.nome;
+        data["quantidadeSolicitacoes"] = this.quantidadeSolicitacoes;
+        return data;
+    }
+
+    clone(): RankingMaterialSolicitadoDto {
+        const json = this.toJSON();
+        let result = new RankingMaterialSolicitadoDto();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IRankingMaterialSolicitadoDto {
+    id: string;
+    nome: string | undefined;
+    quantidadeSolicitacoes: number;
 }
 
 export class RegisterInput implements IRegisterInput {
@@ -7801,6 +8093,61 @@ export enum SolicitacaoMaterialStatus {
     CONCLUIDA = "CONCLUIDA",
 }
 
+export class SolicitacaoPorObraDashboard implements ISolicitacaoPorObraDashboard {
+    obraId: string | undefined;
+    nomeObra: string | undefined;
+    quantidadeAbertas: number;
+    quantidadeConcluidas: number;
+
+    constructor(data?: ISolicitacaoPorObraDashboard) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.obraId = _data["obraId"];
+            this.nomeObra = _data["nomeObra"];
+            this.quantidadeAbertas = _data["quantidadeAbertas"];
+            this.quantidadeConcluidas = _data["quantidadeConcluidas"];
+        }
+    }
+
+    static fromJS(data: any): SolicitacaoPorObraDashboard {
+        data = typeof data === 'object' ? data : {};
+        let result = new SolicitacaoPorObraDashboard();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["obraId"] = this.obraId;
+        data["nomeObra"] = this.nomeObra;
+        data["quantidadeAbertas"] = this.quantidadeAbertas;
+        data["quantidadeConcluidas"] = this.quantidadeConcluidas;
+        return data;
+    }
+
+    clone(): SolicitacaoPorObraDashboard {
+        const json = this.toJSON();
+        let result = new SolicitacaoPorObraDashboard();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface ISolicitacaoPorObraDashboard {
+    obraId: string | undefined;
+    nomeObra: string | undefined;
+    quantidadeAbertas: number;
+    quantidadeConcluidas: number;
+}
+
 export class TarefaDto implements ITarefaDto {
     id: string;
     descricao: string | undefined;
@@ -8048,6 +8395,65 @@ export interface ITarefaEntity {
     obra: ObraEntity;
     encarregadoId: string | undefined;
     encarregado: EncarregadoEntity;
+}
+
+export class TarefaResumoDto implements ITarefaResumoDto {
+    id: string;
+    descricao: string | undefined;
+    status: TarefaStatus;
+    nomeEncarregado: string | undefined;
+    dataPrevistaFinalizacao: moment.Moment | undefined;
+
+    constructor(data?: ITarefaResumoDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.descricao = _data["descricao"];
+            this.status = _data["status"];
+            this.nomeEncarregado = _data["nomeEncarregado"];
+            this.dataPrevistaFinalizacao = _data["dataPrevistaFinalizacao"] ? moment(_data["dataPrevistaFinalizacao"].toString()) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): TarefaResumoDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new TarefaResumoDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["descricao"] = this.descricao;
+        data["status"] = this.status;
+        data["nomeEncarregado"] = this.nomeEncarregado;
+        data["dataPrevistaFinalizacao"] = this.dataPrevistaFinalizacao ? this.dataPrevistaFinalizacao.toISOString() : <any>undefined;
+        return data;
+    }
+
+    clone(): TarefaResumoDto {
+        const json = this.toJSON();
+        let result = new TarefaResumoDto();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface ITarefaResumoDto {
+    id: string;
+    descricao: string | undefined;
+    status: TarefaStatus;
+    nomeEncarregado: string | undefined;
+    dataPrevistaFinalizacao: moment.Moment | undefined;
 }
 
 export enum TarefaStatus {

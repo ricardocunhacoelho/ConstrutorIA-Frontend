@@ -30,7 +30,7 @@
                     </label>
                     <div class="col-md-9">
                         <input type="date" class="form-control" name="dataInicio" id="dataInicio" required
-                            [(ngModel)]="obra.dataInicio" #dataInicioModel="ngModel" #dataInicioEl />
+                            [(ngModel)]="dataInicio" #dataInicioModel="ngModel" #dataInicioEl />
                         <abp-validation-summary [control]="dataInicioModel"
                             [controlEl]="dataInicioEl"></abp-validation-summary>
                     </div>
@@ -41,24 +41,13 @@
                     </label>
                     <div class="col-md-9">
                         <input type="date" class="form-control" name="dataPrevistaTermino" id="dataPrevistaTermino"
-                            [(ngModel)]="obra.dataPrevistaTermino" #dataPrevistaTerminoModel="ngModel"
+                            [(ngModel)]="dataPrevistaTermino" #dataPrevistaTerminoModel="ngModel"
                             #dataPrevistaTerminoEl />
                         <abp-validation-summary [control]="dataPrevistaTerminoModel"
                             [controlEl]="dataPrevistaTerminoEl"></abp-validation-summary>
                     </div>
                 </div>
-                <!-- <div class="form-group row required">
-                    <label class="col-md-3 col-form-label" for="status">
-                        Status
-                    </label>
-                    <div class="col-md-9">
-                        <select class="form-control" name="status" id="status" required [(ngModel)]="obra.status"
-                            #statusModel="ngModel" #statusEl>
-                            <option *ngFor="let s of obraStatusOptions" [value]="s.value">{{ s.label }}</option>
-                        </select>
-                        <abp-validation-summary [control]="statusModel" [controlEl]="statusEl"></abp-validation-summary>
-                    </div>
-                </div> -->
+
             </tab>
             <tab [heading]="'Endereco' | localize" class="pt-3 px-2">
                 <div class="form-group row">
@@ -142,6 +131,7 @@
                 <div *ngFor="let encarregado of encarregados; let i = index"
                     class="border rounded p-3 mb-3 position-relative">
 
+                    <!-- Nome -->
                     <div class="form-group row">
                         <label class="col-md-3 col-form-label" for="encarregado_nome_{{ i }}">Nome</label>
                         <div class="col-md-9">
@@ -151,12 +141,32 @@
                         </div>
                     </div>
 
+                    <!-- CPF/CNPJ -->
                     <div class="form-group row">
                         <label class="col-md-3 col-form-label" for="encarregado_cpf_{{ i }}">CPF/CNPJ</label>
                         <div class="col-md-9">
                             <input type="text" class="form-control" id="encarregado_cpf_{{ i }}"
                                 name="encarregado_cpf_{{ i }}" [(ngModel)]="encarregado.cpfOrCnpj" required
                                 maxlength="18" />
+                        </div>
+                    </div>
+
+                    <!-- Telefone: DDD -->
+                    <div class="form-group row">
+                        <label class="col-md-3 col-form-label" for="encarregado_ddd_{{ i }}">DDD</label>
+                        <div class="col-md-3">
+                            <input type="text" class="form-control" id="encarregado_ddd_{{ i }}"
+                                name="encarregado_ddd_{{ i }}" [(ngModel)]="encarregado.telefone.ddd" required
+                                maxlength="3" pattern="^[0-9]{2,3}$" title="DDD deve conter 2 ou 3 dígitos numéricos" />
+                        </div>
+
+                        <!-- Telefone: Número -->
+                        <label class="col-md-1 col-form-label mr-2" for="encarregado_numero_{{ i }}">Número</label>
+                        <div class="col-md-3">
+                            <input type="text" class="form-control" id="encarregado_numero_{{ i }}"
+                                name="encarregado_numero_{{ i }}" [(ngModel)]="encarregado.telefone.numero" required
+                                maxlength="10" pattern="^[0-9]{8,10}$"
+                                title="Número deve conter entre 8 e 10 dígitos numéricos" />
                         </div>
                     </div>
 

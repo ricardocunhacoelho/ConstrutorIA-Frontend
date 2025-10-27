@@ -11,6 +11,7 @@ import { AppComponentBase } from '@shared/app-component-base';
 import { EncarregadoComObraDto, TarefaServiceProxy, UpdateTarefaDto } from '../../../shared/service-proxies/service-proxies';
 import { TarefaStatus } from '../../../shared/service-proxies/service-proxies';
 import { forkJoin } from 'rxjs';
+import moment from 'moment';
 
 @Component({
   templateUrl: './edit-tarefa-dialog.component.html',
@@ -37,6 +38,7 @@ export class EditTarefaDialogComponent extends AppComponentBase implements OnIni
 
   encarregadosComObras: EncarregadoComObraDto[] = [];
   selectedEncarregado?: EncarregadoComObraDto;
+  dataPrevistaTermino: string | undefined;
 
   constructor(
     injector: Injector,
@@ -61,6 +63,10 @@ export class EditTarefaDialogComponent extends AppComponentBase implements OnIni
         if (this.tarefa.encarregado) {
           this.selectedEncarregado = this.encarregadosComObras
             .find(e => e.id === this.tarefa.encarregado!.id);
+        }
+
+        if (this.tarefa.dataPrevistaFinalizacao) {
+          this.dataPrevistaTermino = moment(this.tarefa.dataPrevistaFinalizacao).format('YYYY-MM-DD');
         }
 
         this.cd.detectChanges();
@@ -102,6 +108,10 @@ export class EditTarefaDialogComponent extends AppComponentBase implements OnIni
   }
 
   save(): void {
+    this.tarefa.dataPrevistaFinalizacao = this.dataPrevistaTermino
+      ? moment(this.dataPrevistaTermino, 'YYYY-MM-DD')
+      : undefined;
+
     this._tarefaService.update(this.tarefa).subscribe(() => {
       this.notify.info(this.l('SavedSuccessfully'));
       this.bsModalRef.hide();

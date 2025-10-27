@@ -2,7 +2,7 @@ import { Component, Injector, OnInit, EventEmitter, Output, ChangeDetectorRef } 
 import { BsModalRef } from 'ngx-bootstrap/modal';
 import { forEach as _forEach, map as _map } from 'lodash-es';
 import { AppComponentBase } from '@shared/app-component-base';
-import { CreateEncarregadoDto, CreateEnderecoDto, CreateObraDto, CreateProprietarioDto, ObraServiceProxy } from '@shared/service-proxies/service-proxies';
+import { CreateEncarregadoDto, CreateEnderecoDto, CreateObraDto, CreateProprietarioDto, CreateTelefoneDto, ObraServiceProxy } from '@shared/service-proxies/service-proxies';
 import { FormsModule } from '@angular/forms';
 import { AbpModalHeaderComponent } from '../../../shared/components/modal/abp-modal-header.component';
 import { TabsetComponent, TabDirective } from 'ngx-bootstrap/tabs';
@@ -34,6 +34,8 @@ export class CreateObraDialogComponent extends AppComponentBase implements OnIni
 
     saving = false;
     obra = new CreateObraDto();
+    dataInicio: string | undefined;
+    dataPrevistaTermino: string | undefined;
     proprietarios: CreateProprietarioDto[] = [];
     encarregados: CreateEncarregadoDto[] = [];
 
@@ -51,6 +53,9 @@ export class CreateObraDialogComponent extends AppComponentBase implements OnIni
         this.obra.endereco = new CreateEnderecoDto();
         this.obra.proprietarios = [];
         this.obra.encarregados = [];
+
+        this.dataInicio = '';
+        this.dataPrevistaTermino = '';
     }
 
     adicionarProprietario() {
@@ -68,6 +73,11 @@ export class CreateObraDialogComponent extends AppComponentBase implements OnIni
         const novo = new CreateEncarregadoDto();
         novo.nome = '';
         novo.cpfOrCnpj = '';
+        novo.telefone = new CreateTelefoneDto();
+        novo.telefone.idd = '55';
+        novo.telefone.ddd = '';
+        novo.telefone.numero = '';
+        novo.telefone.internacional = false;
         this.encarregados.push(novo);
     }
 
@@ -78,13 +88,15 @@ export class CreateObraDialogComponent extends AppComponentBase implements OnIni
     save(): void {
         this.saving = true;
 
-        if (this.obra.dataInicio && typeof (this.obra.dataInicio as any).toISOString !== 'function') {
-            this.obra.dataInicio = moment(this.obra.dataInicio);
-        }
-        if (this.obra.dataPrevistaTermino && typeof (this.obra.dataPrevistaTermino as any).toISOString !== 'function') {
-            this.obra.dataPrevistaTermino = moment(this.obra.dataPrevistaTermino);
-        }
-        
+        // atribui e converte antes de enviar
+        this.obra.dataInicio = this.dataInicio
+            ? moment(this.dataInicio, 'YYYY-MM-DD')
+            : undefined;
+
+        this.obra.dataPrevistaTermino = this.dataPrevistaTermino
+            ? moment(this.dataPrevistaTermino, 'YYYY-MM-DD')
+            : undefined;
+
         this.obra.proprietarios = this.proprietarios;
         this.obra.encarregados = this.encarregados;
 

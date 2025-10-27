@@ -30,7 +30,7 @@
                     </label>
                     <div class="col-md-9">
                         <input type="date" class="form-control" name="dataInicio" id="dataInicio" required
-                            [(ngModel)]="obra.dataInicio" #dataInicioModel="ngModel" #dataInicioEl />
+                            [(ngModel)]="dataInicio" #dataInicioModel="ngModel" #dataInicioEl />
                         <abp-validation-summary [control]="dataInicioModel"
                             [controlEl]="dataInicioEl"></abp-validation-summary>
                     </div>
@@ -41,24 +41,12 @@
                     </label>
                     <div class="col-md-9">
                         <input type="date" class="form-control" name="dataPrevistaTermino" id="dataPrevistaTermino"
-                            [(ngModel)]="obra.dataPrevistaTermino" #dataPrevistaTerminoModel="ngModel"
+                            [(ngModel)]="dataPrevistaTermino" #dataPrevistaTerminoModel="ngModel"
                             #dataPrevistaTerminoEl />
                         <abp-validation-summary [control]="dataPrevistaTerminoModel"
                             [controlEl]="dataPrevistaTerminoEl"></abp-validation-summary>
                     </div>
                 </div>
-                <!-- <div class="form-group row required">
-                    <label class="col-md-3 col-form-label" for="status">
-                        Status
-                    </label>
-                    <div class="col-md-9">
-                        <select class="form-control" name="status" id="status" required [(ngModel)]="obra.status"
-                            #statusModel="ngModel" #statusEl>
-                            <option *ngFor="let s of obraStatusOptions" [value]="s.value">{{ s.label }}</option>
-                        </select>
-                        <abp-validation-summary [control]="statusModel" [controlEl]="statusEl"></abp-validation-summary>
-                    </div>
-                </div> -->
             </tab>
             <tab [heading]="'Endereco' | localize" class="pt-3 px-2">
                 <div class="form-group row">
