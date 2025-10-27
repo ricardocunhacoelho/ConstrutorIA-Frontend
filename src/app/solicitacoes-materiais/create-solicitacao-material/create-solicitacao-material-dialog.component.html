@@ -20,8 +20,12 @@
                     </div>
                     <div class="form-group row">
                         <label class="col-md-3 col-form-label">Quantidade</label>
-                        <div class="col-md-9">
+                        <div class="col-md-3">
                             <input type="text" class="form-control" [(ngModel)]="mat.quantidade" name="mat_quantidade_{{i}}" />
+                        </div>
+                        <label class="col-md-1 col-form-label mr-2">Unidade</label>
+                        <div class="col">
+                            <input type="text" class="form-control" [(ngModel)]="mat.unidade" name="mat_unidade_{{i}}" />
                         </div>
                     </div>
                     <div class="text-end">

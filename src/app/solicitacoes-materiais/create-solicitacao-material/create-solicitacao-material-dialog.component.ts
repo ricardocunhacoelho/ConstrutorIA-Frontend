@@ -13,7 +13,8 @@ import {
     CreateSolicitacaoMaterialDto, 
     UpdateMaterialSolicitadoDto, 
     EncarregadoComObraDto, 
-    SolicitacaoMaterialStatus 
+    SolicitacaoMaterialStatus, 
+    CreateMaterialSolicitadoDto
 } from '../../../shared/service-proxies/service-proxies';
 
 @Component({
@@ -36,7 +37,7 @@ export class CreateSolicitacaoMaterialDialogComponent extends AppComponentBase i
 
     saving = false;
     solicitacao = new CreateSolicitacaoMaterialDto();
-    materiais: UpdateMaterialSolicitadoDto[] = [];
+    materiais: CreateMaterialSolicitadoDto[] = [];
 
     encarregadosComObras: EncarregadoComObraDto[] = [];
     selectedEncarregado?: EncarregadoComObraDto;
@@ -85,7 +86,7 @@ export class CreateSolicitacaoMaterialDialogComponent extends AppComponentBase i
     }
 
     adicionarMaterial() {
-        this.materiais.push(new UpdateMaterialSolicitadoDto());
+        this.materiais.push(new CreateMaterialSolicitadoDto());
     }
 
     removerMaterial(index: number) {
