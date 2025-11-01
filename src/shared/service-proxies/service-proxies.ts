@@ -2664,6 +2664,491 @@ export class TarefaServiceProxy {
 }
 
 @Injectable()
+export class TarefaInternaServiceProxy {
+    private http: HttpClient;
+    private baseUrl: string;
+    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+
+    constructor(@Inject(HttpClient) http: HttpClient, @Optional() @Inject(API_BASE_URL) baseUrl?: string) {
+        this.http = http;
+        this.baseUrl = baseUrl ?? "";
+    }
+
+    /**
+     * @param id (optional) 
+     * @return OK
+     */
+    get(id: string | undefined): Observable<TarefaInternaDto> {
+        let url_ = this.baseUrl + "/api/services/app/TarefaInterna/Get?";
+        if (id === null)
+            throw new Error("The parameter 'id' cannot be null.");
+        else if (id !== undefined)
+            url_ += "Id=" + encodeURIComponent("" + id) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGet(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGet(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<TarefaInternaDto>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<TarefaInternaDto>;
+        }));
+    }
+
+    protected processGet(response: HttpResponseBase): Observable<TarefaInternaDto> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = TarefaInternaDto.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param keyword (optional) 
+     * @param obraId (optional) 
+     * @param userId (optional) 
+     * @param status (optional) 
+     * @param skipCount (optional) 
+     * @param maxResultCount (optional) 
+     * @return OK
+     */
+    getAll(keyword: string | undefined, obraId: string | undefined, userId: number | undefined, status: string | undefined, skipCount: number | undefined, maxResultCount: number | undefined): Observable<TarefaInternaDtoPagedResultDto> {
+        let url_ = this.baseUrl + "/api/services/app/TarefaInterna/GetAll?";
+        if (keyword === null)
+            throw new Error("The parameter 'keyword' cannot be null.");
+        else if (keyword !== undefined)
+            url_ += "Keyword=" + encodeURIComponent("" + keyword) + "&";
+        if (obraId === null)
+            throw new Error("The parameter 'obraId' cannot be null.");
+        else if (obraId !== undefined)
+            url_ += "ObraId=" + encodeURIComponent("" + obraId) + "&";
+        if (userId === null)
+            throw new Error("The parameter 'userId' cannot be null.");
+        else if (userId !== undefined)
+            url_ += "UserId=" + encodeURIComponent("" + userId) + "&";
+        if (status === null)
+            throw new Error("The parameter 'status' cannot be null.");
+        else if (status !== undefined)
+            url_ += "Status=" + encodeURIComponent("" + status) + "&";
+        if (skipCount === null)
+            throw new Error("The parameter 'skipCount' cannot be null.");
+        else if (skipCount !== undefined)
+            url_ += "SkipCount=" + encodeURIComponent("" + skipCount) + "&";
+        if (maxResultCount === null)
+            throw new Error("The parameter 'maxResultCount' cannot be null.");
+        else if (maxResultCount !== undefined)
+            url_ += "MaxResultCount=" + encodeURIComponent("" + maxResultCount) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetAll(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetAll(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<TarefaInternaDtoPagedResultDto>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<TarefaInternaDtoPagedResultDto>;
+        }));
+    }
+
+    protected processGetAll(response: HttpResponseBase): Observable<TarefaInternaDtoPagedResultDto> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = TarefaInternaDtoPagedResultDto.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param body (optional) 
+     * @return OK
+     */
+    create(body: CreateTarefaInternaDto | undefined): Observable<TarefaInternaDto> {
+        let url_ = this.baseUrl + "/api/services/app/TarefaInterna/Create";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processCreate(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processCreate(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<TarefaInternaDto>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<TarefaInternaDto>;
+        }));
+    }
+
+    protected processCreate(response: HttpResponseBase): Observable<TarefaInternaDto> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = TarefaInternaDto.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param body (optional) 
+     * @return OK
+     */
+    update(body: UpdateTarefaInternaDto | undefined): Observable<TarefaInternaDto> {
+        let url_ = this.baseUrl + "/api/services/app/TarefaInterna/Update";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("put", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processUpdate(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processUpdate(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<TarefaInternaDto>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<TarefaInternaDto>;
+        }));
+    }
+
+    protected processUpdate(response: HttpResponseBase): Observable<TarefaInternaDto> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = TarefaInternaDto.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param id (optional) 
+     * @return OK
+     */
+    delete(id: string | undefined): Observable<void> {
+        let url_ = this.baseUrl + "/api/services/app/TarefaInterna/Delete?";
+        if (id === null)
+            throw new Error("The parameter 'id' cannot be null.");
+        else if (id !== undefined)
+            url_ += "Id=" + encodeURIComponent("" + id) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+            })
+        };
+
+        return this.http.request("delete", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processDelete(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processDelete(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<void>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<void>;
+        }));
+    }
+
+    protected processDelete(response: HttpResponseBase): Observable<void> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return _observableOf(null as any);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param body (optional) 
+     * @return OK
+     */
+    exportarParaExcel(body: PagedTarefaInternaResultRequestDto | undefined): Observable<string> {
+        let url_ = this.baseUrl + "/api/services/app/TarefaInterna/ExportarParaExcel";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processExportarParaExcel(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processExportarParaExcel(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<string>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<string>;
+        }));
+    }
+
+    protected processExportarParaExcel(response: HttpResponseBase): Observable<string> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+                result200 = resultData200 !== undefined ? resultData200 : <any>null;
+    
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param body (optional) 
+     * @return OK
+     */
+    exportarParaPdf(body: PagedTarefaInternaResultRequestDto | undefined): Observable<string> {
+        let url_ = this.baseUrl + "/api/services/app/TarefaInterna/ExportarParaPdf";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processExportarParaPdf(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processExportarParaPdf(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<string>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<string>;
+        }));
+    }
+
+    protected processExportarParaPdf(response: HttpResponseBase): Observable<string> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+                result200 = resultData200 !== undefined ? resultData200 : <any>null;
+    
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @return OK
+     */
+    getUsuarios(): Observable<SimpleLookupDto[]> {
+        let url_ = this.baseUrl + "/api/services/app/TarefaInterna/GetUsuarios";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetUsuarios(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetUsuarios(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<SimpleLookupDto[]>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<SimpleLookupDto[]>;
+        }));
+    }
+
+    protected processGetUsuarios(response: HttpResponseBase): Observable<SimpleLookupDto[]> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200.push(SimpleLookupDto.fromJS(item));
+            }
+            else {
+                result200 = <any>null;
+            }
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+}
+
+@Injectable()
 export class TenantServiceProxy {
     private http: HttpClient;
     private baseUrl: string;
@@ -4826,6 +5311,89 @@ export interface ICreateTarefaDto {
     encarregadoId: string | undefined;
 }
 
+export class CreateTarefaInternaDto implements ICreateTarefaInternaDto {
+    responsavelNome: string | undefined;
+    responsavelEmail: string | undefined;
+    descricao: string | undefined;
+    status: TarefaStatus;
+    dataPrevistaFinalizacao: moment.Moment | undefined;
+    dataFinalizacao: moment.Moment | undefined;
+    observacoes: string | undefined;
+    resolucao: string | undefined;
+    obraId: string | undefined;
+    userId: number | undefined;
+    user: UserDto;
+
+    constructor(data?: ICreateTarefaInternaDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.responsavelNome = _data["responsavelNome"];
+            this.responsavelEmail = _data["responsavelEmail"];
+            this.descricao = _data["descricao"];
+            this.status = _data["status"];
+            this.dataPrevistaFinalizacao = _data["dataPrevistaFinalizacao"] ? moment(_data["dataPrevistaFinalizacao"].toString()) : <any>undefined;
+            this.dataFinalizacao = _data["dataFinalizacao"] ? moment(_data["dataFinalizacao"].toString()) : <any>undefined;
+            this.observacoes = _data["observacoes"];
+            this.resolucao = _data["resolucao"];
+            this.obraId = _data["obraId"];
+            this.userId = _data["userId"];
+            this.user = _data["user"] ? UserDto.fromJS(_data["user"]) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): CreateTarefaInternaDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new CreateTarefaInternaDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["responsavelNome"] = this.responsavelNome;
+        data["responsavelEmail"] = this.responsavelEmail;
+        data["descricao"] = this.descricao;
+        data["status"] = this.status;
+        data["dataPrevistaFinalizacao"] = this.dataPrevistaFinalizacao ? this.dataPrevistaFinalizacao.toISOString() : <any>undefined;
+        data["dataFinalizacao"] = this.dataFinalizacao ? this.dataFinalizacao.toISOString() : <any>undefined;
+        data["observacoes"] = this.observacoes;
+        data["resolucao"] = this.resolucao;
+        data["obraId"] = this.obraId;
+        data["userId"] = this.userId;
+        data["user"] = this.user ? this.user.toJSON() : <any>undefined;
+        return data;
+    }
+
+    clone(): CreateTarefaInternaDto {
+        const json = this.toJSON();
+        let result = new CreateTarefaInternaDto();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface ICreateTarefaInternaDto {
+    responsavelNome: string | undefined;
+    responsavelEmail: string | undefined;
+    descricao: string | undefined;
+    status: TarefaStatus;
+    dataPrevistaFinalizacao: moment.Moment | undefined;
+    dataFinalizacao: moment.Moment | undefined;
+    observacoes: string | undefined;
+    resolucao: string | undefined;
+    obraId: string | undefined;
+    userId: number | undefined;
+    user: UserDto;
+}
+
 export class CreateTelefoneDto implements ICreateTelefoneDto {
     numero: string | undefined;
     ddd: string | undefined;
@@ -5950,6 +6518,69 @@ export interface IPagedSolicitacaoMaterialResultRequestDto {
     status: string | undefined;
 }
 
+export class PagedTarefaInternaResultRequestDto implements IPagedTarefaInternaResultRequestDto {
+    maxResultCount: number;
+    skipCount: number;
+    keyword: string | undefined;
+    obraId: string | undefined;
+    userId: number | undefined;
+    status: string | undefined;
+
+    constructor(data?: IPagedTarefaInternaResultRequestDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.maxResultCount = _data["maxResultCount"];
+            this.skipCount = _data["skipCount"];
+            this.keyword = _data["keyword"];
+            this.obraId = _data["obraId"];
+            this.userId = _data["userId"];
+            this.status = _data["status"];
+        }
+    }
+
+    static fromJS(data: any): PagedTarefaInternaResultRequestDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new PagedTarefaInternaResultRequestDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["maxResultCount"] = this.maxResultCount;
+        data["skipCount"] = this.skipCount;
+        data["keyword"] = this.keyword;
+        data["obraId"] = this.obraId;
+        data["userId"] = this.userId;
+        data["status"] = this.status;
+        return data;
+    }
+
+    clone(): PagedTarefaInternaResultRequestDto {
+        const json = this.toJSON();
+        let result = new PagedTarefaInternaResultRequestDto();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IPagedTarefaInternaResultRequestDto {
+    maxResultCount: number;
+    skipCount: number;
+    keyword: string | undefined;
+    obraId: string | undefined;
+    userId: number | undefined;
+    status: string | undefined;
+}
+
 export class PagedTarefaResultRequestDto implements IPagedTarefaResultRequestDto {
     maxResultCount: number;
     skipCount: number;
@@ -6952,7 +7583,7 @@ export interface ISessaoIADto {
 }
 
 export class SimpleLookupDto implements ISimpleLookupDto {
-    id: string;
+    id: any | undefined;
     nome: string | undefined;
 
     constructor(data?: ISimpleLookupDto) {
@@ -6994,7 +7625,7 @@ export class SimpleLookupDto implements ISimpleLookupDto {
 }
 
 export interface ISimpleLookupDto {
-    id: string;
+    id: any | undefined;
     nome: string | undefined;
 }
 
@@ -7339,6 +7970,160 @@ export class TarefaDtoPagedResultDto implements ITarefaDtoPagedResultDto {
 
 export interface ITarefaDtoPagedResultDto {
     items: TarefaDto[] | undefined;
+    totalCount: number;
+}
+
+export class TarefaInternaDto implements ITarefaInternaDto {
+    id: string;
+    responsavelNome: string | undefined;
+    responsavelEmail: string | undefined;
+    descricao: string | undefined;
+    status: TarefaStatus;
+    dataPrevistaFinalizacao: moment.Moment | undefined;
+    dataFinalizacao: moment.Moment | undefined;
+    lastModificationTime: moment.Moment | undefined;
+    creationTime: moment.Moment;
+    observacoes: string | undefined;
+    resolucao: string | undefined;
+    obraId: string | undefined;
+    obra: ObraDto;
+    userId: number | undefined;
+    user: UserDto;
+
+    constructor(data?: ITarefaInternaDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.responsavelNome = _data["responsavelNome"];
+            this.responsavelEmail = _data["responsavelEmail"];
+            this.descricao = _data["descricao"];
+            this.status = _data["status"];
+            this.dataPrevistaFinalizacao = _data["dataPrevistaFinalizacao"] ? moment(_data["dataPrevistaFinalizacao"].toString()) : <any>undefined;
+            this.dataFinalizacao = _data["dataFinalizacao"] ? moment(_data["dataFinalizacao"].toString()) : <any>undefined;
+            this.lastModificationTime = _data["lastModificationTime"] ? moment(_data["lastModificationTime"].toString()) : <any>undefined;
+            this.creationTime = _data["creationTime"] ? moment(_data["creationTime"].toString()) : <any>undefined;
+            this.observacoes = _data["observacoes"];
+            this.resolucao = _data["resolucao"];
+            this.obraId = _data["obraId"];
+            this.obra = _data["obra"] ? ObraDto.fromJS(_data["obra"]) : <any>undefined;
+            this.userId = _data["userId"];
+            this.user = _data["user"] ? UserDto.fromJS(_data["user"]) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): TarefaInternaDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new TarefaInternaDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["responsavelNome"] = this.responsavelNome;
+        data["responsavelEmail"] = this.responsavelEmail;
+        data["descricao"] = this.descricao;
+        data["status"] = this.status;
+        data["dataPrevistaFinalizacao"] = this.dataPrevistaFinalizacao ? this.dataPrevistaFinalizacao.toISOString() : <any>undefined;
+        data["dataFinalizacao"] = this.dataFinalizacao ? this.dataFinalizacao.toISOString() : <any>undefined;
+        data["lastModificationTime"] = this.lastModificationTime ? this.lastModificationTime.toISOString() : <any>undefined;
+        data["creationTime"] = this.creationTime ? this.creationTime.toISOString() : <any>undefined;
+        data["observacoes"] = this.observacoes;
+        data["resolucao"] = this.resolucao;
+        data["obraId"] = this.obraId;
+        data["obra"] = this.obra ? this.obra.toJSON() : <any>undefined;
+        data["userId"] = this.userId;
+        data["user"] = this.user ? this.user.toJSON() : <any>undefined;
+        return data;
+    }
+
+    clone(): TarefaInternaDto {
+        const json = this.toJSON();
+        let result = new TarefaInternaDto();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface ITarefaInternaDto {
+    id: string;
+    responsavelNome: string | undefined;
+    responsavelEmail: string | undefined;
+    descricao: string | undefined;
+    status: TarefaStatus;
+    dataPrevistaFinalizacao: moment.Moment | undefined;
+    dataFinalizacao: moment.Moment | undefined;
+    lastModificationTime: moment.Moment | undefined;
+    creationTime: moment.Moment;
+    observacoes: string | undefined;
+    resolucao: string | undefined;
+    obraId: string | undefined;
+    obra: ObraDto;
+    userId: number | undefined;
+    user: UserDto;
+}
+
+export class TarefaInternaDtoPagedResultDto implements ITarefaInternaDtoPagedResultDto {
+    items: TarefaInternaDto[] | undefined;
+    totalCount: number;
+
+    constructor(data?: ITarefaInternaDtoPagedResultDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            if (Array.isArray(_data["items"])) {
+                this.items = [] as any;
+                for (let item of _data["items"])
+                    this.items.push(TarefaInternaDto.fromJS(item));
+            }
+            this.totalCount = _data["totalCount"];
+        }
+    }
+
+    static fromJS(data: any): TarefaInternaDtoPagedResultDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new TarefaInternaDtoPagedResultDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        if (Array.isArray(this.items)) {
+            data["items"] = [];
+            for (let item of this.items)
+                data["items"].push(item.toJSON());
+        }
+        data["totalCount"] = this.totalCount;
+        return data;
+    }
+
+    clone(): TarefaInternaDtoPagedResultDto {
+        const json = this.toJSON();
+        let result = new TarefaInternaDtoPagedResultDto();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface ITarefaInternaDtoPagedResultDto {
+    items: TarefaInternaDto[] | undefined;
     totalCount: number;
 }
 
@@ -8050,6 +8835,97 @@ export interface IUpdateTarefaDto {
     obra: ObraDto;
     encarregadoId: string | undefined;
     encarregado: EncarregadoDto;
+}
+
+export class UpdateTarefaInternaDto implements IUpdateTarefaInternaDto {
+    id: string;
+    descricao: string | undefined;
+    responsavelNome: string | undefined;
+    responsavelEmail: string | undefined;
+    status: TarefaStatus;
+    dataPrevistaFinalizacao: moment.Moment | undefined;
+    dataFinalizacao: moment.Moment | undefined;
+    observacoes: string | undefined;
+    resolucao: string | undefined;
+    obraId: string | undefined;
+    obra: ObraDto;
+    userId: number | undefined;
+    user: UserDto;
+
+    constructor(data?: IUpdateTarefaInternaDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.descricao = _data["descricao"];
+            this.responsavelNome = _data["responsavelNome"];
+            this.responsavelEmail = _data["responsavelEmail"];
+            this.status = _data["status"];
+            this.dataPrevistaFinalizacao = _data["dataPrevistaFinalizacao"] ? moment(_data["dataPrevistaFinalizacao"].toString()) : <any>undefined;
+            this.dataFinalizacao = _data["dataFinalizacao"] ? moment(_data["dataFinalizacao"].toString()) : <any>undefined;
+            this.observacoes = _data["observacoes"];
+            this.resolucao = _data["resolucao"];
+            this.obraId = _data["obraId"];
+            this.obra = _data["obra"] ? ObraDto.fromJS(_data["obra"]) : <any>undefined;
+            this.userId = _data["userId"];
+            this.user = _data["user"] ? UserDto.fromJS(_data["user"]) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): UpdateTarefaInternaDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new UpdateTarefaInternaDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["descricao"] = this.descricao;
+        data["responsavelNome"] = this.responsavelNome;
+        data["responsavelEmail"] = this.responsavelEmail;
+        data["status"] = this.status;
+        data["dataPrevistaFinalizacao"] = this.dataPrevistaFinalizacao ? this.dataPrevistaFinalizacao.toISOString() : <any>undefined;
+        data["dataFinalizacao"] = this.dataFinalizacao ? this.dataFinalizacao.toISOString() : <any>undefined;
+        data["observacoes"] = this.observacoes;
+        data["resolucao"] = this.resolucao;
+        data["obraId"] = this.obraId;
+        data["obra"] = this.obra ? this.obra.toJSON() : <any>undefined;
+        data["userId"] = this.userId;
+        data["user"] = this.user ? this.user.toJSON() : <any>undefined;
+        return data;
+    }
+
+    clone(): UpdateTarefaInternaDto {
+        const json = this.toJSON();
+        let result = new UpdateTarefaInternaDto();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IUpdateTarefaInternaDto {
+    id: string;
+    descricao: string | undefined;
+    responsavelNome: string | undefined;
+    responsavelEmail: string | undefined;
+    status: TarefaStatus;
+    dataPrevistaFinalizacao: moment.Moment | undefined;
+    dataFinalizacao: moment.Moment | undefined;
+    observacoes: string | undefined;
+    resolucao: string | undefined;
+    obraId: string | undefined;
+    obra: ObraDto;
+    userId: number | undefined;
+    user: UserDto;
 }
 
 export class UserDto implements IUserDto {

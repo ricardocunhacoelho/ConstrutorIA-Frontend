@@ -1,0 +1,106 @@
+﻿<form class="form-horizontal" autocomplete="off" #editTarefaModal="ngForm" (ngSubmit)="save()">
+    <abp-modal-header [title]="'Editar Tarefa Interna' | localize"
+        (onCloseClick)="bsModalRef.hide()"></abp-modal-header>
+
+    <div class="modal-body">
+        <tabset>
+            <tab [heading]="'Detalhes da Tarefa' | localize" class="pt-3 px-2">
+                <div class="form-group row">
+                    <label class="col-md-3 col-form-label" for="descricao">Descrição</label>
+                    <div class="col-md-9">
+                        <textarea class="form-control" id="descricao" name="descricao" [(ngModel)]="tarefa.descricao"
+                            maxlength="256" placeholder="Digite a descrição da tarefa" required></textarea>
+                    </div>
+                </div>
+
+                <!-- Observação -->
+                <div class="form-group row">
+                    <label class="col-md-3 col-form-label" for="observacao">Observação</label>
+                    <div class="col-md-9">
+                        <textarea class="form-control" id="observacao" name="observacao"
+                            [(ngModel)]="tarefa.observacoes" maxlength="256"
+                            placeholder="Digite observações (opcional)"></textarea>
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <label class="col-md-3 col-form-label">Data Prevista Finalização</label>
+                    <div class="col-md-9">
+                        <input type="date" class="form-control" [(ngModel)]="dataPrevistaTermino"
+                            name="dataPrevistaTermino" required />
+                    </div>
+                </div>
+
+                <!-- Card informativo sobre resolução -->
+                <div class="alert alert-info mt-3">
+                    <i class="fas fa-info-circle"></i>
+                    Caso a tarefa já tenha sido concluída, preencha o campo abaixo com a resolução antes de salvar.
+                </div>
+
+                <!-- Campo de resolução -->
+                <div class="form-group row">
+                    <label class="col-md-3 col-form-label" for="resolucao">Resolução</label>
+                    <div class="col-md-9">
+                        <textarea class="form-control" id="resolucao" name="resolucao" [(ngModel)]="tarefa.resolucao"
+                            maxlength="256" placeholder="Descreva a resolução (se aplicável)"></textarea>
+                    </div>
+                </div>
+            </tab>
+
+            <tab [heading]="'Responsável' | localize" class="pt-3 px-2">
+                <p class="text-muted mb-3">
+                    Se o responsável pela tarefa não estiver cadastrado no sistema, selecione a opção
+                    <strong>“Outro (não cadastrado)”</strong> abaixo e preencha o nome e e-mail manualmente.
+                </p>
+                <div class="form-group row">
+                    <label class="col-md-3 col-form-label">Usuário</label>
+                    <div class="col-md-9">
+                        <select class="form-control" [(ngModel)]="selectedUserId" (ngModelChange)="onUserChange()"
+                            name="userSelect">
+                            <option [ngValue]="null">Outro (não cadastrado)</option>
+                            <option *ngFor="let u of usuarios" [ngValue]="u.id">{{ u.nome }}</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div *ngIf="usuarioNaoCadastrado" class="form-group row mt-3">
+                    <label class="col-md-3 col-form-label">Nome</label>
+                    <div class="col-md-9">
+                        <input type="text" class="form-control" name="responsavelNome"
+                            [(ngModel)]="tarefa.responsavelNome" placeholder="Digite o nome do responsável" required />
+                    </div>
+                </div>
+
+                <div *ngIf="usuarioNaoCadastrado" class="form-group row">
+                    <label class="col-md-3 col-form-label">E-mail</label>
+                    <div class="col-md-9">
+                        <input type="email" class="form-control" name="responsavelEmail"
+                            [(ngModel)]="tarefa.responsavelEmail" placeholder="Digite o e-mail do responsável"
+                            required />
+                    </div>
+                </div>
+            </tab>
+
+            <tab [heading]="'Obra' | localize" class="pt-3 px-2">
+                <p class="text-muted mb-3">
+                    Caso a tarefa se refira a uma obra específica, você pode selecioná-la abaixo.
+                    Esse campo é opcional.
+                </p>
+
+                <div class="form-group row">
+                    <label class="col-md-3 col-form-label">Obra</label>
+                    <div class="col-md-9">
+                        <select class="form-control" [(ngModel)]="selectedObraId" (ngModelChange)="onObraChange()"
+                            name="obraSelect">
+                            <option [ngValue]="null">Selecione...</option>
+                            <option *ngFor="let obra of obras" [ngValue]="obra.id">{{ obra.nome }}</option>
+                        </select>
+                    </div>
+                </div>
+            </tab>
+        </tabset>
+    </div>
+
+    <abp-modal-footer [cancelDisabled]="saving" [saveDisabled]="!editTarefaModal.form.valid || saving"
+        (onCancelClick)="bsModalRef.hide()"></abp-modal-footer>
+</form>

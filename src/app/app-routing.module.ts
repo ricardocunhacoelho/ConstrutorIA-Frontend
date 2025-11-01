@@ -51,6 +51,12 @@ import { AppComponent } from './app.component';
                         canActivate: [AppRouteGuard],
                     },
                     {
+                        path: 'escritorio-tarefas',
+                        loadChildren: () => import('./tarefas-internas/tarefas-internas.module').then((m) => m.TarefasInternasModule),
+                        data: { permission: 'Pages.TarefasInternas' },
+                        canActivate: [AppRouteGuard],
+                    },
+                    {
                         path: 'roles',
                         loadChildren: () => import('./roles/roles.module').then((m) => m.RolesModule),
                         data: { permission: 'Pages.Roles' },

@@ -22,7 +22,7 @@ export class SidebarMenuComponent extends AppComponentBase implements OnInit {
     constructor(
         injector: Injector,
         private router: Router,
-        private cdr: ChangeDetectorRef   // 👈 injetado
+        private cdr: ChangeDetectorRef
     ) {
         super(injector);
     }
@@ -31,15 +31,13 @@ export class SidebarMenuComponent extends AppComponentBase implements OnInit {
         this.menuItems = this.getMenuItems();
         this.patchMenuItems(this.menuItems);
 
-        // 🔹 Ativar no primeiro carregamento
         this.activateMenuItems(this.router.url !== '/' ? this.router.url : this.homeRoute);
 
-        // 🔹 Ativar também em navegação posterior
         this.router.events.subscribe((event) => {
             if (event instanceof NavigationEnd) {
                 const currentUrl = event.urlAfterRedirects !== '/' ? event.urlAfterRedirects : this.homeRoute;
                 this.activateMenuItems(currentUrl);
-                this.cdr.detectChanges(); // 👈 força atualização imediata
+                this.cdr.detectChanges();
             }
         });
     }
@@ -48,7 +46,8 @@ export class SidebarMenuComponent extends AppComponentBase implements OnInit {
         return [
             new MenuItem(this.l('HomePage'), '/app/home', 'fas fa-home'),
             new MenuItem(this.l('Obras'), '/app/obras', 'fas fa-building'),
-            new MenuItem(this.l('Tarefas'), '/app/tarefas', 'fas fa-tasks'),
+            new MenuItem(this.l('Tarefas Obras'), '/app/tarefas', 'fas fa-tasks'),
+            new MenuItem(this.l('Tarefas Escritório'), '/app/escritorio-tarefas', 'fa-solid fa-stapler'),
             new MenuItem(this.l('Solicitações Materiais'), '/app/solicitacoes-materiais', 'fa fa-shopping-bag'),
             new MenuItem(this.l('Problemas/Impedimentos'), '/app/problemas-impedimentos', 'fa fa-exclamation-triangle'),
             new MenuItem(this.l('Roles'), '/app/roles', 'fas fa-theater-masks', 'Pages.Roles'),
@@ -92,7 +91,7 @@ export class SidebarMenuComponent extends AppComponentBase implements OnInit {
 
     findMenuItemsByUrl(url: string, items: MenuItem[], foundedItems: MenuItem[] = []): MenuItem[] {
         items.forEach((item: MenuItem) => {
-            if (url.startsWith(item.route)) {   // 👈 aceita /app/obras e /app/obras?status=abertas
+            if (url.startsWith(item.route)) {
                 foundedItems.push(item);
             } else if (item.children) {
                 this.findMenuItemsByUrl(url, item.children, foundedItems);
