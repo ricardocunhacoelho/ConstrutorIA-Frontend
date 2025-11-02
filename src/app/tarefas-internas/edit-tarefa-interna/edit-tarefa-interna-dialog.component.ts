@@ -47,6 +47,7 @@ export class EditTarefaInternaDialogComponent extends AppComponentBase implement
   saving = false;
   tarefa = new UpdateTarefaInternaDto();
   id?: string;
+  isFinalizada = false;
 
   obras: SimpleLookupDto[] = [];
   usuarios: SimpleLookupDto[] = [];
@@ -88,6 +89,7 @@ export class EditTarefaInternaDialogComponent extends AppComponentBase implement
 
       this.tarefa.observacoes = result.observacoes ?? '';
       this.tarefa.resolucao = result.resolucao ?? '';
+      this.isFinalizada = result.status === TarefaStatus.FINALIZADA;
 
       this.cd.detectChanges();
     });
