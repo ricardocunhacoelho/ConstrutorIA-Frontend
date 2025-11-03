@@ -9,6 +9,7 @@ import { CollapseDirective } from 'ngx-bootstrap/collapse';
 @Component({
     selector: 'sidebar-menu',
     templateUrl: './sidebar-menu.component.html',
+    styleUrls: ['./sidebar-menu.component.scss'],
     standalone: true,
     imports: [NgTemplateOutlet, RouterLink, CollapseDirective],
 })
@@ -46,14 +47,18 @@ export class SidebarMenuComponent extends AppComponentBase implements OnInit {
         return [
             new MenuItem(this.l('HomePage'), '/app/home', 'fas fa-home'),
             new MenuItem(this.l('Obras'), '/app/obras', 'fas fa-building'),
-            new MenuItem(this.l('Tarefas Obras'), '/app/tarefas', 'fas fa-tasks'),
-            new MenuItem(this.l('Tarefas Internas'), '/app/escritorio-tarefas', 'fa-solid fa-stapler'),
+            new MenuItem(this.l('Fornecedores'), '/app/fornecedores', 'fa fa-truck'),
+            new MenuItem(this.l('Tarefas'), '', 'fas fa-tasks', '', [
+                new MenuItem(this.l('Tarefas Obras'), '/app/tarefas', 'fa-solid fa-hammer'),
+                new MenuItem(this.l('Tarefas Internas'), '/app/escritorio-tarefas', 'fa-solid fa-stapler'),
+            ]),
             new MenuItem(this.l('Solicitações Materiais'), '/app/solicitacoes-materiais', 'fa fa-shopping-bag'),
             new MenuItem(this.l('Problemas/Impedimentos'), '/app/problemas-impedimentos', 'fa fa-exclamation-triangle'),
             new MenuItem(this.l('Roles'), '/app/roles', 'fas fa-theater-masks', 'Pages.Roles'),
             new MenuItem(this.l('Users'), '/app/users', 'fas fa-users', 'Pages.Users'),
         ];
     }
+
 
     patchMenuItems(items: MenuItem[], parentId?: number): void {
         items.forEach((item: MenuItem, index: number) => {
@@ -91,7 +96,7 @@ export class SidebarMenuComponent extends AppComponentBase implements OnInit {
 
     findMenuItemsByUrl(url: string, items: MenuItem[], foundedItems: MenuItem[] = []): MenuItem[] {
         items.forEach((item: MenuItem) => {
-            if (url.startsWith(item.route)) {
+            if (item.route && url.startsWith(item.route)) {
                 foundedItems.push(item);
             } else if (item.children) {
                 this.findMenuItemsByUrl(url, item.children, foundedItems);
@@ -99,6 +104,7 @@ export class SidebarMenuComponent extends AppComponentBase implements OnInit {
         });
         return foundedItems;
     }
+
 
     activateMenuItem(item: MenuItem): void {
         item.isActive = true;

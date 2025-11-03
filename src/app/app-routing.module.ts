@@ -57,6 +57,12 @@ import { AppComponent } from './app.component';
                         canActivate: [AppRouteGuard],
                     },
                     {
+                        path: 'fornecedores',
+                        loadChildren: () => import('./fornecedores/fornecedores.module').then((m) => m.FornecedoresModule),
+                        data: { permission: 'Pages.Fornecedores' },
+                        canActivate: [AppRouteGuard],
+                    },
+                    {
                         path: 'roles',
                         loadChildren: () => import('./roles/roles.module').then((m) => m.RolesModule),
                         data: { permission: 'Pages.Roles' },

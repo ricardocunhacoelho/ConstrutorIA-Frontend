@@ -18,6 +18,7 @@ import * as ApiServiceProxies from './service-proxies';
         ApiServiceProxies.ProblemaImpedimentoServiceProxy,
         ApiServiceProxies.TarefaServiceProxy,
         ApiServiceProxies.TarefaInternaServiceProxy,
+        ApiServiceProxies.FornecedorServiceProxy,
         { provide: HTTP_INTERCEPTORS, useClass: AbpHttpInterceptor, multi: true },
     ],
 })

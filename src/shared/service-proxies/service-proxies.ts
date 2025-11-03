@@ -206,6 +206,304 @@ export class ConfigurationServiceProxy {
 }
 
 @Injectable()
+export class FornecedorServiceProxy {
+    private http: HttpClient;
+    private baseUrl: string;
+    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+
+    constructor(@Inject(HttpClient) http: HttpClient, @Optional() @Inject(API_BASE_URL) baseUrl?: string) {
+        this.http = http;
+        this.baseUrl = baseUrl ?? "";
+    }
+
+    /**
+     * @param id (optional) 
+     * @return OK
+     */
+    get(id: string | undefined): Observable<FornecedorDto> {
+        let url_ = this.baseUrl + "/api/services/app/Fornecedor/Get?";
+        if (id === null)
+            throw new Error("The parameter 'id' cannot be null.");
+        else if (id !== undefined)
+            url_ += "Id=" + encodeURIComponent("" + id) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGet(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGet(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<FornecedorDto>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<FornecedorDto>;
+        }));
+    }
+
+    protected processGet(response: HttpResponseBase): Observable<FornecedorDto> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = FornecedorDto.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param keyword (optional) 
+     * @param skipCount (optional) 
+     * @param maxResultCount (optional) 
+     * @return OK
+     */
+    getAll(keyword: string | undefined, skipCount: number | undefined, maxResultCount: number | undefined): Observable<FornecedorDtoPagedResultDto> {
+        let url_ = this.baseUrl + "/api/services/app/Fornecedor/GetAll?";
+        if (keyword === null)
+            throw new Error("The parameter 'keyword' cannot be null.");
+        else if (keyword !== undefined)
+            url_ += "Keyword=" + encodeURIComponent("" + keyword) + "&";
+        if (skipCount === null)
+            throw new Error("The parameter 'skipCount' cannot be null.");
+        else if (skipCount !== undefined)
+            url_ += "SkipCount=" + encodeURIComponent("" + skipCount) + "&";
+        if (maxResultCount === null)
+            throw new Error("The parameter 'maxResultCount' cannot be null.");
+        else if (maxResultCount !== undefined)
+            url_ += "MaxResultCount=" + encodeURIComponent("" + maxResultCount) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetAll(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetAll(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<FornecedorDtoPagedResultDto>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<FornecedorDtoPagedResultDto>;
+        }));
+    }
+
+    protected processGetAll(response: HttpResponseBase): Observable<FornecedorDtoPagedResultDto> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = FornecedorDtoPagedResultDto.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param body (optional) 
+     * @return OK
+     */
+    create(body: CreateFornecedorDto | undefined): Observable<FornecedorDto> {
+        let url_ = this.baseUrl + "/api/services/app/Fornecedor/Create";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processCreate(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processCreate(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<FornecedorDto>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<FornecedorDto>;
+        }));
+    }
+
+    protected processCreate(response: HttpResponseBase): Observable<FornecedorDto> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = FornecedorDto.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param body (optional) 
+     * @return OK
+     */
+    update(body: UpdateFornecedorDto | undefined): Observable<FornecedorDto> {
+        let url_ = this.baseUrl + "/api/services/app/Fornecedor/Update";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("put", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processUpdate(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processUpdate(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<FornecedorDto>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<FornecedorDto>;
+        }));
+    }
+
+    protected processUpdate(response: HttpResponseBase): Observable<FornecedorDto> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = FornecedorDto.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param id (optional) 
+     * @return OK
+     */
+    delete(id: string | undefined): Observable<void> {
+        let url_ = this.baseUrl + "/api/services/app/Fornecedor/Delete?";
+        if (id === null)
+            throw new Error("The parameter 'id' cannot be null.");
+        else if (id !== undefined)
+            url_ += "Id=" + encodeURIComponent("" + id) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+            })
+        };
+
+        return this.http.request("delete", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processDelete(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processDelete(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<void>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<void>;
+        }));
+    }
+
+    protected processDelete(response: HttpResponseBase): Observable<void> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return _observableOf(null as any);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+}
+
+@Injectable()
 export class ObraServiceProxy {
     private http: HttpClient;
     private baseUrl: string;
@@ -4822,6 +5120,69 @@ export interface ICreateEnderecoDto {
     cep: string | undefined;
 }
 
+export class CreateFornecedorDto implements ICreateFornecedorDto {
+    nomeFantasia: string | undefined;
+    email: string | undefined;
+    razaoSocial: string | undefined;
+    cpfOrCnpj: string | undefined;
+    telefone: CreateTelefoneDto;
+    endereco: CreateEnderecoDto;
+
+    constructor(data?: ICreateFornecedorDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.nomeFantasia = _data["nomeFantasia"];
+            this.email = _data["email"];
+            this.razaoSocial = _data["razaoSocial"];
+            this.cpfOrCnpj = _data["cpfOrCnpj"];
+            this.telefone = _data["telefone"] ? CreateTelefoneDto.fromJS(_data["telefone"]) : <any>undefined;
+            this.endereco = _data["endereco"] ? CreateEnderecoDto.fromJS(_data["endereco"]) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): CreateFornecedorDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new CreateFornecedorDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["nomeFantasia"] = this.nomeFantasia;
+        data["email"] = this.email;
+        data["razaoSocial"] = this.razaoSocial;
+        data["cpfOrCnpj"] = this.cpfOrCnpj;
+        data["telefone"] = this.telefone ? this.telefone.toJSON() : <any>undefined;
+        data["endereco"] = this.endereco ? this.endereco.toJSON() : <any>undefined;
+        return data;
+    }
+
+    clone(): CreateFornecedorDto {
+        const json = this.toJSON();
+        let result = new CreateFornecedorDto();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface ICreateFornecedorDto {
+    nomeFantasia: string | undefined;
+    email: string | undefined;
+    razaoSocial: string | undefined;
+    cpfOrCnpj: string | undefined;
+    telefone: CreateTelefoneDto;
+    endereco: CreateEnderecoDto;
+}
+
 export class CreateMaterialSolicitadoDto implements ICreateMaterialSolicitadoDto {
     nome: string | undefined;
     quantidade: string | undefined;
@@ -5050,7 +5411,9 @@ export interface ICreateProblemaImpedimentoDto {
 export class CreateProprietarioDto implements ICreateProprietarioDto {
     id: string;
     nome: string;
+    email: string;
     cpfOrCnpj: string;
+    telefone: CreateTelefoneDto;
 
     constructor(data?: ICreateProprietarioDto) {
         if (data) {
@@ -5065,7 +5428,9 @@ export class CreateProprietarioDto implements ICreateProprietarioDto {
         if (_data) {
             this.id = _data["id"];
             this.nome = _data["nome"];
+            this.email = _data["email"];
             this.cpfOrCnpj = _data["cpfOrCnpj"];
+            this.telefone = _data["telefone"] ? CreateTelefoneDto.fromJS(_data["telefone"]) : <any>undefined;
         }
     }
 
@@ -5080,7 +5445,9 @@ export class CreateProprietarioDto implements ICreateProprietarioDto {
         data = typeof data === 'object' ? data : {};
         data["id"] = this.id;
         data["nome"] = this.nome;
+        data["email"] = this.email;
         data["cpfOrCnpj"] = this.cpfOrCnpj;
+        data["telefone"] = this.telefone ? this.telefone.toJSON() : <any>undefined;
         return data;
     }
 
@@ -5095,7 +5462,9 @@ export class CreateProprietarioDto implements ICreateProprietarioDto {
 export interface ICreateProprietarioDto {
     id: string;
     nome: string;
+    email: string;
     cpfOrCnpj: string;
+    telefone: CreateTelefoneDto;
 }
 
 export class CreateRoleDto implements ICreateRoleDto {
@@ -5841,6 +6210,128 @@ export interface IFlatPermissionDto {
     name: string | undefined;
     displayName: string | undefined;
     description: string | undefined;
+}
+
+export class FornecedorDto implements IFornecedorDto {
+    id: string;
+    nomeFantasia: string | undefined;
+    email: string | undefined;
+    razaoSocial: string | undefined;
+    cpfOrCnpj: string | undefined;
+    telefone: TelefoneDto;
+    endereco: EnderecoDto;
+
+    constructor(data?: IFornecedorDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.nomeFantasia = _data["nomeFantasia"];
+            this.email = _data["email"];
+            this.razaoSocial = _data["razaoSocial"];
+            this.cpfOrCnpj = _data["cpfOrCnpj"];
+            this.telefone = _data["telefone"] ? TelefoneDto.fromJS(_data["telefone"]) : <any>undefined;
+            this.endereco = _data["endereco"] ? EnderecoDto.fromJS(_data["endereco"]) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): FornecedorDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new FornecedorDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["nomeFantasia"] = this.nomeFantasia;
+        data["email"] = this.email;
+        data["razaoSocial"] = this.razaoSocial;
+        data["cpfOrCnpj"] = this.cpfOrCnpj;
+        data["telefone"] = this.telefone ? this.telefone.toJSON() : <any>undefined;
+        data["endereco"] = this.endereco ? this.endereco.toJSON() : <any>undefined;
+        return data;
+    }
+
+    clone(): FornecedorDto {
+        const json = this.toJSON();
+        let result = new FornecedorDto();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IFornecedorDto {
+    id: string;
+    nomeFantasia: string | undefined;
+    email: string | undefined;
+    razaoSocial: string | undefined;
+    cpfOrCnpj: string | undefined;
+    telefone: TelefoneDto;
+    endereco: EnderecoDto;
+}
+
+export class FornecedorDtoPagedResultDto implements IFornecedorDtoPagedResultDto {
+    items: FornecedorDto[] | undefined;
+    totalCount: number;
+
+    constructor(data?: IFornecedorDtoPagedResultDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            if (Array.isArray(_data["items"])) {
+                this.items = [] as any;
+                for (let item of _data["items"])
+                    this.items.push(FornecedorDto.fromJS(item));
+            }
+            this.totalCount = _data["totalCount"];
+        }
+    }
+
+    static fromJS(data: any): FornecedorDtoPagedResultDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new FornecedorDtoPagedResultDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        if (Array.isArray(this.items)) {
+            data["items"] = [];
+            for (let item of this.items)
+                data["items"].push(item.toJSON());
+        }
+        data["totalCount"] = this.totalCount;
+        return data;
+    }
+
+    clone(): FornecedorDtoPagedResultDto {
+        const json = this.toJSON();
+        let result = new FornecedorDtoPagedResultDto();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IFornecedorDtoPagedResultDto {
+    items: FornecedorDto[] | undefined;
+    totalCount: number;
 }
 
 export class GetCurrentLoginInformationsOutput implements IGetCurrentLoginInformationsOutput {
@@ -8420,6 +8911,73 @@ export interface ITenantLoginInfoDto {
 export enum ThreadStatus {
     ABERTA = "ABERTA",
     FECHADA = "FECHADA",
+}
+
+export class UpdateFornecedorDto implements IUpdateFornecedorDto {
+    id: string;
+    nomeFantasia: string | undefined;
+    email: string | undefined;
+    razaoSocial: string | undefined;
+    cpfOrCnpj: string | undefined;
+    telefone: TelefoneDto;
+    endereco: EnderecoDto;
+
+    constructor(data?: IUpdateFornecedorDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.nomeFantasia = _data["nomeFantasia"];
+            this.email = _data["email"];
+            this.razaoSocial = _data["razaoSocial"];
+            this.cpfOrCnpj = _data["cpfOrCnpj"];
+            this.telefone = _data["telefone"] ? TelefoneDto.fromJS(_data["telefone"]) : <any>undefined;
+            this.endereco = _data["endereco"] ? EnderecoDto.fromJS(_data["endereco"]) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): UpdateFornecedorDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new UpdateFornecedorDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["nomeFantasia"] = this.nomeFantasia;
+        data["email"] = this.email;
+        data["razaoSocial"] = this.razaoSocial;
+        data["cpfOrCnpj"] = this.cpfOrCnpj;
+        data["telefone"] = this.telefone ? this.telefone.toJSON() : <any>undefined;
+        data["endereco"] = this.endereco ? this.endereco.toJSON() : <any>undefined;
+        return data;
+    }
+
+    clone(): UpdateFornecedorDto {
+        const json = this.toJSON();
+        let result = new UpdateFornecedorDto();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IUpdateFornecedorDto {
+    id: string;
+    nomeFantasia: string | undefined;
+    email: string | undefined;
+    razaoSocial: string | undefined;
+    cpfOrCnpj: string | undefined;
+    telefone: TelefoneDto;
+    endereco: EnderecoDto;
 }
 
 export class UpdateMaterialSolicitadoDto implements IUpdateMaterialSolicitadoDto {
