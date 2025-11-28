@@ -1,0 +1,168 @@
+<div class="modal-header d-flex align-items-center justify-content-between">
+  <h5 class="modal-title">Cotações Existentes</h5>
+
+  <button type="button" class="btn-close" aria-label="Close" (click)="bsModalRef.hide()">
+    <i class="fa fa-times"></i>
+  </button>
+</div>
+
+
+<div class="modal-body">
+  <div *ngIf="loading" class="text-center my-4">
+    <i class="fa fa-spinner fa-spin"></i> Carregando cotações...
+  </div>
+
+  <div *ngIf="!loading && cotacoes.length === 0" class="text-center text-muted my-4">
+    Nenhuma cotação encontrada.
+  </div>
+
+  <div *ngFor="let cotacao of cotacoes; let i = index" class="mb-3">
+    <div class="card shadow-sm border-0 rounded-3" [class.bg-light]="expanded[i]">
+      <div class="card-body d-flex justify-content-between align-items-center cursor-pointer" (click)="toggleExpand(i)">
+        <div class="flex-grow-1">
+          <h6 class="mb-1">
+            <strong>Fornecedor:</strong> {{ cotacao.fornecedor?.nome }}
+          </h6>
+          <p class="mb-0 text-muted small">
+            <strong>Status:</strong> <span [ngClass]="cotacao.hasOrcamento ? 'text-success' : 'text-muted'">
+              {{ cotacao.displayStatus }}
+            </span>
+            <strong>Obra:</strong> {{ cotacao.obra?.nome || 'Não informado' }}
+          </p>
+        </div>
+
+        <button class="btn btn-outline-secondary btn-sm" (click)="toggleExpand(i); $event.stopPropagation()">
+          <i class="fa" [ngClass]="expanded[i] ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+        </button>
+      </div>
+
+      <div class="px-3 pb-3" *ngIf="expanded[i]" @expandCollapse>
+
+        <hr />
+
+        <!-- STATUS -->
+        <p>
+          <strong>Status:</strong>
+          <span [ngClass]="cotacao.hasOrcamento ? 'text-success' : 'text-muted'">
+            {{ cotacao.displayStatus }}
+          </span>
+        </p>
+
+        <!-- OBSERVAÇÕES -->
+        <div *ngIf="cotacao.observacaoFornecedor">
+          <strong>Observação p/ fornecedor:</strong>
+          <p>{{ cotacao.observacaoFornecedor }}</p>
+        </div>
+
+        <div *ngIf="cotacao.observacaoInterna">
+          <strong>Observação interna:</strong>
+          <p>{{ cotacao.observacaoInterna }}</p>
+        </div>
+
+        <!-- SEM ORÇAMENTO: VISUAL ANTIGO -->
+        <div *ngIf="!cotacao.hasOrcamento">
+
+          <h6 class="mb-2 mt-3">Materiais:</h6>
+
+          <ul class="list-group small">
+            <li *ngFor="let mat of cotacao.materiaisCotados"
+              class="list-group-item d-flex justify-content-between align-items-center">
+              {{ mat.nome }}
+              <span class="badge bg-secondary">
+                {{ mat.quantidade }} {{ mat.unidade }}
+              </span>
+            </li>
+          </ul>
+
+          <p class="mt-4"><strong>Total:</strong> Aguardando fornecedor</p>
+        </div>
+
+        <!-- COM ORÇAMENTO: AGRUPADO -->
+        <div *ngIf="cotacao.hasOrcamento">
+
+          <h6 class="mt-3">Materiais Orçados:</h6>
+
+          <div *ngFor="let grupo of cotacao.materiaisAgrupados" class="card mt-3 p-3 border material-card"
+            [class.material-disabled]="grupo.removido">
+
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <h6 class="mb-0">{{ grupo.nome }}</h6>
+
+              <!-- BOTÃO REMOVER / ADICIONAR -->
+              <button type="button" class="btn btn-sm"
+                [ngClass]="grupo.removido ? 'btn-success btn-pulse' : 'btn-outline-danger'"
+                (click)="removerGrupo(cotacao, grupo); $event.stopPropagation()"
+                [title]="grupo.removido ? 'Adicionar item novamente' : 'Remover item'">
+
+                <i class="fa" [ngClass]="grupo.removido ? 'fa-plus' : 'fa-times'"></i>
+              </button>
+            </div>
+
+
+
+            <!-- VARIAÇÕES -->
+            <div class="variacoes-wrapper" [class.variacoes-disabled]="grupo.removido">
+
+              <div *ngFor="let v of grupo.variacoes" class="form-check mb-2">
+                <input class="form-check-input" type="radio" name="{{ grupo.nome }}" [value]="v"
+                  [(ngModel)]="grupo.selected" [disabled]="grupo.removido" />
+
+                <label class="form-check-label w-100">
+                  <div class="d-flex justify-content-between align-items-center">
+
+                    <!-- Lado esquerdo: descrição -->
+                    <div>
+                      <div>
+                        <strong *ngIf="v.especificacao">{{ v.especificacao }}</strong>
+                      </div>
+
+                      <small class="text-muted">
+                        {{ v.quantidade }} {{ v.unidade }}
+                        <span *ngIf="v.precoItem">
+                          • {{ v.precoItem | currency:'BRL' }} / un
+                        </span>
+                      </small>
+                    </div>
+
+                    <!-- Lado direito: total -->
+                    <div class="text-end">
+                      <div class="fw-bold">
+                        {{ v.precoTotal | currency:'BRL' }}
+                      </div>
+
+                      <small *ngIf="v.emFalta" class="text-danger">
+                        Em falta
+                      </small>
+                    </div>
+
+                  </div>
+                </label>
+
+
+
+              </div>
+            </div>
+          </div>
+
+          <!-- TOTAL -->
+          <div class="d-flex justify-content-between mt-4 align-items-center">
+            <h5>Total: {{ getTotal(cotacao) | currency:'BRL' }}</h5>
+
+            <button class="btn btn-success">
+              Realizar compra
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="modal-footer">
+  <button type="button" class="btn btn-primary" (click)="novaCotacao()">
+    + Nova cotação
+  </button>
+</div>

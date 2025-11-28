@@ -22,6 +22,8 @@ import { CreateSolicitacaoMaterialDialogComponent } from './create-solicitacao-m
 import { EditSolicitacaoMaterialDialogComponent } from './edit-solicitacao-material/edit-solicitacao-material-dialog.component';
 import { BsDropdownDirective, BsDropdownToggleDirective, BsDropdownMenuDirective } from 'ngx-bootstrap/dropdown';
 import * as FileSaver from 'file-saver';
+import { CreateCotacaoDialogComponent } from '../cotacoes/create-cotacao/create-cotacao-dialog.component';
+import { CotacoesListDialogComponent } from '@app/cotacoes/list-cotacoes/list-cotacoes-dialog.component';
 
 @Component({
     templateUrl: './solicitacoes-materiais.component.html',
@@ -213,5 +215,23 @@ export class SolicitacoesMateriaisComponent extends PagedListingComponentBase<So
 
         const blob = new Blob(byteArrays, { type: contentType });
         return blob;
+    }
+
+    abrirCotacoes(solicitacao: SolicitacaoMaterialDto): void {
+            if (solicitacao.cotacoes &&  solicitacao.cotacoes.length > 0) {
+                const ref = this._modalService.show(CotacoesListDialogComponent, {
+                    class: 'modal-lg',
+                    initialState: { solicitacaoId: solicitacao.id }
+                });
+
+                ref.content.onSave.subscribe(() => this.refresh());
+            } else {
+                const ref = this._modalService.show(CreateCotacaoDialogComponent, {
+                    class: 'modal-xl',
+                    initialState: { solicitacaoId: solicitacao.id }
+                });
+
+                ref.content.onSave.subscribe(() => this.refresh());
+            }
     }
 }

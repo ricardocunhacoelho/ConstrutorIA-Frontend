@@ -19,7 +19,8 @@
                                 <i class="fa fa-download"></i>
                                 {{ 'Exportar' | localize }}
                             </button>
-                            <ul *dropdownMenu class="dropdown-menu dropdown-menu-right" role="menu" aria-labelledby="btn-exportar">
+                            <ul *dropdownMenu class="dropdown-menu dropdown-menu-right" role="menu"
+                                aria-labelledby="btn-exportar">
                                 <li role="menuitem">
                                     <a class="dropdown-item" href="javascript:;" (click)="exportarParaExcel()">
                                         <i class="fa fa-file-excel text-success"></i> Excel
@@ -196,11 +197,16 @@
                                         </ul>
                                     </td>
                                     <td>
-                                        <button type="button" class="btn btn-sm bg-secondary"
+                                        <button type="button" class="btn btn-sm bg-info" (click)="abrirCotacoes(record)">
+                                            <i class="fas fa-shopping-cart"></i>
+                                        </button>
+
+                                        <button type="button" class="btn btn-sm bg-secondary mx-2"
                                             (click)="editSolicitacaoMaterial(record)">
                                             <i class="fas fa-pencil-alt"></i>
                                         </button>
-                                        <button type="button" class="btn btn-sm bg-danger mx-2"
+
+                                        <button type="button" class="btn btn-sm bg-danger"
                                             (click)="deleteSolicitacaoMaterial(record)">
                                             <i class="fas fa-trash"></i>
                                         </button>

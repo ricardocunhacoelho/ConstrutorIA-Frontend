@@ -4,6 +4,8 @@ import { CreateSolicitacaoMaterialDialogComponent } from './create-solicitacao-m
 import { EditSolicitacaoMaterialDialogComponent } from './edit-solicitacao-material/edit-solicitacao-material-dialog.component';
 import { SolicitacoesMateriaisRoutingModule } from './solicitacoes-materiais-routing.module';
 import { SolicitacoesMateriaisComponent } from './solicitacoes-materiais.component';
+import { CreateCotacaoDialogComponent } from './../cotacoes/create-cotacao/create-cotacao-dialog.component';
+import { CotacoesListDialogComponent } from './../cotacoes/list-cotacoes/list-cotacoes-dialog.component';
 import { CommonModule } from '@angular/common';
 
 @NgModule({
@@ -14,6 +16,8 @@ import { CommonModule } from '@angular/common';
         SolicitacoesMateriaisComponent,
         CreateSolicitacaoMaterialDialogComponent,
         EditSolicitacaoMaterialDialogComponent,
+        CreateCotacaoDialogComponent,
+        CotacoesListDialogComponent
     ],
 })
 export class SolicitacoesMateriaisModule {}

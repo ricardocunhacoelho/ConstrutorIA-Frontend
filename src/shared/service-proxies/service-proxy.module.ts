@@ -19,6 +19,7 @@ import * as ApiServiceProxies from './service-proxies';
         ApiServiceProxies.TarefaServiceProxy,
         ApiServiceProxies.TarefaInternaServiceProxy,
         ApiServiceProxies.FornecedorServiceProxy,
+        ApiServiceProxies.CotacaoServiceProxy,
         { provide: HTTP_INTERCEPTORS, useClass: AbpHttpInterceptor, multi: true },
     ],
 })

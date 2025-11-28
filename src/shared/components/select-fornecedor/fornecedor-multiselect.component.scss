@@ -1,0 +1,29 @@
+.fornecedor-multiselect {
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+
+    .tag {
+      background: #f1f1f1;
+      border-radius: 16px;
+      padding: 4px 10px;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+
+      .remove-btn {
+        background: none;
+        border: none;
+        font-size: 16px;
+        margin-left: 4px;
+        cursor: pointer;
+      }
+    }
+  }
+
+  .lista-fornecedores {
+    max-height: 180px;
+    overflow-y: auto;
+  }
+}

@@ -1,0 +1,79 @@
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.collapse-container {
+  animation: expand 0.25s ease-in-out;
+}
+
+@keyframes expand {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.btn-close {
+  background-color: transparent !important;
+  opacity: 1 !important;
+  z-index: 10;
+}
+
+.material-disabled {
+  opacity: 0.45;
+  filter: grayscale(100%);
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.material-disabled::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.45);
+  pointer-events: none;
+  border-radius: 0.5rem;
+}
+
+.variacoes-disabled {
+  pointer-events: none;
+}
+
+button.btn-outline-success {
+  font-weight: 600;
+}
+
+.btn-pulse {
+  animation: none;
+}
+
+.btn-pulse:hover {
+  animation: pulse 1.2s infinite;
+}
+
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(25, 135, 84, 0.7);
+  }
+
+  70% {
+    box-shadow: 0 0 0 8px rgba(25, 135, 84, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(25, 135, 84, 0);
+  }
+}
+
+.card {
+  transition: background-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.card.bg-light {
+  box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+}

@@ -26,6 +26,7 @@ import { TableModule } from 'primeng/table';
 import { AutoCompleteModule } from 'primeng/autocomplete';
 import { PaginatorModule } from 'primeng/paginator';
 import { ProgressBarModule } from 'primeng/progressbar';
+import { FornecedorMultiselectComponent } from './components/select-fornecedor/fornecedor-multiselect.component';
 
 @NgModule({
     imports: [
@@ -48,6 +49,7 @@ import { ProgressBarModule } from 'primeng/progressbar';
         LocalizePipe,
         BusyDirective,
         EqualValidator,
+        FornecedorMultiselectComponent
     ],
     exports: [
         AbpPaginationControlsComponent,
@@ -65,6 +67,7 @@ import { ProgressBarModule } from 'primeng/progressbar';
         TabsModule,
         TableModule,
         PaginatorModule,
+        FornecedorMultiselectComponent,
     ],
 })
 export class SharedModule {
