@@ -72,8 +72,23 @@ button.btn-outline-success {
 
 .card {
   transition: background-color 0.25s ease, box-shadow 0.25s ease;
+    border: 1px solid #949997 !important;
+
 }
 
 .card.bg-light {
   box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+}
+
+.border-success {
+  border: 1px solid #198754 !important;
+}
+
+.card.border-success .card-body {
+  background: #ecfdf3;
+}
+
+.disabled-card {
+  pointer-events: none;
+  opacity: 0.6;
 }

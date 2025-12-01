@@ -1,5 +1,5 @@
 <div class="modal-header d-flex align-items-center justify-content-between">
-  <h5 class="modal-title">Cotações Existentes</h5>
+  <h5 class="modal-title">Cotações e Orçamentos</h5>
 
   <button type="button" class="btn-close" aria-label="Close" (click)="bsModalRef.hide()">
     <i class="fa fa-times"></i>
@@ -9,7 +9,7 @@
 
 <div class="modal-body">
   <div *ngIf="loading" class="text-center my-4">
-    <i class="fa fa-spinner fa-spin"></i> Carregando cotações...
+    <i class="fa fa-spinner fa-spin"></i> Carregando cotações e orçamentos...
   </div>
 
   <div *ngIf="!loading && cotacoes.length === 0" class="text-center text-muted my-4">
@@ -17,24 +17,63 @@
   </div>
 
   <div *ngFor="let cotacao of cotacoes; let i = index" class="mb-3">
-    <div class="card shadow-sm border-0 rounded-3" [class.bg-light]="expanded[i]">
-      <div class="card-body d-flex justify-content-between align-items-center cursor-pointer" (click)="toggleExpand(i)">
-        <div class="flex-grow-1">
-          <h6 class="mb-1">
-            <strong>Fornecedor:</strong> {{ cotacao.fornecedor?.nome }}
-          </h6>
-          <p class="mb-0 text-muted small">
-            <strong>Status:</strong> <span [ngClass]="cotacao.hasOrcamento ? 'text-success' : 'text-muted'">
-              {{ cotacao.displayStatus }}
-            </span>
-            <strong>Obra:</strong> {{ cotacao.obra?.nome || 'Não informado' }}
-          </p>
-        </div>
+    <div class="card shadow-sm rounded-3" [class.bg-light]="expanded[i]"
+      [class.disabled-card]="cotacao.id === 'melhor-compra' && naoCompensaMelhorCompra"
+      [ngClass]="cotacao.id === 'melhor-compra' ? 'border-success' : 'border-0'">
 
-        <button class="btn btn-outline-secondary btn-sm" (click)="toggleExpand(i); $event.stopPropagation()">
+      <div class="card-body d-flex justify-content-between align-items-center cursor-pointer" (click)="toggleExpand(i)">
+        <!-- HEADER: se for Melhor compra, mostra só o título "Melhor compra" e obra -->
+        <ng-container *ngIf="cotacao.id === 'melhor-compra'; else normalHeader">
+          <div class="flex-grow-1" [class.opacity-50]="naoCompensaMelhorCompra">
+
+            <h6 class="mb-1" [ngClass]="naoCompensaMelhorCompra ? 'text-secondary' : 'text-success'">
+              <strong>Melhor compra</strong>
+            </h6>
+
+            <p *ngIf="cotacao.hasOrcamento && !naoCompensaMelhorCompra" class="mb-0 text-muted small">
+              <strong>Obra:</strong> {{ cotacao.obra?.nome || 'Não informado' }}
+            </p>
+
+            <p class="mb-0 medium mt-1" *ngIf="cotacao.hasOrcamento && !naoCompensaMelhorCompra">
+              <strong>Total:</strong> {{ getTotal(cotacao) | currency:'BRL' }}
+            </p>
+
+            <!-- MENSAGEM QUANDO NÃO COMPENSA -->
+            <p *ngIf="naoCompensaMelhorCompra" class="mt-2 fw-bold small">
+              Não existe melhor compra — um dos fornecedores já possui o menor valor.
+            </p>
+          </div>
+        </ng-container>
+
+
+        <!-- HEADER NORMAL (fornecedor, status, obra) -->
+        <ng-template #normalHeader>
+          <div class="flex-grow-1">
+            <h6 class="mb-1">
+              <strong>Fornecedor:</strong> {{ cotacao.fornecedor?.nome }}
+            </h6>
+            <p class="mb-0 text-muted small">
+              <strong>Status:</strong>
+              <span [ngClass]="cotacao.hasOrcamento ? 'text-success' : 'text-muted'">
+                {{ cotacao.displayStatus }}
+              </span>
+              <strong class="ms-2">Obra:</strong> {{ cotacao.obra?.nome || 'Não informado' }}
+            </p>
+            <p class="mb-0 medium mt-1 fw-bold" *ngIf="cotacao.hasOrcamento">
+              <strong>Total:</strong> {{ getTotal(cotacao) | currency:'BRL' }}
+            </p>
+
+          </div>
+        </ng-template>
+
+        <button class="btn btn-outline-secondary btn-sm"
+          (click)="!naoCompensaMelhorCompra && toggleExpand(i); $event.stopPropagation()"
+          [disabled]="naoCompensaMelhorCompra">
           <i class="fa" [ngClass]="expanded[i] ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
         </button>
+
       </div>
+
 
       <div class="px-3 pb-3" *ngIf="expanded[i]" @expandCollapse>
 
@@ -104,8 +143,9 @@
             <div class="variacoes-wrapper" [class.variacoes-disabled]="grupo.removido">
 
               <div *ngFor="let v of grupo.variacoes" class="form-check mb-2">
-                <input class="form-check-input" type="radio" name="{{ grupo.nome }}" [value]="v"
+                <input class="form-check-input" type="radio" [name]="cotacao.id + '-' + grupo.nome" [value]="v"
                   [(ngModel)]="grupo.selected" [disabled]="grupo.removido" />
+
 
                 <label class="form-check-label w-100">
                   <div class="d-flex justify-content-between align-items-center">
@@ -121,7 +161,13 @@
                         <span *ngIf="v.precoItem">
                           • {{ v.precoItem | currency:'BRL' }} / un
                         </span>
+                        <br *ngIf="cotacao.id === 'melhor-compra' && v.fornecedorNome" />
+
+                        <small class="text-muted" *ngIf="cotacao.id === 'melhor-compra' && v.fornecedorNome">
+                          Fornecedor: <strong>{{ v.fornecedorNome }}</strong>
+                        </small>
                       </small>
+
                     </div>
 
                     <!-- Lado direito: total -->
