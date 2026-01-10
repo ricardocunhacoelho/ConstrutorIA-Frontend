@@ -25,7 +25,12 @@ import { LocalizePipe } from '@shared/pipes/localize.pipe';
 import {
     CotacaoComOrcamentoDto,
     CotacaoServiceProxy,
-    MaterialOrcadoDto
+    CreateMaterialPedidoCompraDto,
+    CreateMelhorCompraDto,
+    CreatePedidoCompraDto,
+    MaterialOrcadoDto,
+    MelhorCompraStatus,
+    PedidoCompraServiceProxy
 } from '../../../shared/service-proxies/service-proxies';
 
 import { CreateCotacaoDialogComponent } from '../create-cotacao/create-cotacao-dialog.component';
@@ -36,6 +41,8 @@ import {
     transition,
     animate
 } from '@angular/animations';
+import { SelecionarEnderecoDialogComponent } from './selecionar-endereco-dialog/selecionar-endereco-dialog.component';
+
 
 const MELHOR_COMPRA_ID = 'melhor-compra';
 
@@ -99,10 +106,12 @@ export class CotacoesListDialogComponent implements OnInit {
     expanded: boolean[] = [];
     loading = false;
     naoCompensaMelhorCompra = false;
+    savingCompra = false;
 
     constructor(
         public bsModalRef: BsModalRef,
         private _cotacaoService: CotacaoServiceProxy,
+        private _pedidoCompraService: PedidoCompraServiceProxy,
         private _modalService: BsModalService,
         private cdr: ChangeDetectorRef
     ) { }
@@ -288,5 +297,180 @@ export class CotacoesListDialogComponent implements OnInit {
 
     removerGrupo(cotacao: any, grupo: any): void {
         grupo.removido = !grupo.removido;
+    }
+
+    async realizarCompra(cotacao: CotacaoComOrcamentoViewModel): Promise<void> {
+        if (this.savingCompra) return;
+
+        const result = await this.abrirDialogEndereco(cotacao);
+
+        if (!result) return;
+
+        this.savingCompra = true;
+
+        if (cotacao.id === MELHOR_COMPRA_ID && !this.naoCompensaMelhorCompra) {
+            this.gerarPedidosMelhorCompra(cotacao, result);
+            return;
+        }
+
+        this.gerarPedidoCompra(cotacao, result);
+    }
+
+    private abrirDialogEndereco(cotacao: CotacaoComOrcamentoViewModel): Promise<any> {
+        return new Promise(resolve => {
+
+            const endereco = cotacao?.obra?.endereco;
+
+            const enderecoFormatado = endereco
+                ? `${endereco.rua}, ${endereco.numero} - ${endereco.bairro}, ${endereco.cidade} - ${endereco.uf}, CEP: ${endereco.cep}`
+                : '';
+
+            const modalRef = this._modalService.show(SelecionarEnderecoDialogComponent, {
+                class: 'modal-md'
+            });
+
+            modalRef.content.enderecoObraId = endereco?.id;
+            modalRef.content.enderecoObraFormatado = enderecoFormatado;
+
+            const oldHide = modalRef.hide;
+            modalRef.hide = () => {
+                const content = modalRef.content;
+                oldHide.apply(modalRef);
+
+                if (!content.confirmado) {
+                    resolve(null);
+                    return;
+                }
+
+                resolve({
+                    usarObra: content.usarEnderecoObra,
+                    endereco: content.endereco,
+                    enderecoObraId: content.enderecoObraId
+                });
+            };
+        });
+    }
+
+    private gerarPedidosMelhorCompra(
+        cotacao: CotacaoComOrcamentoViewModel,
+        enderecoResult: any
+    ): void {
+        const dto = new CreateMelhorCompraDto();
+        dto.solicitacaoMaterialId = cotacao.solicitacaoMaterialId;
+        dto.obraId = cotacao.obraId;
+        dto.userId = abp.session.userId;
+        dto.status = MelhorCompraStatus.EmAndamento;
+        dto.observacaoInterna = cotacao.observacaoInterna;
+        dto.total = this.getTotal(cotacao);
+
+        dto.pedidosCompra = this.montarPedidosParaMelhorCompra(cotacao, enderecoResult);
+
+        this._pedidoCompraService.gerarPedidosMelhorCompra(dto).subscribe(() => {
+            this.savingCompra = false;
+            this.onSave.emit();
+            this.bsModalRef.hide();
+        });
+    }
+
+
+    private montarPedidosParaMelhorCompra(
+        cotacao: CotacaoComOrcamentoViewModel,
+        enderecoResult: any
+    ): CreatePedidoCompraDto[] {
+
+        const grupos = cotacao.materiaisAgrupados || [];
+        const pedidosPorFornecedor: { [key: string]: CreatePedidoCompraDto } = {};
+
+        grupos
+            .filter(g => !g.removido && g.selected)
+            .forEach(g => {
+                const v = g.selected!;
+                const fornecedor = v.fornecedorNome || 'desconhecido';
+
+                if (!pedidosPorFornecedor[fornecedor]) {
+                    const pedido = new CreatePedidoCompraDto();
+
+                    pedido.solicitacaoMaterialId = cotacao.solicitacaoMaterialId;
+                    pedido.cotacaoId = v.cotacaoId;
+                    pedido.orcamentoId = v.orcamentoId;
+                    pedido.obraId = cotacao.obraId;
+                    pedido.userId = abp.session.userId;
+                    pedido.isMelhorCompra = true;
+                    pedido.observacaoInterna = cotacao.observacaoInterna;
+                    pedido.materiaisPedidosCompra = [];
+
+                    if (enderecoResult?.usarObra) {
+                        pedido.enderecoEntregaId = enderecoResult.enderecoObraId;
+                    } else {
+                        pedido.enderecoEntrega = enderecoResult.endereco;
+                    }
+
+                    pedidosPorFornecedor[fornecedor] = pedido;
+                }
+
+                const mat = new CreateMaterialPedidoCompraDto();
+                mat.nome = v.nome;
+                mat.quantidade = String(v.quantidade);
+                mat.unidade = v.unidade;
+                mat.especificacao = v.especificacao;
+                mat.fornecedorId = v.fornecedorId;
+                mat.solicitacaoMaterialId = cotacao.solicitacaoMaterialId;
+                mat.cotacaoId = v.cotacaoId;
+                mat.orcamentoId = v.orcamentoId;
+                mat.materialOrcadoId = v.id;
+                mat.precoItem = v.precoItem;
+                mat.precoTotal = v.precoTotal;
+
+                pedidosPorFornecedor[fornecedor].materiaisPedidosCompra.push(mat);
+            });
+
+        return Object.values(pedidosPorFornecedor);
+    }
+
+    private gerarPedidoCompra(
+        cotacao: CotacaoComOrcamentoViewModel,
+        enderecoResult: any
+    ): void {
+
+        const dto = new CreatePedidoCompraDto();
+        dto.solicitacaoMaterialId = cotacao.solicitacaoMaterialId;
+        dto.cotacaoId = cotacao.id;
+        dto.obraId = cotacao.obraId;
+        dto.userId = abp.session.userId;
+        dto.observacaoInterna = cotacao.observacaoInterna;
+        dto.observacaoFornecedor = cotacao.observacaoFornecedor;
+
+        if (enderecoResult?.usarObra) {
+            dto.enderecoEntregaId = enderecoResult.enderecoObraId;
+        } else {
+            dto.enderecoEntrega = enderecoResult.endereco;
+        }
+
+        dto.materiaisPedidosCompra = (cotacao.materiaisAgrupados || [])
+            .filter(g => !g.removido && g.selected)
+            .map(g => {
+                const v = g.selected!;
+                const mat = new CreateMaterialPedidoCompraDto();
+
+                mat.nome = v.nome;
+                mat.quantidade = String(v.quantidade);
+                mat.unidade = v.unidade;
+                mat.especificacao = v.especificacao;
+                mat.fornecedorId = v.fornecedorId;
+                mat.solicitacaoMaterialId = cotacao.solicitacaoMaterialId;
+                mat.cotacaoId = cotacao.id;
+                mat.orcamentoId = v.orcamentoId;
+                mat.materialOrcadoId = v.id;
+                mat.precoItem = v.precoItem;
+                mat.precoTotal = v.precoTotal;
+
+                return mat;
+            });
+
+        this._pedidoCompraService.gerarPedidoCompra(dto).subscribe(() => {
+            this.savingCompra = false;
+            this.onSave.emit();
+            this.bsModalRef.hide();
+        });
     }
 }

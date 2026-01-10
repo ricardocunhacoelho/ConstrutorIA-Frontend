@@ -1,0 +1,76 @@
+<div class="modal-header">
+    <h5 class="modal-title">Endereço de entrega</h5>
+    <button type="button" class="btn-close" (click)="bsModalRef.hide()"> <i class="fa fa-times"></i>
+    </button>
+</div>
+
+<div class="modal-body">
+
+    <div class="endereco-option mb-3" [class.selected]="usarEnderecoObra" (click)="usarEnderecoObra = true">
+
+        <input type="radio" hidden [(ngModel)]="usarEnderecoObra" [value]="true">
+
+        <div class="card shadow-sm p-3 cursor-pointer">
+            <strong class="d-block mb-1 fs-5">Endereço da obra</strong>
+
+            <div class="text-muted fs-7">
+                {{ enderecoObraFormatado }}
+            </div>
+
+            <div class="mt-2">
+                <small class="text-success fs-7" *ngIf="usarEnderecoObra">
+                    <i class="fa fa-check-circle mr-1"></i>
+                    Selecionado
+                </small>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="form-check mb-4">
+        <input type="radio" class="form-check-input" [(ngModel)]="usarEnderecoObra" [value]="false" id="optOutro">
+        <label for="optOutro" class="form-check-label">
+            Informar outro endereço
+        </label>
+    </div>
+
+    <div *ngIf="!usarEnderecoObra">
+
+        <div class="mb-2">
+            <label>Rua</label>
+            <input required type="text" class="form-control" [(ngModel)]="endereco.rua">
+        </div>
+
+        <div class="mb-2">
+            <label>Número</label>
+            <input required type="text" class="form-control" [(ngModel)]="endereco.numero">
+        </div>
+
+        <div class="mb-2">
+            <label>Bairro</label>
+            <input required type="text" class="form-control" [(ngModel)]="endereco.bairro">
+        </div>
+
+        <div class="mb-2">
+            <label>Cidade</label>
+            <input required type="text" class="form-control" [(ngModel)]="endereco.cidade">
+        </div>
+
+        <div class="mb-2">
+            <label>UF</label>
+            <input required type="text" maxlength="2" class="form-control" [(ngModel)]="endereco.uf">
+        </div>
+
+        <div class="mb-2">
+            <label>CEP</label>
+            <input required type="text" maxlength="9" class="form-control" [(ngModel)]="endereco.cep">
+        </div>
+
+    </div>
+
+</div>
+
+<div class="modal-footer">
+    <button class="btn btn-secondary" (click)="cancelar()">Cancelar</button>
+    <button class="btn btn-primary" (click)="confirmar()">Confirmar</button>
+</div>

@@ -84,11 +84,21 @@ button.btn-outline-success {
   border: 1px solid #198754 !important;
 }
 
-.card.border-success .card-body {
-  background: #ecfdf3;
-}
-
 .disabled-card {
   pointer-events: none;
   opacity: 0.6;
+}
+
+.card-completo{
+  background-color: #f1fcf5 !important;
+}
+
+.btn-melhor-compra {
+  background-color: #28a745 !important; /* verde */
+  border-color: #28a745 !important;
+  color: white !important;
+}
+
+.btn-melhor-compra i {
+  color: white !important; /* seta branca */
 }

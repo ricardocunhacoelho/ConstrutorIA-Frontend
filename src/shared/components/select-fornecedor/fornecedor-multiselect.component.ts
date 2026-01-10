@@ -11,6 +11,7 @@ import { LocalizePipe } from '@shared/pipes/localize.pipe';
     selector: 'app-fornecedor-multiselect',
     templateUrl: './fornecedor-multiselect.component.html',
     styleUrls: ['./fornecedor-multiselect.component.scss'],
+    standalone: true,
     imports: [
         CommonModule,
         FormsModule,

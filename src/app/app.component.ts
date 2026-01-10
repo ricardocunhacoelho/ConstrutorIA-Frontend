@@ -6,6 +6,8 @@ import { HeaderComponent } from './layout/header.component';
 import { SidebarComponent } from './layout/sidebar.component';
 import { RouterOutlet } from '@angular/router';
 import { FooterComponent } from './layout/footer.component';
+import { NotificacaoUsuarioSignalRService } from './services/notificacao-usuario-signalr.service';
+
 
 @Component({
     templateUrl: './app.component.html',
@@ -18,7 +20,8 @@ export class AppComponent extends AppComponentBase implements OnInit {
     constructor(
         injector: Injector,
         private renderer: Renderer2,
-        private _layoutStore: LayoutStoreService
+        private _layoutStore: LayoutStoreService,
+        private notificacaoSignalR: NotificacaoUsuarioSignalRService
     ) {
         super(injector);
     }
@@ -27,6 +30,8 @@ export class AppComponent extends AppComponentBase implements OnInit {
         this.renderer.addClass(document.body, 'sidebar-mini');
 
         SignalRAspNetCoreHelper.initSignalR();
+
+        this.notificacaoSignalR.start();
 
         abp.event.on('abp.notifications.received', (userNotification) => {
             abp.notifications.showUiNotifyForUserNotification(userNotification);

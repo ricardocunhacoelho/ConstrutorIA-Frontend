@@ -30,11 +30,7 @@
               <strong>Melhor compra</strong>
             </h6>
 
-            <p *ngIf="cotacao.hasOrcamento && !naoCompensaMelhorCompra" class="mb-0 text-muted small">
-              <strong>Obra:</strong> {{ cotacao.obra?.nome || 'Não informado' }}
-            </p>
-
-            <p class="mb-0 medium mt-1" *ngIf="cotacao.hasOrcamento && !naoCompensaMelhorCompra">
+            <p class="mb-0 medium mt-1 text-success" *ngIf="cotacao.hasOrcamento && !naoCompensaMelhorCompra">
               <strong>Total:</strong> {{ getTotal(cotacao) | currency:'BRL' }}
             </p>
 
@@ -66,11 +62,15 @@
           </div>
         </ng-template>
 
-        <button class="btn btn-outline-secondary btn-sm"
-          (click)="!naoCompensaMelhorCompra && toggleExpand(i); $event.stopPropagation()"
-          [disabled]="naoCompensaMelhorCompra">
-          <i class="fa" [ngClass]="expanded[i] ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+        <button class="btn btn-sm" (click)="!naoCompensaMelhorCompra && toggleExpand(i); $event.stopPropagation()"
+          [disabled]="naoCompensaMelhorCompra" [ngClass]="cotacao.id === 'melhor-compra'
+              ? 'btn-melhor-compra'
+              : 'btn-outline-secondary'">
+
+          <i class="fa" [ngClass]="expanded[i] ? 'fa-chevron-up' : 'fa-chevron-down'">
+          </i>
         </button>
+
 
       </div>
 
@@ -163,9 +163,9 @@
                         </span>
                         <br *ngIf="cotacao.id === 'melhor-compra' && v.fornecedorNome" />
 
-                        <small class="text-muted" *ngIf="cotacao.id === 'melhor-compra' && v.fornecedorNome">
+                        <span class="text-muted" *ngIf="cotacao.id === 'melhor-compra' && v.fornecedorNome">
                           Fornecedor: <strong>{{ v.fornecedorNome }}</strong>
-                        </small>
+                        </span>
                       </small>
 
                     </div>
@@ -194,7 +194,7 @@
           <div class="d-flex justify-content-between mt-4 align-items-center">
             <h5>Total: {{ getTotal(cotacao) | currency:'BRL' }}</h5>
 
-            <button class="btn btn-success">
+            <button class="btn btn-success" (click)="realizarCompra(cotacao)" [disabled]="savingCompra || loading">
               Realizar compra
             </button>
           </div>
