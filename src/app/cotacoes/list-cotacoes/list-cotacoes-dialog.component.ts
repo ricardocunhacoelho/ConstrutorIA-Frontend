@@ -23,6 +23,7 @@ import { PrimeTemplate } from 'primeng/api';
 import { LocalizePipe } from '@shared/pipes/localize.pipe';
 
 import {
+    CompraServiceProxy,
     CotacaoComOrcamentoDto,
     CotacaoServiceProxy,
     CreateMaterialPedidoCompraDto,
@@ -42,15 +43,11 @@ import {
     animate
 } from '@angular/animations';
 import { SelecionarEnderecoDialogComponent } from './selecionar-endereco-dialog/selecionar-endereco-dialog.component';
+import { forkJoin } from 'rxjs';
 
 
 const MELHOR_COMPRA_ID = 'melhor-compra';
 
-/**
- * NOTA:
- * MaterialOrcadoDto é uma classe gerada pelo service-proxy (possui init(), toJSON(), clone()).
- * Para evitar erro de tipagem (missing init/toJSON/clone) usamos Object.assign(new MaterialOrcadoDto(), ...)
- */
 type MaterialOrcadoDtoExtended = MaterialOrcadoDto & {
     fornecedorNome?: string;
     cotacaoId?: string;
@@ -61,6 +58,9 @@ interface MaterialOrcadoGrupo {
     variacoes: MaterialOrcadoDtoExtended[];
     selected: MaterialOrcadoDtoExtended | null;
     removido?: boolean;
+    feitoPedido?: boolean;
+    jaComprado?: boolean;
+    cotacaoSelecionadaId?: string;
 }
 
 type CotacaoComOrcamentoViewModel = CotacaoComOrcamentoDto & {
@@ -107,11 +107,15 @@ export class CotacoesListDialogComponent implements OnInit {
     loading = false;
     naoCompensaMelhorCompra = false;
     savingCompra = false;
+    pedidoOrigemId: string | null = null;
+    existePedido: boolean = false;
+
 
     constructor(
         public bsModalRef: BsModalRef,
         private _cotacaoService: CotacaoServiceProxy,
         private _pedidoCompraService: PedidoCompraServiceProxy,
+        private _compraService: CompraServiceProxy,
         private _modalService: BsModalService,
         private cdr: ChangeDetectorRef
     ) { }
@@ -123,39 +127,132 @@ export class CotacoesListDialogComponent implements OnInit {
     loadCotacoes(): void {
         this.loading = true;
 
-        this._cotacaoService
-            .getAllWithOrcamentoBySolicitacao(this.solicitacaoId)
-            .subscribe((result) => {
-                const list = (result as CotacaoComOrcamentoViewModel[]) || [];
+        forkJoin({
+            cotacoes: this._cotacaoService.getAllWithOrcamentoBySolicitacao(this.solicitacaoId),
+            pedidos: this._pedidoCompraService.getBySolicitacao(this.solicitacaoId),
+            compras: this._compraService.getAllBySolicitacao(this.solicitacaoId),
+        }).subscribe(({ cotacoes, pedidos, compras }) => {
 
-                // agrupa cada cotação normalmente
-                list.forEach(c => {
-                    if (c.hasOrcamento && c.orcamento) {
-                        c.materiaisAgrupados = this.groupMateriaisFromOrcamento(c.orcamento, c);
+            const list = (cotacoes as CotacaoComOrcamentoViewModel[]) || [];
+
+            // agrupa materiais
+            list.forEach(c => {
+                if (c.hasOrcamento && c.orcamento) {
+                    c.materiaisAgrupados = this.groupMateriaisFromOrcamento(c.orcamento, c);
+                }
+            });
+
+            // 2️⃣ cria Melhor compra
+            const temMaisDeUm = list.filter(c =>
+                c.hasOrcamento && c.orcamento?.materiaisOrcados?.length
+            ).length > 1;
+
+            if (temMaisDeUm) {
+                const melhor = this.buildMelhorCompraCotacao(list);
+
+                const totalMelhor = this.getTotal(melhor);
+                const totaisIndividuais = list.map(c => this.getTotal(c));
+                const menorIndividual = Math.min(...totaisIndividuais);
+
+                if (totalMelhor === menorIndividual) {
+                    this.naoCompensaMelhorCompra = false;
+                }
+
+                this.cotacoes = [...list, melhor];
+            } else {
+                this.cotacoes = list;
+            }
+
+            this.conciliarPedidosECompras(this.cotacoes, pedidos, compras);
+
+            this.loading = false;
+            this.cdr.detectChanges();
+        });
+    }
+
+    private conciliarPedidosECompras(
+        cotacoes: CotacaoComOrcamentoViewModel[],
+        pedidos: any[],
+        compras: any[]
+    ): void {
+
+        if (!cotacoes?.length) return;
+
+        const materiaisPedidos = new Set<string>();
+        const materiaisComprados = new Set<string>();
+
+        // 🔹 pedidos (feitoPedido)
+        (pedidos || []).forEach(pedido => {
+            (pedido.materiaisPedidosCompra || []).forEach((mat: any) => {
+                if (mat.materialOrcadoId) {
+                    materiaisPedidos.add(mat.materialOrcadoId);
+                }
+            });
+        });
+
+        // 🔹 compras (jaComprado)
+        (compras || []).forEach(compra => {
+            (compra.materiaisComprados || []).forEach((mat: any) => {
+                if (mat.materialOrcadoId) {
+                    materiaisComprados.add(mat.materialOrcadoId);
+                }
+            });
+        });
+
+        cotacoes.forEach(cotacao => {
+            if (!cotacao.materiaisAgrupados?.length) return;
+
+            cotacao.materiaisAgrupados.forEach(grupo => {
+
+                let foiPedido = false;
+                let foiComprado = false;
+
+                grupo.variacoes.forEach(v => {
+                    if (!v.id) return;
+
+                    if (materiaisPedidos.has(v.id)) {
+                        foiPedido = true;
+                    }
+
+                    if (materiaisComprados.has(v.id)) {
+                        foiComprado = true;
                     }
                 });
 
-                // se tiver mais de um orçamento válido, cria o card "Melhor compra"
-                const temMaisDeUm = list.filter(c =>
-                    c.hasOrcamento && c.orcamento?.materiaisOrcados?.length
-                ).length > 1;
+                grupo.feitoPedido = foiPedido;
+                grupo.jaComprado = foiComprado;
 
-                if (temMaisDeUm) {
-                    const melhor = this.buildMelhorCompraCotacao(list);
-                    const totalMelhor = this.getTotal(melhor);
-                    const totaisIndividuais = list.map(c => this.getTotal(c));
-                    const menorIndividual = Math.min(...totaisIndividuais);
-                    if (totalMelhor == menorIndividual) {
-                        this.naoCompensaMelhorCompra = false;
-                    }
-                    this.cotacoes = [...list, melhor];
-                } else {
-                    this.cotacoes = list;
+                if (grupo.jaComprado) {
+                    grupo.removido = false;
+                    grupo.selected = grupo.selected ?? grupo.variacoes[0];
                 }
-
-                this.loading = false;
-                this.cdr.detectChanges();
             });
+        });
+
+        this.pedidoOrigemId = null;
+        this.existePedido = false;
+
+        const pedidoMelhorCompra = (pedidos || []).find(p => p.isMelhorCompra);
+
+        if (pedidoMelhorCompra) {
+            this.existePedido = true;
+            this.pedidoOrigemId = MELHOR_COMPRA_ID;
+            return;
+        }
+
+        const pedidoNormal = (pedidos || []).find(p => p.cotacaoId);
+
+        if (pedidoNormal) {
+            this.existePedido = true;
+            this.pedidoOrigemId = pedidoNormal.cotacaoId;
+        }
+
+    }
+
+    isCardDesabilitado(cotacao: CotacaoComOrcamentoViewModel): boolean {
+        if (!this.existePedido) return false;
+
+        return cotacao.id !== this.pedidoOrigemId;
     }
 
     // agrupa materiais dentro de um orçamento e cria instâncias corretas das variações
@@ -279,6 +376,118 @@ export class CotacoesListDialogComponent implements OnInit {
             .map((g: any) => g.selected?.precoTotal ?? 0)
             .reduce((a: number, b: number) => a + b, 0);
     }
+
+    getTotalGasto(cotacao: CotacaoComOrcamentoViewModel): number {
+        return (cotacao.materiaisAgrupados || [])
+            .filter(g => g.jaComprado)
+            .map(g => g.selected?.precoTotal ?? 0)
+            .reduce((a, b) => a + b, 0);
+    }
+
+    getTotalRestante(cotacao: CotacaoComOrcamentoViewModel): number {
+        const total = this.getTotal(cotacao);
+        const gasto = this.getTotalGasto(cotacao);
+        return total - gasto;
+    }
+
+    getResumoStatusCotacao(cotacao: CotacaoComOrcamentoViewModel): {
+        texto: string;
+        classe: string;
+    } {
+
+        const grupos = cotacao.materiaisAgrupados || [];
+        const isMelhorCompra = cotacao.id === MELHOR_COMPRA_ID;
+
+        if (!grupos.length) {
+            return { texto: 'Sem materiais', classe: 'text-muted' };
+        }
+
+        const total = grupos.length;
+        const comprados = grupos.filter(g => g.jaComprado).length;
+        const pedidos = grupos.filter(g => g.feitoPedido).length;
+
+        /* ===============================
+           🔥 MELHOR COMPRA
+        =============================== */
+        if (isMelhorCompra) {
+
+            // ✅ tudo comprado
+            if (comprados === total) {
+                return {
+                    texto: ' — Todos os itens comprados',
+                    classe: 'text-success'
+                };
+            }
+
+            // 🟡 compra parcial
+            if (comprados > 0) {
+                return {
+                    texto: ' — Compra parcial em andamento',
+                    classe: 'text-warning'
+                };
+            }
+
+            // 🔵 pedido feito, aguardando compra
+            if (pedidos > 0) {
+                return {
+                    texto: ' — Pedido realizado, aguardando compra',
+                    classe: 'text-primary'
+                };
+            }
+
+            // ⚪ nada feito
+            return {
+                texto: ' — Aguardando pedido',
+                classe: 'text-muted'
+            };
+        }
+
+        /* ===============================
+    📦 COTAÇÃO NORMAL
+ =============================== */
+
+        const pedidoEhMelhorCompra = this.pedidoOrigemId === MELHOR_COMPRA_ID;
+
+        // 🚫 Pedido foi feito pela Melhor compra
+        if (pedidoEhMelhorCompra) {
+            return {
+                texto: 'Itens incluídos na Melhor compra',
+                classe: 'text-muted'
+            };
+        }
+
+        // ✅ tudo comprado
+        if (comprados === total) {
+            return {
+                texto: 'Todos os itens comprados',
+                classe: 'text-success'
+            };
+        }
+
+        // 🟡 compra parcial
+        if (comprados > 0) {
+            return {
+                texto: 'Compra parcial em andamento',
+                classe: 'text-warning'
+            };
+        }
+
+        // 🔵 pedido feito
+        if (pedidos > 0) {
+            return {
+                texto: 'Pedido realizado — aguardando compra',
+                classe: 'text-primary'
+            };
+        }
+
+        // ⚪ nada feito
+        return {
+            texto: 'Aguardando pedido',
+            classe: 'text-muted'
+        };
+
+    }
+
 
     toggleExpand(index: number): void {
         this.expanded[index] = !this.expanded[index];

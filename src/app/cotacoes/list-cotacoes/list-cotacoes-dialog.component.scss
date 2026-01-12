@@ -102,3 +102,7 @@ button.btn-outline-success {
 .btn-melhor-compra i {
   color: white !important; /* seta branca */
 }
+
+.disabled-card {
+  pointer-events: none;
+}
