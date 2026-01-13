@@ -65,6 +65,11 @@ interface MaterialOrcadoGrupo {
 
 type CotacaoComOrcamentoViewModel = CotacaoComOrcamentoDto & {
     materiaisAgrupados?: MaterialOrcadoGrupo[];
+    enderecoEntrega?: {
+        id?: string;
+        formatado: string;
+        origem: 'PEDIDO' | 'COMPRA';
+    };
 };
 
 @Component({
@@ -102,6 +107,7 @@ export class CotacoesListDialogComponent implements OnInit {
     @Output() onSave = new EventEmitter<void>();
 
     cotacoes: CotacaoComOrcamentoViewModel[] = [];
+    obraNome: string = '';
     expandedIndex: number | null = null;
     expanded: boolean[] = [];
     loading = false;
@@ -109,6 +115,11 @@ export class CotacoesListDialogComponent implements OnInit {
     savingCompra = false;
     pedidoOrigemId: string | null = null;
     existePedido: boolean = false;
+    melhorCompraAgrupada: {
+        fornecedor: string;
+        grupos: MaterialOrcadoGrupo[];
+    }[] = [];
+
 
 
     constructor(
@@ -132,6 +143,8 @@ export class CotacoesListDialogComponent implements OnInit {
             pedidos: this._pedidoCompraService.getBySolicitacao(this.solicitacaoId),
             compras: this._compraService.getAllBySolicitacao(this.solicitacaoId),
         }).subscribe(({ cotacoes, pedidos, compras }) => {
+
+            this.obraNome = cotacoes[0]?.obra?.nome || '';
 
             const list = (cotacoes as CotacaoComOrcamentoViewModel[]) || [];
 
@@ -159,11 +172,20 @@ export class CotacoesListDialogComponent implements OnInit {
                 }
 
                 this.cotacoes = [...list, melhor];
+                this.expanded = new Array(this.cotacoes.length).fill(false);
             } else {
                 this.cotacoes = list;
+                this.expanded = new Array(this.cotacoes.length).fill(false);
             }
 
             this.conciliarPedidosECompras(this.cotacoes, pedidos, compras);
+
+            const melhorCompra = this.cotacoes.find(c => c.id === MELHOR_COMPRA_ID);
+
+            if (melhorCompra) {
+                this.melhorCompraAgrupada = this.buildGruposPorFornecedor(melhorCompra);
+            }
+
 
             this.loading = false;
             this.cdr.detectChanges();
@@ -181,7 +203,7 @@ export class CotacoesListDialogComponent implements OnInit {
         const materiaisPedidos = new Set<string>();
         const materiaisComprados = new Set<string>();
 
-        // 🔹 pedidos (feitoPedido)
+        // 🔹 pedidos
         (pedidos || []).forEach(pedido => {
             (pedido.materiaisPedidosCompra || []).forEach((mat: any) => {
                 if (mat.materialOrcadoId) {
@@ -190,7 +212,7 @@ export class CotacoesListDialogComponent implements OnInit {
             });
         });
 
-        // 🔹 compras (jaComprado)
+        // 🔹 compras
         (compras || []).forEach(compra => {
             (compra.materiaisComprados || []).forEach((mat: any) => {
                 if (mat.materialOrcadoId) {
@@ -200,35 +222,71 @@ export class CotacoesListDialogComponent implements OnInit {
         });
 
         cotacoes.forEach(cotacao => {
-            if (!cotacao.materiaisAgrupados?.length) return;
 
-            cotacao.materiaisAgrupados.forEach(grupo => {
+            // ==========================
+            // STATUS DOS MATERIAIS
+            // ==========================
+            if (cotacao.materiaisAgrupados?.length) {
+                cotacao.materiaisAgrupados.forEach(grupo => {
 
-                let foiPedido = false;
-                let foiComprado = false;
+                    let foiPedido = false;
+                    let foiComprado = false;
 
-                grupo.variacoes.forEach(v => {
-                    if (!v.id) return;
+                    grupo.variacoes.forEach(v => {
+                        if (!v.id) return;
 
-                    if (materiaisPedidos.has(v.id)) {
-                        foiPedido = true;
-                    }
+                        if (materiaisPedidos.has(v.id)) foiPedido = true;
+                        if (materiaisComprados.has(v.id)) foiComprado = true;
+                    });
 
-                    if (materiaisComprados.has(v.id)) {
-                        foiComprado = true;
+                    grupo.feitoPedido = foiPedido;
+                    grupo.jaComprado = foiComprado;
+
+                    if (grupo.jaComprado) {
+                        grupo.removido = false;
+                        grupo.selected = grupo.selected ?? grupo.variacoes[0];
                     }
                 });
+            }
 
-                grupo.feitoPedido = foiPedido;
-                grupo.jaComprado = foiComprado;
+            // ==========================
+            // ENDEREÇO (COMPRA > PEDIDO)
+            // ==========================
 
-                if (grupo.jaComprado) {
-                    grupo.removido = false;
-                    grupo.selected = grupo.selected ?? grupo.variacoes[0];
-                }
-            });
+            // 🔥 COMPRA
+            const compra = (compras || []).find(c =>
+                c.cotacaoId === cotacao.id ||
+                (cotacao.id === MELHOR_COMPRA_ID && c.pedidoCompra?.isMelhorCompra)
+            );
+
+            if (compra?.enderecoEntrega) {
+                cotacao.enderecoEntrega = {
+                    id: compra.enderecoEntrega.id,
+                    formatado: this.formatarEndereco(compra.enderecoEntrega),
+                    origem: 'COMPRA'
+                };
+                return; // encerra só essa cotação
+            }
+
+            // 🔹 PEDIDO
+            const pedido = (pedidos || []).find(p =>
+                cotacao.id === MELHOR_COMPRA_ID
+                    ? p.isMelhorCompra
+                    : p.cotacaoId === cotacao.id
+            );
+
+            if (pedido?.enderecoEntrega) {
+                cotacao.enderecoEntrega = {
+                    id: pedido.enderecoEntrega.id,
+                    formatado: this.formatarEndereco(pedido.enderecoEntrega),
+                    origem: 'PEDIDO'
+                };
+            }
         });
 
+        // ==========================
+        // BLOQUEIO DE COTAÇÕES
+        // ==========================
         this.pedidoOrigemId = null;
         this.existePedido = false;
 
@@ -246,8 +304,16 @@ export class CotacoesListDialogComponent implements OnInit {
             this.existePedido = true;
             this.pedidoOrigemId = pedidoNormal.cotacaoId;
         }
-
     }
+
+
+    private formatarEndereco(endereco: any): string {
+        if (!endereco) return 'Endereço não informado';
+
+        return `${endereco.rua}, ${endereco.numero} - ${endereco.bairro}, 
+                ${endereco.cidade} - ${endereco.uf}, CEP: ${endereco.cep}`;
+    }
+
 
     isCardDesabilitado(cotacao: CotacaoComOrcamentoViewModel): boolean {
         if (!this.existePedido) return false;
@@ -292,6 +358,41 @@ export class CotacoesListDialogComponent implements OnInit {
 
         return Object.values(grupos);
     }
+
+    private buildGruposPorFornecedor(
+        cotacao: CotacaoComOrcamentoViewModel
+    ): {
+        fornecedor: string;
+        grupos: MaterialOrcadoGrupo[];
+    }[] {
+
+        const map = new Map<string, MaterialOrcadoGrupo[]>();
+
+        (cotacao.materiaisAgrupados || [])
+            .filter(g => !g.removido && g.selected)
+            .forEach(g => {
+                const fornecedor = g.selected?.fornecedorNome || 'Fornecedor não informado';
+
+                if (!map.has(fornecedor)) {
+                    map.set(fornecedor, []);
+                }
+
+                map.get(fornecedor)!.push(g);
+            });
+
+        // 🔤 ordena materiais
+        map.forEach(grupos => {
+            grupos.sort((a, b) =>
+                a.nome.localeCompare(b.nome, 'pt-BR', { sensitivity: 'base' })
+            );
+        });
+
+        // 🔽 ordena fornecedores
+        return Array.from(map.entries())
+            .map(([fornecedor, grupos]) => ({ fornecedor, grupos }))
+            .sort((a, b) => b.grupos.length - a.grupos.length);
+    }
+
 
     // constrói o card "Melhor compra" usando instâncias corretas
     buildMelhorCompraCotacao(cotacoes: CotacaoComOrcamentoViewModel[]): CotacaoComOrcamentoViewModel {
@@ -366,6 +467,14 @@ export class CotacoesListDialogComponent implements OnInit {
         melhorBase.materiaisAgrupados = Object.values(gruposMap);
 
         return melhorBase;
+    }
+
+    trackByFornecedor(index: number, item: any): string {
+        return item.fornecedor;
+    }
+
+    trackByGrupo(index: number, grupo: MaterialOrcadoGrupo): string {
+        return grupo.nome;
     }
 
     getTotal(cotacao: any): number {

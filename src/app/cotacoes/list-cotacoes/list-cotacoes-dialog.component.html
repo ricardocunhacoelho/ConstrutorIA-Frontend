@@ -16,6 +16,10 @@
     Nenhuma cotação encontrada.
   </div>
 
+  <h5 *ngIf="cotacoes && cotacoes.length > 0" class="mb-3">
+    {{ obraNome }}
+  </h5>
+
   <div *ngFor="let cotacao of cotacoes; let i = index" class="mb-3">
     <div class="card shadow-sm rounded-3" [class.disabled-card]="isCardDesabilitado(cotacao)"
       [class.opacity-50]="isCardDesabilitado(cotacao)">
@@ -59,10 +63,6 @@
               <strong>Fornecedor:</strong> {{ cotacao.fornecedor?.nome }}
             </h6>
 
-            <p class="mb-0 text-muted small">
-              <strong>Obra:</strong> {{ cotacao.obra?.nome || 'Não informado' }}
-            </p>
-
             <!-- 🔥 RESUMO INTELIGENTE -->
             <p class="mb-0 small fw-semibold" *ngIf="cotacao.hasOrcamento"
               [ngClass]="getResumoStatusCotacao(cotacao).classe">
@@ -94,14 +94,6 @@
       <div class="px-3 pb-3" *ngIf="expanded[i]" @expandCollapse>
 
         <hr />
-
-        <!-- STATUS -->
-        <p>
-          <strong>Status:</strong>
-          <span [ngClass]="cotacao.hasOrcamento ? 'text-success' : 'text-muted'">
-            {{ cotacao.displayStatus }}
-          </span>
-        </p>
 
         <!-- OBSERVAÇÕES -->
         <div *ngIf="cotacao.observacaoFornecedor">
@@ -135,24 +127,44 @@
         <!-- COM ORÇAMENTO: AGRUPADO -->
         <div *ngIf="cotacao.hasOrcamento">
 
-          <h6 class="mt-3">Materiais Orçados:</h6>
+          <ng-container *ngIf="cotacao.id === 'melhor-compra'; else materiaisNormal">
 
-          <div *ngFor="let grupo of cotacao.materiaisAgrupados" class="card mt-3 p-3 border material-card"
-            [class.material-disabled]="grupo.removido">
+            <p *ngIf="cotacao.enderecoEntrega" class="mb-4 text-muted">
+              <i class="fa fa-map-marker-alt me-1 mr-2"></i>
+              <strong>Endereço de Entrega:</strong> {{ cotacao.enderecoEntrega.formatado }}
+            </p>
 
-            <div class="d-flex justify-content-between align-items-start mb-2">
-              <h6 class="mb-0">
-                {{ grupo.nome | titlecase }}
-                <span *ngIf="grupo.feitoPedido && !grupo.jaComprado" class="badge bg-warning text-dark ms-3 ml-2">
-                  Pedido realizado
-                </span>
-                <span *ngIf="grupo.jaComprado" class="badge bg-success ms-3 ml-2">
-                  Compra concluída
+            <h5 class="mb-0">
+              <strong>Materiais:</strong>
+            </h5>
+
+            <div *ngFor="let bloco of melhorCompraAgrupada; trackBy: trackByFornecedor" class="mt-4">
+
+              <h6 class="mb-2">
+                <strong class="mr-2">{{ bloco.fornecedor }}</strong>
+                <span class="badge bg-secondary ms-2">
+                  {{ bloco.grupos.length }} itens
                 </span>
               </h6>
 
-              <!-- BOTÃO REMOVER / ADICIONAR -->
-              <button type="button" class="btn btn-sm" [disabled]="grupo.jaComprado || grupo.feitoPedido" [ngClass]="
+              <div *ngFor="let grupo of bloco.grupos; trackBy: trackByGrupo" class="card mt-2 p-3 border material-card"
+                [class.material-disabled]="grupo.removido">
+
+                <!-- 🔁 CARD ORIGINAL (INALTERADO) -->
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <h6 class="mb-0">
+                    {{ grupo.nome | titlecase }}
+
+                    <span *ngIf="grupo.feitoPedido && !grupo.jaComprado" class="badge bg-warning text-dark ms-3">
+                      Pedido realizado
+                    </span>
+
+                    <span *ngIf="grupo.jaComprado" class="badge bg-success ms-3">
+                      Compra concluída
+                    </span>
+                  </h6>
+
+                  <button type="button" class="btn btn-sm" [disabled]="grupo.jaComprado || grupo.feitoPedido" [ngClass]="
               grupo.jaComprado
                 ? 'btn-success'
                 : grupo.feitoPedido
@@ -170,70 +182,176 @@
                   ? 'Item já foi pedido — aguardando compra'
                   : (grupo.removido ? 'Adicionar item novamente' : 'Remover item')
             ">
-                <i class="fa" [ngClass]="
+                    <i class="fa" [ngClass]="
                 grupo.jaComprado
                   ? 'fa-truck'
                   : grupo.feitoPedido
                     ? 'fa-lock'
                     : (grupo.removido ? 'fa-plus' : 'fa-times')
               ">
-                </i>
-              </button>
+                    </i>
+                  </button>
+                </div>
 
-            </div>
+                <div class="variacoes-wrapper" [class.variacoes-disabled]="grupo.removido">
 
-
-
-            <!-- VARIAÇÕES -->
-            <div class="variacoes-wrapper" [class.variacoes-disabled]="grupo.removido">
-
-              <div *ngFor="let v of grupo.variacoes" class="form-check mb-2">
-                <input class="form-check-input" type="radio" [name]="cotacao.id + '-' + grupo.nome" [value]="v"
-                  [(ngModel)]="grupo.selected" [disabled]="grupo.removido || grupo.feitoPedido|| grupo.jaComprado" />
+                  <div *ngFor="let v of grupo.variacoes" class="form-check mb-2">
+                    <input class="form-check-input" type="radio" [name]="cotacao.id + '-' + grupo.nome" [value]="v"
+                      [(ngModel)]="grupo.selected"
+                      [disabled]="grupo.removido || grupo.feitoPedido|| grupo.jaComprado" />
 
 
-                <label class="form-check-label w-100">
-                  <div class="d-flex justify-content-between align-items-center">
+                    <label class="form-check-label w-100">
+                      <div class="d-flex justify-content-between align-items-center">
 
-                    <!-- Lado esquerdo: descrição -->
-                    <div>
-                      <div>
-                        <strong *ngIf="v.especificacao">{{ v.especificacao }}</strong>
+                        <!-- Lado esquerdo: descrição -->
+                        <div>
+                          <div>
+                            <strong *ngIf="v.especificacao">{{ v.especificacao }}</strong>
+                          </div>
+
+                          <small class="text-muted">
+                            {{ v.quantidade }} {{ v.unidade }}
+                            <span *ngIf="v.precoItem">
+                              • {{ v.precoItem | currency:'BRL' }} / un
+                            </span>
+                            <br *ngIf="cotacao.id === 'melhor-compra' && v.fornecedorNome" />
+
+                            <span class="text-muted" *ngIf="cotacao.id === 'melhor-compra' && v.fornecedorNome">
+                              Fornecedor: <strong>{{ v.fornecedorNome }}</strong>
+                            </span>
+                          </small>
+
+                        </div>
+
+                        <!-- Lado direito: total -->
+                        <div class="text-end">
+                          <div class="fw-bold">
+                            {{ v.precoTotal | currency:'BRL' }}
+                          </div>
+
+                          <small *ngIf="v.emFalta" class="text-danger">
+                            Em falta
+                          </small>
+                        </div>
+
                       </div>
+                    </label>
 
-                      <small class="text-muted">
-                        {{ v.quantidade }} {{ v.unidade }}
-                        <span *ngIf="v.precoItem">
-                          • {{ v.precoItem | currency:'BRL' }} / un
-                        </span>
-                        <br *ngIf="cotacao.id === 'melhor-compra' && v.fornecedorNome" />
 
-                        <span class="text-muted" *ngIf="cotacao.id === 'melhor-compra' && v.fornecedorNome">
-                          Fornecedor: <strong>{{ v.fornecedorNome }}</strong>
-                        </span>
-                      </small>
-
-                    </div>
-
-                    <!-- Lado direito: total -->
-                    <div class="text-end">
-                      <div class="fw-bold">
-                        {{ v.precoTotal | currency:'BRL' }}
-                      </div>
-
-                      <small *ngIf="v.emFalta" class="text-danger">
-                        Em falta
-                      </small>
-                    </div>
 
                   </div>
-                </label>
+                </div>
+              </div>
+
+            </div>
+
+          </ng-container>
 
 
+          <ng-template #materiaisNormal>
+            <p *ngIf="cotacao.enderecoEntrega" class="mb-4 text-muted">
+              <i class="fa fa-map-marker-alt me-1 mr-2"></i>
+              <strong>Endereço de Entrega:</strong> {{ cotacao.enderecoEntrega.formatado }}
+            </p>
+            <div *ngFor="let grupo of cotacao.materiaisAgrupados" class="card mt-3 p-3 border material-card"
+              [class.material-disabled]="grupo.removido">
+
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <h6 class="mb-0">
+                  {{ grupo.nome | titlecase }}
+                  <span *ngIf="grupo.feitoPedido && !grupo.jaComprado" class="badge bg-warning text-dark ms-3 ml-2">
+                    Pedido realizado
+                  </span>
+                  <span *ngIf="grupo.jaComprado" class="badge bg-success ms-3 ml-2">
+                    Compra concluída
+                  </span>
+                </h6>
+
+                <!-- BOTÃO REMOVER / ADICIONAR -->
+                <button type="button" class="btn btn-sm" [disabled]="grupo.jaComprado || grupo.feitoPedido" [ngClass]="
+              grupo.jaComprado
+                ? 'btn-success'
+                : grupo.feitoPedido
+                  ? 'btn-warning'
+                  : (grupo.removido ? 'btn-success btn-pulse' : 'btn-outline-danger')
+            " (click)="
+              !grupo.jaComprado &&
+              !grupo.feitoPedido &&
+              removerGrupo(cotacao, grupo);
+              $event.stopPropagation()
+            " [title]="
+              grupo.jaComprado
+                ? 'Item já comprado — não pode ser removido'
+                : grupo.feitoPedido
+                  ? 'Item já foi pedido — aguardando compra'
+                  : (grupo.removido ? 'Adicionar item novamente' : 'Remover item')
+            ">
+                  <i class="fa" [ngClass]="
+                grupo.jaComprado
+                  ? 'fa-truck'
+                  : grupo.feitoPedido
+                    ? 'fa-lock'
+                    : (grupo.removido ? 'fa-plus' : 'fa-times')
+              ">
+                  </i>
+                </button>
 
               </div>
+
+
+
+              <!-- VARIAÇÕES -->
+              <div class="variacoes-wrapper" [class.variacoes-disabled]="grupo.removido">
+
+                <div *ngFor="let v of grupo.variacoes" class="form-check mb-2">
+                  <input class="form-check-input" type="radio" [name]="cotacao.id + '-' + grupo.nome" [value]="v"
+                    [(ngModel)]="grupo.selected" [disabled]="grupo.removido || grupo.feitoPedido|| grupo.jaComprado" />
+
+
+                  <label class="form-check-label w-100">
+                    <div class="d-flex justify-content-between align-items-center">
+
+                      <!-- Lado esquerdo: descrição -->
+                      <div>
+                        <div>
+                          <strong *ngIf="v.especificacao">{{ v.especificacao }}</strong>
+                        </div>
+
+                        <small class="text-muted">
+                          {{ v.quantidade }} {{ v.unidade }}
+                          <span *ngIf="v.precoItem">
+                            • {{ v.precoItem | currency:'BRL' }} / un
+                          </span>
+                          <br *ngIf="cotacao.id === 'melhor-compra' && v.fornecedorNome" />
+
+                          <span class="text-muted" *ngIf="cotacao.id === 'melhor-compra' && v.fornecedorNome">
+                            Fornecedor: <strong>{{ v.fornecedorNome }}</strong>
+                          </span>
+                        </small>
+
+                      </div>
+
+                      <!-- Lado direito: total -->
+                      <div class="text-end">
+                        <div class="fw-bold">
+                          {{ v.precoTotal | currency:'BRL' }}
+                        </div>
+
+                        <small *ngIf="v.emFalta" class="text-danger">
+                          Em falta
+                        </small>
+                      </div>
+
+                    </div>
+                  </label>
+
+
+
+                </div>
+              </div>
             </div>
-          </div>
+          </ng-template>
 
           <!-- TOTAL -->
           <div class="d-flex justify-content-between mt-4 align-items-center">
@@ -248,7 +366,8 @@
               </h5>
             </div>
 
-            <button class="btn btn-success" (click)="realizarCompra(cotacao)" [disabled]="savingCompra || loading || existePedido">
+            <button class="btn btn-success" (click)="realizarCompra(cotacao)"
+              [disabled]="savingCompra || loading || existePedido">
               Realizar compra
             </button>
           </div>
@@ -262,7 +381,8 @@
 </div>
 
 <div class="modal-footer">
-  <button type="button" class="btn btn-primary" (click)="novaCotacao()">
+  <button type="button" class="btn btn-primary" (click)="novaCotacao()"
+    disabled="loading || savingCompra || existePedido">
     + Nova cotação
   </button>
 </div>
