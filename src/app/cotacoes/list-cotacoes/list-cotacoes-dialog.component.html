@@ -12,38 +12,43 @@
     <i class="fa fa-spinner fa-spin"></i> Carregando cotações e orçamentos...
   </div>
 
-  <div *ngIf="!loading && cotacoes.length === 0" class="text-center text-muted my-4">
+  <div *ngIf="!loading && fluxoCompraVM.length === 0" class="text-center text-muted my-4">
     Nenhuma cotação encontrada.
   </div>
 
-  <h5 *ngIf="cotacoes && cotacoes.length > 0" class="mb-3">
+  <h5 *ngIf="fluxoCompraVM && fluxoCompraVM.length > 0" class="mb-3">
     {{ obraNome }}
   </h5>
 
-  <div *ngFor="let cotacao of cotacoes; let i = index" class="mb-3">
-    <div class="card shadow-sm rounded-3" [class.disabled-card]="isCardDesabilitado(cotacao)"
-      [class.opacity-50]="isCardDesabilitado(cotacao)">
+  <div *ngFor="let fluxo of fluxoCompraVM; let i = index" class="mb-3">
+    <div class="card shadow-sm rounded-3" [class.disabled-card]="isCardDesabilitado(fluxo)"
+      [class.opacity-50]="isCardDesabilitado(fluxo)">
 
 
       <div class="card-body d-flex justify-content-between align-items-center cursor-pointer"
-        (click)="!isCardDesabilitado(cotacao) && toggleExpand(i)">
-
+        (click)="!isCardDesabilitado(fluxo) && toggleExpand(i)">
         <!-- HEADER: se for Melhor compra, mostra só o título "Melhor compra" e obra -->
-        <ng-container *ngIf="cotacao.id === 'melhor-compra'; else normalHeader">
+        <ng-container *ngIf="fluxo.id === 'melhor-compra'; else normalHeader">
           <div class="flex-grow-1" [class.opacity-50]="naoCompensaMelhorCompra">
 
-            <h6 class="mb-1" [ngClass]="naoCompensaMelhorCompra ? 'text-secondary' : 'text-success'">
-              <strong>Melhor compra</strong> {{ getResumoStatusCotacao(cotacao).texto }}
+            <h5 *ngIf="existePedido" class="mb-2"
+              [ngClass]="naoCompensaMelhorCompra ? 'text-secondary' : 'text-success'">
+              <strong>Melhor compra</strong> {{ getResumoStatus(fluxo).texto }}
+            </h5>
+
+            <h6 *ngIf="!existePedido" class="mb-2"
+              [ngClass]="naoCompensaMelhorCompra ? 'text-secondary' : 'text-success'">
+              <strong>Melhor compra</strong> {{ getResumoStatus(fluxo).texto }}
             </h6>
 
             <div>
               <h7 class="mb-0">
-                Preço total dos produtos: {{ getTotal(cotacao) | currency:'BRL' }}
+                Preço total dos produtos: {{ getTotal(fluxo) | currency:'BRL' }}
               </h7>
 
               <!-- Só aparece se já houve gasto -->
-              <h6 *ngIf="getTotalGasto(cotacao) > 0" class="text-success fw-semibold">
-                Compras efetivadas: {{ getTotalGasto(cotacao) | currency:'BRL' }}
+              <h6 *ngIf="getTotalGasto(fluxo) > 0" class="text-success fw-semibold">
+                Compras efetivadas: {{ getTotalGasto(fluxo) | currency:'BRL' }}
               </h6>
             </div>
 
@@ -60,25 +65,30 @@
         <ng-template #normalHeader>
           <div class="flex-grow-1">
             <h6 class="mb-1">
-              <strong>Fornecedor:</strong> {{ cotacao.fornecedor?.nome }}
+              <strong>Fornecedor:</strong> {{ fluxo.fornecedor?.nome }}
             </h6>
 
-            <!-- 🔥 RESUMO INTELIGENTE -->
-            <p class="mb-0 small fw-semibold" *ngIf="cotacao.hasOrcamento"
-              [ngClass]="getResumoStatusCotacao(cotacao).classe">
+            <div *ngIf="!fluxo.hasOrcamento">
+              <p class="mb-0 small fw-semibold">
+                {{ fluxo.statusView }}
+              </p>
 
-              {{ getResumoStatusCotacao(cotacao).texto }}
+            </div>
+
+            <!-- 🔥 RESUMO INTELIGENTE -->
+            <p class="mb-0 small fw-semibold" *ngIf="fluxo.hasOrcamento" [ngClass]="getResumoStatus(fluxo).classe">
+              {{ getResumoStatus(fluxo).texto }}
             </p>
 
-            <p class="mb-0 medium mt-1 fw-bold" *ngIf="cotacao.hasOrcamento">
-              <strong>Total:</strong> {{ getTotal(cotacao) | currency:'BRL' }}
+            <p class="mb-0 medium mt-1 fw-bold" *ngIf="fluxo.hasOrcamento">
+              <strong>Total:</strong> {{ getTotal(fluxo) | currency:'BRL' }}
             </p>
           </div>
 
         </ng-template>
 
-        <button class="btn btn-sm" (click)="!isCardDesabilitado(cotacao) && toggleExpand(i); $event.stopPropagation()"
-          [disabled]="isCardDesabilitado(cotacao)" [ngClass]="cotacao.id === 'melhor-compra'
+        <button class="btn btn-sm" (click)="!isCardDesabilitado(fluxo) && toggleExpand(i); $event.stopPropagation()"
+          [disabled]="isCardDesabilitado(fluxo)" [ngClass]="fluxo.id === 'melhor-compra'
           ? 'btn-melhor-compra'
           : 'btn-outline-secondary'">
 
@@ -96,23 +106,23 @@
         <hr />
 
         <!-- OBSERVAÇÕES -->
-        <div *ngIf="cotacao.observacaoFornecedor">
+        <div *ngIf="fluxo.observacaoFornecedor">
           <strong>Observação p/ fornecedor:</strong>
-          <p>{{ cotacao.observacaoFornecedor }}</p>
+          <p>{{ fluxo.observacaoFornecedor }}</p>
         </div>
 
-        <div *ngIf="cotacao.observacaoInterna">
+        <div *ngIf="fluxo.observacaoInterna">
           <strong>Observação interna:</strong>
-          <p>{{ cotacao.observacaoInterna }}</p>
+          <p>{{ fluxo.observacaoInterna }}</p>
         </div>
 
         <!-- SEM ORÇAMENTO: VISUAL ANTIGO -->
-        <div *ngIf="!cotacao.hasOrcamento">
+        <div *ngIf="!fluxo.hasOrcamento">
 
           <h6 class="mb-2 mt-3">Materiais:</h6>
 
           <ul class="list-group small">
-            <li *ngFor="let mat of cotacao.materiaisCotados"
+            <li *ngFor="let mat of fluxo.materiaisCotados"
               class="list-group-item d-flex justify-content-between align-items-center">
               {{ mat.nome }}
               <span class="badge bg-secondary">
@@ -125,13 +135,18 @@
         </div>
 
         <!-- COM ORÇAMENTO: AGRUPADO -->
-        <div *ngIf="cotacao.hasOrcamento">
+        <div *ngIf="fluxo.hasOrcamento">
 
-          <ng-container *ngIf="cotacao.id === 'melhor-compra'; else materiaisNormal">
+          <ng-container *ngIf="fluxo.id === 'melhor-compra'; else materiaisNormal">
 
-            <p *ngIf="cotacao.enderecoEntrega" class="mb-4 text-muted">
+            <p *ngIf="fluxo.usuarioPedido" class="mb-3 mt-2 text-muted">
+              <i class="fa fa-user me-1 mr-2"></i>
+              <strong>Usuário Responsável Pela Compra:</strong> {{ fluxo.usuarioPedido }}
+            </p>
+
+            <p *ngIf="fluxo.enderecoEntrega" class="mb-4 text-muted">
               <i class="fa fa-map-marker-alt me-1 mr-2"></i>
-              <strong>Endereço de Entrega:</strong> {{ cotacao.enderecoEntrega.formatado }}
+              <strong>Endereço de Entrega:</strong> {{ fluxo.enderecoEntrega.formatado }}
             </p>
 
             <h5 class="mb-0">
@@ -141,11 +156,21 @@
             <div *ngFor="let bloco of melhorCompraAgrupada; trackBy: trackByFornecedor" class="mt-4">
 
               <h6 class="mb-2">
-                <strong class="mr-2">{{ bloco.fornecedor }}</strong>
+                <strong class="mr-2">{{ bloco.infosCompraFornecedor?.fornecedor }}</strong>
                 <span class="badge bg-secondary ms-2">
                   {{ bloco.grupos.length }} itens
                 </span>
               </h6>
+
+              <!-- Prazo de entrega -->
+              <div *ngIf="bloco.infosCompraFornecedor?.prazoEntrega" class="text-muted small">
+                <strong>Prazo de entrega:</strong> {{ bloco.prazoEntrega }}
+              </div>
+
+              <!-- Observação -->
+              <div *ngIf="bloco.observacao" class="text-muted small mt-1">
+                <strong>Observação:</strong> {{ bloco.infosCompraFornecedor?.observacao }}
+              </div>
 
               <div *ngFor="let grupo of bloco.grupos; trackBy: trackByGrupo" class="card mt-2 p-3 border material-card"
                 [class.material-disabled]="grupo.removido">
@@ -173,7 +198,7 @@
             " (click)="
               !grupo.jaComprado &&
               !grupo.feitoPedido &&
-              removerGrupo(cotacao, grupo);
+              removerGrupo(fluxo, grupo);
               $event.stopPropagation()
             " [title]="
               grupo.jaComprado
@@ -196,7 +221,7 @@
                 <div class="variacoes-wrapper" [class.variacoes-disabled]="grupo.removido">
 
                   <div *ngFor="let v of grupo.variacoes" class="form-check mb-2">
-                    <input class="form-check-input" type="radio" [name]="cotacao.id + '-' + grupo.nome" [value]="v"
+                    <input class="form-check-input" type="radio" [name]="fluxo.id + '-' + grupo.nome" [value]="v"
                       [(ngModel)]="grupo.selected"
                       [disabled]="grupo.removido || grupo.feitoPedido|| grupo.jaComprado" />
 
@@ -215,9 +240,9 @@
                             <span *ngIf="v.precoItem">
                               • {{ v.precoItem | currency:'BRL' }} / un
                             </span>
-                            <br *ngIf="cotacao.id === 'melhor-compra' && v.fornecedorNome" />
+                            <br *ngIf="fluxo.id === 'melhor-compra' && v.fornecedorNome" />
 
-                            <span class="text-muted" *ngIf="cotacao.id === 'melhor-compra' && v.fornecedorNome">
+                            <span class="text-muted" *ngIf="fluxo.id === 'melhor-compra' && v.fornecedorNome">
                               Fornecedor: <strong>{{ v.fornecedorNome }}</strong>
                             </span>
                           </small>
@@ -250,11 +275,17 @@
 
 
           <ng-template #materiaisNormal>
-            <p *ngIf="cotacao.enderecoEntrega" class="mb-4 text-muted">
-              <i class="fa fa-map-marker-alt me-1 mr-2"></i>
-              <strong>Endereço de Entrega:</strong> {{ cotacao.enderecoEntrega.formatado }}
+
+            <p *ngIf="fluxo.usuarioPedido" class="mb-4 text-muted">
+              <i class="fa fa-user me-1"></i>
+              <strong>Usuário responsável pela compra:</strong> {{ fluxo.usuarioPedido }}
             </p>
-            <div *ngFor="let grupo of cotacao.materiaisAgrupados" class="card mt-3 p-3 border material-card"
+
+            <p *ngIf="fluxo.enderecoEntrega" class="mb-4 text-muted">
+              <i class="fa fa-map-marker-alt me-1 mr-2"></i>
+              <strong>Endereço de Entrega:</strong> {{ fluxo.enderecoEntrega.formatado }}
+            </p>
+            <div *ngFor="let grupo of fluxo.materiaisAgrupados" class="card mt-3 p-3 border material-card"
               [class.material-disabled]="grupo.removido">
 
               <div class="d-flex justify-content-between align-items-start mb-2">
@@ -278,7 +309,7 @@
             " (click)="
               !grupo.jaComprado &&
               !grupo.feitoPedido &&
-              removerGrupo(cotacao, grupo);
+              removerGrupo(fluxo, grupo);
               $event.stopPropagation()
             " [title]="
               grupo.jaComprado
@@ -305,7 +336,7 @@
               <div class="variacoes-wrapper" [class.variacoes-disabled]="grupo.removido">
 
                 <div *ngFor="let v of grupo.variacoes" class="form-check mb-2">
-                  <input class="form-check-input" type="radio" [name]="cotacao.id + '-' + grupo.nome" [value]="v"
+                  <input class="form-check-input" type="radio" [name]="fluxo.id + '-' + grupo.nome" [value]="v"
                     [(ngModel)]="grupo.selected" [disabled]="grupo.removido || grupo.feitoPedido|| grupo.jaComprado" />
 
 
@@ -323,9 +354,9 @@
                           <span *ngIf="v.precoItem">
                             • {{ v.precoItem | currency:'BRL' }} / un
                           </span>
-                          <br *ngIf="cotacao.id === 'melhor-compra' && v.fornecedorNome" />
+                          <br *ngIf="fluxo.id === 'melhor-compra' && v.fornecedorNome" />
 
-                          <span class="text-muted" *ngIf="cotacao.id === 'melhor-compra' && v.fornecedorNome">
+                          <span class="text-muted" *ngIf="fluxo.id === 'melhor-compra' && v.fornecedorNome">
                             Fornecedor: <strong>{{ v.fornecedorNome }}</strong>
                           </span>
                         </small>
@@ -357,16 +388,16 @@
           <div class="d-flex justify-content-between mt-4 align-items-center">
             <div>
               <h6 class="mb-2">
-                Total: {{ getTotal(cotacao) | currency:'BRL' }}
+                Total: {{ getTotal(fluxo) | currency:'BRL' }}
               </h6>
 
               <!-- Só aparece se já houve gasto -->
-              <h5 *ngIf="getTotalGasto(cotacao) > 0" class="text-success fw-semibold">
-                Já gasto: {{ getTotalGasto(cotacao) | currency:'BRL' }}
+              <h5 *ngIf="getTotalGasto(fluxo) > 0" class="text-success fw-semibold">
+                Já gasto: {{ getTotalGasto(fluxo) | currency:'BRL' }}
               </h5>
             </div>
 
-            <button class="btn btn-success" (click)="realizarCompra(cotacao)"
+            <button class="btn btn-success" (click)="realizarCompra(fluxo)"
               [disabled]="savingCompra || loading || existePedido">
               Realizar compra
             </button>
