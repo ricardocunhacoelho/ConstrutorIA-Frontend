@@ -24,6 +24,10 @@ import { SidebarLogoComponent } from './layout/sidebar-logo.component';
 import { SidebarUserPanelComponent } from './layout/sidebar-user-panel.component';
 import { SidebarMenuComponent } from './layout/sidebar-menu.component';
 
+import { LOCALE_ID } from '@angular/core';
+import { registerLocaleData } from '@angular/common';
+import localePt from '@angular/common/locales/pt';
+registerLocaleData(localePt);
 @NgModule({
     imports: [
         AppRoutingModule,
@@ -52,6 +56,8 @@ import { SidebarMenuComponent } from './layout/sidebar-menu.component';
         SidebarUserPanelComponent,
         SidebarMenuComponent,
     ],
-    providers: [],
+    providers: [
+        { provide: LOCALE_ID, useValue: 'pt-BR' }
+    ],
 })
-export class AppModule {}
+export class AppModule { }

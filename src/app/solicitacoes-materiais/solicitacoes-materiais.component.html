@@ -188,7 +188,15 @@
                                     <td>{{ record.dataHora | date:'short' }}</td>
                                     <td>{{ record.obra.nome }}</td>
                                     <td>{{ record.encarregado.nome }}</td>
-                                    <td>{{ record.status }}</td>
+                                    <td>
+                                        <span class="badge" [ngClass]="{
+                                            'bg-warning text-dark': record.status === 'ABERTA',
+                                            'bg-success': record.status === 'CONCLUIDA'
+                                            }">
+                                            {{ record.status }}
+                                        </span>
+                                    </td>
+
                                     <td>
                                         <ul *ngIf="record.materiaisSolicitados?.length > 0">
                                             <li *ngFor="let mat of record.materiaisSolicitados">
@@ -197,7 +205,8 @@
                                         </ul>
                                     </td>
                                     <td>
-                                        <button type="button" class="btn btn-sm bg-info" (click)="abrirCotacoes(record)">
+                                        <button type="button" class="btn btn-sm bg-info"
+                                            (click)="abrirCotacoes(record)">
                                             <i class="fas fa-shopping-cart"></i>
                                         </button>
 

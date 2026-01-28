@@ -139,11 +139,12 @@ export class SolicitacoesMateriaisComponent extends PagedListingComponentBase<So
     private showCreateOrEditDialog(id?: string): void {
         let ref: BsModalRef;
         if (!id) {
-            ref = this._modalService.show(CreateSolicitacaoMaterialDialogComponent, { class: 'modal-lg' });
+            ref = this._modalService.show(CreateSolicitacaoMaterialDialogComponent, { class: 'modal-lg',backdrop: 'static' });
         } else {
             ref = this._modalService.show(EditSolicitacaoMaterialDialogComponent, {
                 class: 'modal-lg',
                 initialState: { id },
+                backdrop: 'static'
             });
         }
         ref.content.onSave.subscribe(() => this.refresh());
@@ -221,14 +222,16 @@ export class SolicitacoesMateriaisComponent extends PagedListingComponentBase<So
             if (solicitacao.cotacoes &&  solicitacao.cotacoes.length > 0) {
                 const ref = this._modalService.show(CotacoesListDialogComponent, {
                     class: 'modal-lg',
-                    initialState: { solicitacaoId: solicitacao.id }
+                    initialState: { solicitacaoId: solicitacao.id },
+                    backdrop: 'static'
                 });
 
                 ref.content.onSave.subscribe(() => this.refresh());
             } else {
                 const ref = this._modalService.show(CreateCotacaoDialogComponent, {
                     class: 'modal-xl',
-                    initialState: { solicitacaoId: solicitacao.id }
+                    initialState: { solicitacaoId: solicitacao.id },
+                    backdrop: 'static'
                 });
 
                 ref.content.onSave.subscribe(() => this.refresh());

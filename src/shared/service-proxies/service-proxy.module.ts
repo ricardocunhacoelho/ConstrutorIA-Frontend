@@ -23,6 +23,7 @@ import * as ApiServiceProxies from './service-proxies';
         ApiServiceProxies.PedidoCompraServiceProxy,
         ApiServiceProxies.NotificacaoUsuarioServiceProxy,
         ApiServiceProxies.CompraServiceProxy,
+        ApiServiceProxies.IntervencaoCompraServiceProxy,
         { provide: HTTP_INTERCEPTORS, useClass: AbpHttpInterceptor, multi: true },
     ],
 })
