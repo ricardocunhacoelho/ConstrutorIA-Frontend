@@ -200,7 +200,7 @@ export class HomeComponent extends AppComponentBase implements OnInit {
         this._solicitacaoService.getAll(undefined, undefined, undefined, undefined, 0, 20)
             .subscribe(result => {
                 this.ultimasSolicitacoes = result.items || [];
-                const abertas = this.ultimasSolicitacoes.filter(s => s.status === 'ABERTA').length;
+                const abertas = this.ultimasSolicitacoes.filter(s => s.status === 0).length;
                 const concluidas = this.ultimasSolicitacoes.length - abertas;
 
                 this.donutChartData = {

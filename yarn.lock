@@ -300,6 +300,11 @@
   dependencies:
     tslib "^2.3.0"
 
+"@angular/language-service@^19.2.1":
+  version "19.2.1"
+  resolved "https://registry.npmjs.org/@angular/language-service/-/language-service-19.2.1.tgz"
+  integrity sha512-JJPxFQp3tbKy6xSKLHMYUA6SOBxtJoOKDNAasj8tNrgZLgxtGABWz3kPNlgzpVQ6HHyderrzPhDir9aQDooSJQ==
+
 "@angular/platform-browser-dynamic@^19.2.1":
   version "19.2.1"
   resolved "https://registry.npmjs.org/@angular/platform-browser-dynamic/-/platform-browser-dynamic-19.2.1.tgz"

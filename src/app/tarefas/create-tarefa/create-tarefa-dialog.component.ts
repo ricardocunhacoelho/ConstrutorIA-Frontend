@@ -28,7 +28,6 @@ import moment from 'moment';
         TabsetComponent,
         TabDirective,
         LocalizePipe,
-        NgIf
     ]
 })
 export class CreateTarefaDialogComponent extends AppComponentBase implements OnInit {

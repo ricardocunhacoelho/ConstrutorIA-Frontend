@@ -26,19 +26,19 @@
 
 
       <div class="card-body d-flex justify-content-between align-items-center cursor-pointer"
-        (click)="!isCardDesabilitado(fluxo) && toggleExpand(i)">
-        <!-- HEADER: se for Melhor compra, mostra só o título "Melhor compra" e obra -->
-        <ng-container *ngIf="fluxo.id === 'melhor-compra'; else normalHeader">
-          <div class="flex-grow-1" [class.opacity-50]="naoCompensaMelhorCompra">
+        (click)="canExpand(fluxo) && toggleExpand(i)">
+        <!-- HEADER: se for Menor Valor por item, mostra só o título "Menor Valor por item" e obra -->
+        <ng-container *ngIf="fluxo.tipo === 'MENOR_VALOR_POR_ITEM'; else normalHeader">
+          <div class="flex-grow-1 pr-4" [class.opacity-50]="naoCompensaMelhorCompra">
 
             <h5 *ngIf="existePedido" class="mb-2"
               [ngClass]="naoCompensaMelhorCompra ? 'text-secondary' : 'text-success'">
-              <strong>Melhor compra</strong> {{ getResumoStatus(fluxo).texto }}
+              <strong>Menor valor por item</strong> {{ getResumoStatus(fluxo).texto }}
             </h5>
 
             <h6 *ngIf="!existePedido" class="mb-2"
               [ngClass]="naoCompensaMelhorCompra ? 'text-secondary' : 'text-success'">
-              <strong>Melhor compra</strong> {{ getResumoStatus(fluxo).texto }}
+              <strong>Menor valor por item</strong> {{ getResumoStatus(fluxo).texto }}
             </h6>
 
             <div>
@@ -55,15 +55,29 @@
 
             <!-- MENSAGEM QUANDO NÃO COMPENSA -->
             <p *ngIf="naoCompensaMelhorCompra" class="mt-2 fw-bold small">
-              Não existe melhor compra — um dos fornecedores já possui o menor valor.
+              Não existe Menor valor por item — um dos fornecedores já possui o menor valor.
             </p>
+
+            <div
+              *ngIf="!naoCompensaMelhorCompra && fluxo.tipo === 'MENOR_VALOR_POR_ITEM' && menorValorPodeNaoCompensar()"
+              class="mt-2 fw-semibold d-flex align-items-start gap-1">
+
+              <span>
+                <strong>Atenção:</strong> alguns itens do <strong>Menor valor por item</strong> possuem
+                <strong>frete</strong>
+                ou <strong>desconto</strong> vinculados no orçamento de origem, isto pode alterar o valor final ao
+                separar os pedidos.
+              </span>
+            </div>
+
+
           </div>
         </ng-container>
 
 
         <!-- HEADER NORMAL (fornecedor, status, obra) -->
         <ng-template #normalHeader>
-          <div class="flex-grow-1" [ngClass]="getHeaderClass(fluxo)">
+          <div class="flex-grow-1 pr-4" [ngClass]="getHeaderClass(fluxo)">
 
             <!-- 🔥 FORNECEDOR COM PEDIDO NORMAL -->
             <h5 class="mb-1" *ngIf="isFornecedorPedidoNormal(fluxo)">
@@ -83,7 +97,7 @@
 
             <div *ngIf="!fluxo.hasOrcamento">
               <p class="mb-0 small fw-semibold">
-                {{ fluxo.statusView }}
+                Aguardando orçamento do fornecedor - {{ fluxo.statusView }}
               </p>
             </div>
 
@@ -93,34 +107,49 @@
               {{ getResumoStatus(fluxo).texto }}
             </p>
 
-            <p class="mb-0 medium mt-1 fw-bold" *ngIf="fluxo.hasOrcamento && !isFornecedorPedidoNormal(fluxo)">
-              <strong>Total:</strong> {{ getTotal(fluxo) | currency:'BRL' }}
+            <p class="mb-0 mt-1 fw-bold d-flex flex-wrap align-items-center gap-2"
+              *ngIf="fluxo.hasOrcamento && !isFornecedorPedidoNormal(fluxo)">
+
+              <!-- TOTAL -->
+              <span class="mr-2">
+                <strong>Total:</strong>
+
+                <span class="fs-6">
+                  {{ getTotalComFreteEDesconto(fluxo) | currency:'BRL' }}
+                </span>
+              </span>
+
+              <!-- DETALHES -->
+              <span class="small text-muted fw-normal">
+
+                ( Produtos {{ getTotal(fluxo) | currency:'BRL' }}
+
+                <ng-container *ngIf="hasFrete(fluxo)">
+                  • <span class="text-danger"> Frete +{{ fluxo.orcamento.valorFrete | currency:'BRL' }}</span>
+                </ng-container>
+
+                <ng-container *ngIf="hasDesconto(fluxo)">
+                  • <span class="text-success">
+                    Desconto -{{ fluxo.orcamento.valorDesconto | currency:'BRL' }}
+                  </span>
+                </ng-container>
+
+                )
+              </span>
+
             </p>
 
-            <div *ngIf="isFornecedorPedidoNormal(fluxo)">
-              <h7 class="mb-0">
-                Preço total dos produtos:
-                {{ getTotal(fluxo) | currency:'BRL' }}
-              </h7>
-
-              <h6 *ngIf="getTotalGasto(fluxo) > 0" class="text-success fw-semibold">
-                Compras efetivadas:
-                {{ getTotalGasto(fluxo) | currency:'BRL' }}
-              </h6>
-            </div>
 
           </div>
         </ng-template>
 
 
-        <button class="btn btn-sm" (click)="!isCardDesabilitado(fluxo) && toggleExpand(i); $event.stopPropagation()"
-          [disabled]="isCardDesabilitado(fluxo)" [ngClass]="fluxo.id === 'melhor-compra'
-          ? 'btn-melhor-compra'
-          : 'btn-outline-secondary'">
+        <button class="btn btn-sm" (click)="canExpand(fluxo) && toggleExpand(i); $event.stopPropagation()"
+          [disabled]="!canExpand(fluxo)" [ngClass]="fluxo.tipo === 'MENOR_VALOR_POR_ITEM'
+    ? 'btn-melhor-compra'
+    : 'btn-outline-secondary'">
 
-
-          <i class="fa" [ngClass]="expanded[i] ? 'fa-chevron-up' : 'fa-chevron-down'">
-          </i>
+          <i class="fa" [ngClass]="expanded[i] ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
         </button>
 
 
@@ -143,7 +172,7 @@
         </div>
 
         <!-- SEM ORÇAMENTO: VISUAL ANTIGO -->
-        <div *ngIf="!fluxo.hasOrcamento">
+        <div *ngIf="fluxo.tipo === 'COTACAO' && !fluxo.hasOrcamento">
 
           <h6 class="mb-2 mt-3">Materiais:</h6>
 
@@ -157,16 +186,16 @@
             </li>
           </ul>
 
-          <p class="mt-4"><strong>Total:</strong> Aguardando fornecedor</p>
+          <p class="mt-4">Aguardando orçamento do fornecedor</p>
         </div>
 
-        <div *ngIf="fluxo.hasOrcamento">
+        <div *ngIf="fluxo.tipo === 'MENOR_VALOR_POR_ITEM' || fluxo.hasOrcamento">
 
-          <ng-container *ngIf="fluxo.id === 'melhor-compra'; else materiaisNormal">
+          <ng-container *ngIf="fluxo.tipo === 'MENOR_VALOR_POR_ITEM'; else materiaisNormal">
 
             <p *ngIf="fluxo.usuarioPedido" class="mb-3 mt-2 text-muted">
               <i class="fa fa-user me-1 mr-2"></i>
-              <strong>Usuário Responsável Pela Compra:</strong> {{ fluxo.usuarioPedido }}
+              <strong>Usuário responsável pela compra:</strong> {{ fluxo.usuarioPedido }}
             </p>
 
             <p *ngIf="fluxo.compraEfetivada && fluxo.compraEfetivada.observacao" class="mb-4 text-muted">
@@ -177,7 +206,7 @@
 
             <p *ngIf="fluxo.enderecoEntrega" class="mb-4 text-muted">
               <i class="fa fa-map-marker-alt me-1 mr-2"></i>
-              <strong>Endereço de Entrega:</strong> {{ fluxo.enderecoEntrega.formatado }}
+              <strong>Endereço de entrega:</strong> {{ fluxo.enderecoEntrega.formatado }}
             </p>
 
             <p *ngIf="fluxo.compraEfetivada && fluxo.compraEfetivada.prazoEntrega" class="mb-4 text-muted">
@@ -190,8 +219,7 @@
               <strong>Materiais:</strong>
             </h5>
 
-            <div *ngFor="let bloco of melhorCompraAgrupada; trackBy: trackByFornecedor" class="mt-4">
-
+            <div *ngFor="let bloco of this.menorValorPorItemAgrupada; trackBy: trackByFornecedor" class="mt-4">
               <h6 class="mb-2">
                 <strong class="mr-2">{{ bloco.fornecedor }}</strong>
                 <span class="badge bg-secondary ms-2">
@@ -220,11 +248,11 @@
                     <h6 class="mb-0">
                       {{ grupo.nome | titlecase }}
 
-                      <span *ngIf="grupo.feitoPedido && !grupo.jaComprado" class="badge bg-warning text-dark ms-3">
+                      <span *ngIf="grupo.feitoPedido && !grupo.jaComprado" class="badge bg-warning text-dark ms-3 ml-2">
                         Pedido realizado
                       </span>
 
-                      <span *ngIf="grupo.jaComprado" class="badge bg-success ms-3">
+                      <span *ngIf="grupo.jaComprado" class="badge bg-success ms-3  ml-2">
                         Compra concluída
                       </span>
                     </h6>
@@ -277,7 +305,6 @@
 
                       <!-- TEM sugestão -->
                       <div *ngIf="grupo.intervencao.materialSugeridoEspecificacao">
-                        teste
                         <label class="form-check">
                           <input type="radio" [(ngModel)]="grupo.opcaoSelecionada" value="ACEITAR_SUGESTAO">
                           Seguir com material sugerido —
@@ -324,7 +351,7 @@
 
                   <div class="variacoes-wrapper" [class.variacoes-disabled]="grupo.removido">
 
-                    <div *ngFor="let v of grupo.variacoes" class="form-check mb-2">
+                    <div *ngFor="let v of grupo.variacoes" class="form-check mb-4">
                       <input class="form-check-input" type="radio" [name]="fluxo.id + '-' + grupo.nome" [value]="v"
                         [(ngModel)]="grupo.selected"
                         [disabled]="grupo.removido || grupo.feitoPedido|| grupo.jaComprado" />
@@ -344,9 +371,10 @@
                               <span *ngIf="v.precoItem">
                                 • {{ v.precoItem | currency:'BRL' }} / un
                               </span>
-                              <br *ngIf="fluxo.id === 'melhor-compra' && v.fornecedorNome" />
+                              <br *ngIf="fluxo.tipo === 'MENOR_VALOR_POR_ITEM' && v.fornecedorNome" />
 
-                              <span class="text-muted" *ngIf="fluxo.id === 'melhor-compra' && v.fornecedorNome">
+                              <span class="text-muted"
+                                *ngIf="fluxo.tipo === 'MENOR_VALOR_POR_ITEM' && v.fornecedorNome">
                                 Fornecedor: <strong>{{ v.fornecedorNome }}</strong>
                               </span>
                             </small>
@@ -388,7 +416,7 @@
 
             <p *ngIf="fluxo.enderecoEntrega" class="mb-4 text-muted">
               <i class="fa fa-map-marker-alt me-1 mr-2"></i>
-              <strong>Endereço de Entrega:</strong> {{ fluxo.enderecoEntrega.formatado }}
+              <strong>Endereço de entrega:</strong> {{ fluxo.enderecoEntrega.formatado }}
             </p>
             <div *ngFor="let grupo of fluxo.materiaisAgrupados" class="card mt-3 p-3 border material-card"
               [class.material-disabled]="grupo.removido">
@@ -501,7 +529,7 @@
               <!-- VARIAÇÕES -->
               <div class="variacoes-wrapper" [class.variacoes-disabled]="grupo.removido">
 
-                <div *ngFor="let v of grupo.variacoes" class="form-check mb-2">
+                <div *ngFor="let v of grupo.variacoes" class="form-check mb-4">
                   <input class="form-check-input" type="radio" [name]="fluxo.id + '-' + grupo.nome" [value]="v"
                     [(ngModel)]="grupo.selected" [disabled]="grupo.removido || grupo.feitoPedido|| grupo.jaComprado" />
 
@@ -520,9 +548,9 @@
                           <span *ngIf="v.precoItem">
                             • {{ v.precoItem | currency:'BRL' }} / un
                           </span>
-                          <br *ngIf="fluxo.id === 'melhor-compra' && v.fornecedorNome" />
+                          <br *ngIf="fluxo.tipo === 'MENOR_VALOR_POR_ITEM' && v.fornecedorNome" />
 
-                          <span class="text-muted" *ngIf="fluxo.id === 'melhor-compra' && v.fornecedorNome">
+                          <span class="text-muted" *ngIf="fluxo.tipo === 'MENOR_VALOR_POR_ITEM' && v.fornecedorNome">
                             Fornecedor: <strong>{{ v.fornecedorNome }}</strong>
                           </span>
                         </small>
@@ -550,23 +578,65 @@
             </div>
           </ng-template>
 
-          <!-- TOTAL -->
-          <div class="d-flex justify-content-between mt-4 align-items-center">
-            <div>
-              <h6 class="mb-2">
-                Total: {{ getTotal(fluxo) | currency:'BRL' }}
-              </h6>
+          <div class="mt-4">
 
-              <!-- Só aparece se já houve gasto -->
-              <h5 *ngIf="getTotalGasto(fluxo) > 0" class="text-success fw-semibold">
-                Já gasto: {{ getTotalGasto(fluxo) | currency:'BRL' }}
+            <p class="mb-1 small text-muted">
+              Produtos:
+              <strong class="text-dark">
+                {{ getTotal(fluxo) | currency:'BRL' }}
+              </strong>
+            </p>
+
+            <p *ngIf="hasDesconto(fluxo)" class="mb-1 small text-muted">
+              Desconto:
+              <strong class="text-success">
+                -{{ fluxo.orcamento.valorDesconto | currency:'BRL' }}
+              </strong>
+              <span *ngIf="fluxo.orcamento.condicaoDesconto">
+                ({{ fluxo.orcamento.condicaoDesconto }})
+              </span>
+            </p>
+
+            <!-- FRETE -->
+            <p *ngIf="hasFrete(fluxo)" class="mb-1 small text-muted">
+              Frete:
+              <strong class="text-danger">
+                +{{ fluxo.orcamento.valorFrete | currency:'BRL' }}
+              </strong>
+              <span *ngIf="fluxo.orcamento.condicaoFrete">
+                ({{ fluxo.orcamento.condicaoFrete }})
+              </span>
+            </p>
+
+            <!-- TOTAL FINAL -->
+            <div class="d-flex justify-content-between align-items-center mt-2 mb-2">
+
+              <h5 *ngIf="fluxo.tipo === 'COTACAO'" class="mb-0 fw-bold">
+                Total
+                <span class="text-dark">
+                  {{ getTotalComFreteEDesconto(fluxo) | currency:'BRL' }}
+                </span>
               </h5>
+
+              <h5 *ngIf="fluxo.tipo === 'MENOR_VALOR_POR_ITEM'" class="mb-0 fw-bold">
+                Total
+                <span class="text-dark">
+                  {{ getTotal(fluxo) | currency:'BRL' }}
+                </span>
+              </h5>
+
+              <button class="btn btn-success" (click)="realizarCompra(fluxo)"
+                [disabled]="savingCompra || loading || existePedido">
+                Realizar compra
+              </button>
+
             </div>
 
-            <button class="btn btn-success" (click)="realizarCompra(fluxo)"
-              [disabled]="savingCompra || loading || existePedido">
-              Realizar compra
-            </button>
+            <!-- JÁ GASTO -->
+            <p *ngIf="getTotalGasto(fluxo) > 0" class="mt-2 fw-semibold text-success">
+              Já gasto: {{ getTotalGasto(fluxo) | currency:'BRL' }}
+            </p>
+
           </div>
 
         </div>

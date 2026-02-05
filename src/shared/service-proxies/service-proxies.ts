@@ -3663,7 +3663,7 @@ export class SolicitacaoMaterialServiceProxy {
      * @param maxResultCount (optional) 
      * @return OK
      */
-    getAll(keyword: string | undefined, obraId: string | undefined, encarregadoId: string | undefined, status: string | undefined, skipCount: number | undefined, maxResultCount: number | undefined): Observable<SolicitacaoMaterialDtoPagedResultDto> {
+    getAll(keyword: string | undefined, obraId: string | undefined, encarregadoId: string | undefined, status: SolicitacaoMaterialStatusNullable | null | undefined, skipCount: number | undefined, maxResultCount: number | undefined): Observable<SolicitacaoMaterialDtoPagedResultDto> {
         let url_ = this.baseUrl + "/api/services/app/SolicitacaoMaterial/GetAll?";
         if (keyword === null)
             throw new Error("The parameter 'keyword' cannot be null.");
@@ -3677,9 +3677,7 @@ export class SolicitacaoMaterialServiceProxy {
             throw new Error("The parameter 'encarregadoId' cannot be null.");
         else if (encarregadoId !== undefined)
             url_ += "EncarregadoId=" + encodeURIComponent("" + encarregadoId) + "&";
-        if (status === null)
-            throw new Error("The parameter 'status' cannot be null.");
-        else if (status !== undefined)
+        if (status !== undefined && status !== null)
             url_ += "Status=" + encodeURIComponent("" + status) + "&";
         if (skipCount === null)
             throw new Error("The parameter 'skipCount' cannot be null.");
@@ -6843,9 +6841,14 @@ export class CompraDto implements ICompraDto {
     user: UserDto;
     enderecoEntregaId: string | undefined;
     enderecoEntrega: EnderecoDto;
+    retiradaNoFornecedor: boolean;
     prazoEntrega: moment.Moment | undefined;
     observacaoInterna: string | undefined;
     observacaoFornecedor: string | undefined;
+    valorFrete: number | undefined;
+    condicaoFrete: string | undefined;
+    valorDesconto: number | undefined;
+    condicaoDesconto: string | undefined;
     status: CompraStatus;
     statusView: string | undefined;
     materiaisComprados: MaterialCompradoDto[] | undefined;
@@ -6872,9 +6875,14 @@ export class CompraDto implements ICompraDto {
             this.user = _data["user"] ? UserDto.fromJS(_data["user"]) : <any>undefined;
             this.enderecoEntregaId = _data["enderecoEntregaId"];
             this.enderecoEntrega = _data["enderecoEntrega"] ? EnderecoDto.fromJS(_data["enderecoEntrega"]) : <any>undefined;
+            this.retiradaNoFornecedor = _data["retiradaNoFornecedor"];
             this.prazoEntrega = _data["prazoEntrega"] ? moment(_data["prazoEntrega"].toString()) : <any>undefined;
             this.observacaoInterna = _data["observacaoInterna"];
             this.observacaoFornecedor = _data["observacaoFornecedor"];
+            this.valorFrete = _data["valorFrete"];
+            this.condicaoFrete = _data["condicaoFrete"];
+            this.valorDesconto = _data["valorDesconto"];
+            this.condicaoDesconto = _data["condicaoDesconto"];
             this.status = _data["status"];
             this.statusView = _data["statusView"];
             if (Array.isArray(_data["materiaisComprados"])) {
@@ -6905,9 +6913,14 @@ export class CompraDto implements ICompraDto {
         data["user"] = this.user ? this.user.toJSON() : <any>undefined;
         data["enderecoEntregaId"] = this.enderecoEntregaId;
         data["enderecoEntrega"] = this.enderecoEntrega ? this.enderecoEntrega.toJSON() : <any>undefined;
+        data["retiradaNoFornecedor"] = this.retiradaNoFornecedor;
         data["prazoEntrega"] = this.prazoEntrega ? this.prazoEntrega.toISOString() : <any>undefined;
         data["observacaoInterna"] = this.observacaoInterna;
         data["observacaoFornecedor"] = this.observacaoFornecedor;
+        data["valorFrete"] = this.valorFrete;
+        data["condicaoFrete"] = this.condicaoFrete;
+        data["valorDesconto"] = this.valorDesconto;
+        data["condicaoDesconto"] = this.condicaoDesconto;
         data["status"] = this.status;
         data["statusView"] = this.statusView;
         if (Array.isArray(this.materiaisComprados)) {
@@ -6938,9 +6951,14 @@ export interface ICompraDto {
     user: UserDto;
     enderecoEntregaId: string | undefined;
     enderecoEntrega: EnderecoDto;
+    retiradaNoFornecedor: boolean;
     prazoEntrega: moment.Moment | undefined;
     observacaoInterna: string | undefined;
     observacaoFornecedor: string | undefined;
+    valorFrete: number | undefined;
+    condicaoFrete: string | undefined;
+    valorDesconto: number | undefined;
+    condicaoDesconto: string | undefined;
     status: CompraStatus;
     statusView: string | undefined;
     materiaisComprados: MaterialCompradoDto[] | undefined;
@@ -6971,10 +6989,15 @@ export class CompraEntity implements ICompraEntity {
     user: User;
     enderecoEntregaId: string | undefined;
     enderecoEntrega: EnderecoEntity;
-    prazoEntrega: moment.Moment;
+    retiradaNoFornecedor: boolean;
+    prazoEntrega: moment.Moment | undefined;
     observacaoInterna: string | undefined;
     observacaoFornecedor: string | undefined;
     observacaoRecebidoFornecedor: string | undefined;
+    valorFrete: number | undefined;
+    condicaoFrete: string | undefined;
+    valorDesconto: number | undefined;
+    condicaoDesconto: string | undefined;
     status: CompraStatus;
     materiaisComprados: MaterialCompradoEntity[] | undefined;
     total: number | undefined;
@@ -7012,10 +7035,15 @@ export class CompraEntity implements ICompraEntity {
             this.user = _data["user"] ? User.fromJS(_data["user"]) : <any>undefined;
             this.enderecoEntregaId = _data["enderecoEntregaId"];
             this.enderecoEntrega = _data["enderecoEntrega"] ? EnderecoEntity.fromJS(_data["enderecoEntrega"]) : <any>undefined;
+            this.retiradaNoFornecedor = _data["retiradaNoFornecedor"];
             this.prazoEntrega = _data["prazoEntrega"] ? moment(_data["prazoEntrega"].toString()) : <any>undefined;
             this.observacaoInterna = _data["observacaoInterna"];
             this.observacaoFornecedor = _data["observacaoFornecedor"];
             this.observacaoRecebidoFornecedor = _data["observacaoRecebidoFornecedor"];
+            this.valorFrete = _data["valorFrete"];
+            this.condicaoFrete = _data["condicaoFrete"];
+            this.valorDesconto = _data["valorDesconto"];
+            this.condicaoDesconto = _data["condicaoDesconto"];
             this.status = _data["status"];
             if (Array.isArray(_data["materiaisComprados"])) {
                 this.materiaisComprados = [] as any;
@@ -7057,10 +7085,15 @@ export class CompraEntity implements ICompraEntity {
         data["user"] = this.user ? this.user.toJSON() : <any>undefined;
         data["enderecoEntregaId"] = this.enderecoEntregaId;
         data["enderecoEntrega"] = this.enderecoEntrega ? this.enderecoEntrega.toJSON() : <any>undefined;
+        data["retiradaNoFornecedor"] = this.retiradaNoFornecedor;
         data["prazoEntrega"] = this.prazoEntrega ? this.prazoEntrega.toISOString() : <any>undefined;
         data["observacaoInterna"] = this.observacaoInterna;
         data["observacaoFornecedor"] = this.observacaoFornecedor;
         data["observacaoRecebidoFornecedor"] = this.observacaoRecebidoFornecedor;
+        data["valorFrete"] = this.valorFrete;
+        data["condicaoFrete"] = this.condicaoFrete;
+        data["valorDesconto"] = this.valorDesconto;
+        data["condicaoDesconto"] = this.condicaoDesconto;
         data["status"] = this.status;
         if (Array.isArray(this.materiaisComprados)) {
             data["materiaisComprados"] = [];
@@ -7102,10 +7135,15 @@ export interface ICompraEntity {
     user: User;
     enderecoEntregaId: string | undefined;
     enderecoEntrega: EnderecoEntity;
-    prazoEntrega: moment.Moment;
+    retiradaNoFornecedor: boolean;
+    prazoEntrega: moment.Moment | undefined;
     observacaoInterna: string | undefined;
     observacaoFornecedor: string | undefined;
     observacaoRecebidoFornecedor: string | undefined;
+    valorFrete: number | undefined;
+    condicaoFrete: string | undefined;
+    valorDesconto: number | undefined;
+    condicaoDesconto: string | undefined;
     status: CompraStatus;
     materiaisComprados: MaterialCompradoEntity[] | undefined;
     total: number | undefined;
@@ -7126,8 +7164,11 @@ export class CotacaoComOrcamentoDto implements ICotacaoComOrcamentoDto {
     obra: SimpleLookupWithAdressDto;
     observacaoInterna: string | undefined;
     observacaoFornecedor: string | undefined;
+    enderecoEntregaId: string | undefined;
+    enderecoEntrega: EnderecoDto;
+    retiradaNoFornecedor: boolean;
     status: CotacaoStatus;
-    statusView: string | undefined;
+    readonly statusView: string | undefined;
     materiaisCotados: MaterialCotadoDto[] | undefined;
     total: number | undefined;
     hasOrcamento: boolean;
@@ -7154,8 +7195,11 @@ export class CotacaoComOrcamentoDto implements ICotacaoComOrcamentoDto {
             this.obra = _data["obra"] ? SimpleLookupWithAdressDto.fromJS(_data["obra"]) : <any>undefined;
             this.observacaoInterna = _data["observacaoInterna"];
             this.observacaoFornecedor = _data["observacaoFornecedor"];
+            this.enderecoEntregaId = _data["enderecoEntregaId"];
+            this.enderecoEntrega = _data["enderecoEntrega"] ? EnderecoDto.fromJS(_data["enderecoEntrega"]) : <any>undefined;
+            this.retiradaNoFornecedor = _data["retiradaNoFornecedor"];
             this.status = _data["status"];
-            this.statusView = _data["statusView"];
+            (<any>this).statusView = _data["statusView"];
             if (Array.isArray(_data["materiaisCotados"])) {
                 this.materiaisCotados = [] as any;
                 for (let item of _data["materiaisCotados"])
@@ -7186,6 +7230,9 @@ export class CotacaoComOrcamentoDto implements ICotacaoComOrcamentoDto {
         data["obra"] = this.obra ? this.obra.toJSON() : <any>undefined;
         data["observacaoInterna"] = this.observacaoInterna;
         data["observacaoFornecedor"] = this.observacaoFornecedor;
+        data["enderecoEntregaId"] = this.enderecoEntregaId;
+        data["enderecoEntrega"] = this.enderecoEntrega ? this.enderecoEntrega.toJSON() : <any>undefined;
+        data["retiradaNoFornecedor"] = this.retiradaNoFornecedor;
         data["status"] = this.status;
         data["statusView"] = this.statusView;
         if (Array.isArray(this.materiaisCotados)) {
@@ -7218,6 +7265,9 @@ export interface ICotacaoComOrcamentoDto {
     obra: SimpleLookupWithAdressDto;
     observacaoInterna: string | undefined;
     observacaoFornecedor: string | undefined;
+    enderecoEntregaId: string | undefined;
+    enderecoEntrega: EnderecoDto;
+    retiradaNoFornecedor: boolean;
     status: CotacaoStatus;
     statusView: string | undefined;
     materiaisCotados: MaterialCotadoDto[] | undefined;
@@ -7237,8 +7287,11 @@ export class CotacaoDto implements ICotacaoDto {
     obra: SimpleLookupWithAdressDto;
     observacaoInterna: string | undefined;
     observacaoFornecedor: string | undefined;
+    enderecoEntregaId: string | undefined;
+    enderecoEntrega: EnderecoDto;
+    retiradaNoFornecedor: boolean;
     status: CotacaoStatus;
-    statusView: string | undefined;
+    readonly statusView: string | undefined;
     materiaisCotados: MaterialCotadoDto[] | undefined;
     total: number | undefined;
 
@@ -7262,8 +7315,11 @@ export class CotacaoDto implements ICotacaoDto {
             this.obra = _data["obra"] ? SimpleLookupWithAdressDto.fromJS(_data["obra"]) : <any>undefined;
             this.observacaoInterna = _data["observacaoInterna"];
             this.observacaoFornecedor = _data["observacaoFornecedor"];
+            this.enderecoEntregaId = _data["enderecoEntregaId"];
+            this.enderecoEntrega = _data["enderecoEntrega"] ? EnderecoDto.fromJS(_data["enderecoEntrega"]) : <any>undefined;
+            this.retiradaNoFornecedor = _data["retiradaNoFornecedor"];
             this.status = _data["status"];
-            this.statusView = _data["statusView"];
+            (<any>this).statusView = _data["statusView"];
             if (Array.isArray(_data["materiaisCotados"])) {
                 this.materiaisCotados = [] as any;
                 for (let item of _data["materiaisCotados"])
@@ -7291,6 +7347,9 @@ export class CotacaoDto implements ICotacaoDto {
         data["obra"] = this.obra ? this.obra.toJSON() : <any>undefined;
         data["observacaoInterna"] = this.observacaoInterna;
         data["observacaoFornecedor"] = this.observacaoFornecedor;
+        data["enderecoEntregaId"] = this.enderecoEntregaId;
+        data["enderecoEntrega"] = this.enderecoEntrega ? this.enderecoEntrega.toJSON() : <any>undefined;
+        data["retiradaNoFornecedor"] = this.retiradaNoFornecedor;
         data["status"] = this.status;
         data["statusView"] = this.statusView;
         if (Array.isArray(this.materiaisCotados)) {
@@ -7320,6 +7379,9 @@ export interface ICotacaoDto {
     obra: SimpleLookupWithAdressDto;
     observacaoInterna: string | undefined;
     observacaoFornecedor: string | undefined;
+    enderecoEntregaId: string | undefined;
+    enderecoEntrega: EnderecoDto;
+    retiradaNoFornecedor: boolean;
     status: CotacaoStatus;
     statusView: string | undefined;
     materiaisCotados: MaterialCotadoDto[] | undefined;
@@ -7397,6 +7459,9 @@ export class CotacaoEntity implements ICotacaoEntity {
     fornecedor: FornecedorEntity;
     obraId: string | undefined;
     obra: ObraEntity;
+    enderecoEntregaId: string | undefined;
+    enderecoEntrega: EnderecoEntity;
+    retiradaNoFornecedor: boolean;
     observacaoInterna: string | undefined;
     observacaoFornecedor: string | undefined;
     status: CotacaoStatus;
@@ -7428,6 +7493,9 @@ export class CotacaoEntity implements ICotacaoEntity {
             this.fornecedor = _data["fornecedor"] ? FornecedorEntity.fromJS(_data["fornecedor"]) : <any>undefined;
             this.obraId = _data["obraId"];
             this.obra = _data["obra"] ? ObraEntity.fromJS(_data["obra"]) : <any>undefined;
+            this.enderecoEntregaId = _data["enderecoEntregaId"];
+            this.enderecoEntrega = _data["enderecoEntrega"] ? EnderecoEntity.fromJS(_data["enderecoEntrega"]) : <any>undefined;
+            this.retiradaNoFornecedor = _data["retiradaNoFornecedor"];
             this.observacaoInterna = _data["observacaoInterna"];
             this.observacaoFornecedor = _data["observacaoFornecedor"];
             this.status = _data["status"];
@@ -7463,6 +7531,9 @@ export class CotacaoEntity implements ICotacaoEntity {
         data["fornecedor"] = this.fornecedor ? this.fornecedor.toJSON() : <any>undefined;
         data["obraId"] = this.obraId;
         data["obra"] = this.obra ? this.obra.toJSON() : <any>undefined;
+        data["enderecoEntregaId"] = this.enderecoEntregaId;
+        data["enderecoEntrega"] = this.enderecoEntrega ? this.enderecoEntrega.toJSON() : <any>undefined;
+        data["retiradaNoFornecedor"] = this.retiradaNoFornecedor;
         data["observacaoInterna"] = this.observacaoInterna;
         data["observacaoFornecedor"] = this.observacaoFornecedor;
         data["status"] = this.status;
@@ -7498,6 +7569,9 @@ export interface ICotacaoEntity {
     fornecedor: FornecedorEntity;
     obraId: string | undefined;
     obra: ObraEntity;
+    enderecoEntregaId: string | undefined;
+    enderecoEntrega: EnderecoEntity;
+    retiradaNoFornecedor: boolean;
     observacaoInterna: string | undefined;
     observacaoFornecedor: string | undefined;
     status: CotacaoStatus;
@@ -7517,6 +7591,9 @@ export class CreateCotacaoDto implements ICreateCotacaoDto {
     obraId: string | undefined;
     observacaoInterna: string | undefined;
     observacaoFornecedor: string | undefined;
+    enderecoEntregaId: string | undefined;
+    enderecoEntrega: CreateEnderecoDto;
+    retiradaNoFornecedor: boolean;
     status: CotacaoStatus;
     materiaisCotados: CreateMaterialCotadoDto[] | undefined;
 
@@ -7536,6 +7613,9 @@ export class CreateCotacaoDto implements ICreateCotacaoDto {
             this.obraId = _data["obraId"];
             this.observacaoInterna = _data["observacaoInterna"];
             this.observacaoFornecedor = _data["observacaoFornecedor"];
+            this.enderecoEntregaId = _data["enderecoEntregaId"];
+            this.enderecoEntrega = _data["enderecoEntrega"] ? CreateEnderecoDto.fromJS(_data["enderecoEntrega"]) : <any>undefined;
+            this.retiradaNoFornecedor = _data["retiradaNoFornecedor"];
             this.status = _data["status"];
             if (Array.isArray(_data["materiaisCotados"])) {
                 this.materiaisCotados = [] as any;
@@ -7559,6 +7639,9 @@ export class CreateCotacaoDto implements ICreateCotacaoDto {
         data["obraId"] = this.obraId;
         data["observacaoInterna"] = this.observacaoInterna;
         data["observacaoFornecedor"] = this.observacaoFornecedor;
+        data["enderecoEntregaId"] = this.enderecoEntregaId;
+        data["enderecoEntrega"] = this.enderecoEntrega ? this.enderecoEntrega.toJSON() : <any>undefined;
+        data["retiradaNoFornecedor"] = this.retiradaNoFornecedor;
         data["status"] = this.status;
         if (Array.isArray(this.materiaisCotados)) {
             data["materiaisCotados"] = [];
@@ -7582,6 +7665,9 @@ export interface ICreateCotacaoDto {
     obraId: string | undefined;
     observacaoInterna: string | undefined;
     observacaoFornecedor: string | undefined;
+    enderecoEntregaId: string | undefined;
+    enderecoEntrega: CreateEnderecoDto;
+    retiradaNoFornecedor: boolean;
     status: CotacaoStatus;
     materiaisCotados: CreateMaterialCotadoDto[] | undefined;
 }
@@ -7903,7 +7989,7 @@ export interface ICreateMaterialPedidoCompraDto {
 
 export class CreateMaterialSolicitadoDto implements ICreateMaterialSolicitadoDto {
     nome: string | undefined;
-    quantidade: string | undefined;
+    quantidade: number;
     justificativa: string | undefined;
     unidade: string | undefined;
 
@@ -7951,7 +8037,7 @@ export class CreateMaterialSolicitadoDto implements ICreateMaterialSolicitadoDto
 
 export interface ICreateMaterialSolicitadoDto {
     nome: string | undefined;
-    quantidade: string | undefined;
+    quantidade: number;
     justificativa: string | undefined;
     unidade: string | undefined;
 }
@@ -8125,9 +8211,14 @@ export class CreatePedidoCompraDto implements ICreatePedidoCompraDto {
     obraId: string | undefined;
     enderecoEntregaId: string | undefined;
     enderecoEntrega: CreateEnderecoDto;
+    retiradaNoFornecedor: boolean;
     userId: number;
     observacaoInterna: string | undefined;
     observacaoFornecedor: string | undefined;
+    valorFrete: number | undefined;
+    condicaoFrete: string | undefined;
+    valorDesconto: number | undefined;
+    condicaoDesconto: string | undefined;
     materiaisPedidosCompra: CreateMaterialPedidoCompraDto[] | undefined;
     isMelhorCompra: boolean;
 
@@ -8148,9 +8239,14 @@ export class CreatePedidoCompraDto implements ICreatePedidoCompraDto {
             this.obraId = _data["obraId"];
             this.enderecoEntregaId = _data["enderecoEntregaId"];
             this.enderecoEntrega = _data["enderecoEntrega"] ? CreateEnderecoDto.fromJS(_data["enderecoEntrega"]) : <any>undefined;
+            this.retiradaNoFornecedor = _data["retiradaNoFornecedor"];
             this.userId = _data["userId"];
             this.observacaoInterna = _data["observacaoInterna"];
             this.observacaoFornecedor = _data["observacaoFornecedor"];
+            this.valorFrete = _data["valorFrete"];
+            this.condicaoFrete = _data["condicaoFrete"];
+            this.valorDesconto = _data["valorDesconto"];
+            this.condicaoDesconto = _data["condicaoDesconto"];
             if (Array.isArray(_data["materiaisPedidosCompra"])) {
                 this.materiaisPedidosCompra = [] as any;
                 for (let item of _data["materiaisPedidosCompra"])
@@ -8175,9 +8271,14 @@ export class CreatePedidoCompraDto implements ICreatePedidoCompraDto {
         data["obraId"] = this.obraId;
         data["enderecoEntregaId"] = this.enderecoEntregaId;
         data["enderecoEntrega"] = this.enderecoEntrega ? this.enderecoEntrega.toJSON() : <any>undefined;
+        data["retiradaNoFornecedor"] = this.retiradaNoFornecedor;
         data["userId"] = this.userId;
         data["observacaoInterna"] = this.observacaoInterna;
         data["observacaoFornecedor"] = this.observacaoFornecedor;
+        data["valorFrete"] = this.valorFrete;
+        data["condicaoFrete"] = this.condicaoFrete;
+        data["valorDesconto"] = this.valorDesconto;
+        data["condicaoDesconto"] = this.condicaoDesconto;
         if (Array.isArray(this.materiaisPedidosCompra)) {
             data["materiaisPedidosCompra"] = [];
             for (let item of this.materiaisPedidosCompra)
@@ -8202,9 +8303,14 @@ export interface ICreatePedidoCompraDto {
     obraId: string | undefined;
     enderecoEntregaId: string | undefined;
     enderecoEntrega: CreateEnderecoDto;
+    retiradaNoFornecedor: boolean;
     userId: number;
     observacaoInterna: string | undefined;
     observacaoFornecedor: string | undefined;
+    valorFrete: number | undefined;
+    condicaoFrete: string | undefined;
+    valorDesconto: number | undefined;
+    condicaoDesconto: string | undefined;
     materiaisPedidosCompra: CreateMaterialPedidoCompraDto[] | undefined;
     isMelhorCompra: boolean;
 }
@@ -8421,7 +8527,6 @@ export interface ICreateRoleDto {
 export class CreateSolicitacaoMaterialDto implements ICreateSolicitacaoMaterialDto {
     dataHora: moment.Moment;
     descricao: string | undefined;
-    status: SolicitacaoMaterialStatus;
     obraId: string | undefined;
     encarregadoId: string | undefined;
     materiaisSolicitados: CreateMaterialSolicitadoDto[] | undefined;
@@ -8439,7 +8544,6 @@ export class CreateSolicitacaoMaterialDto implements ICreateSolicitacaoMaterialD
         if (_data) {
             this.dataHora = _data["dataHora"] ? moment(_data["dataHora"].toString()) : <any>undefined;
             this.descricao = _data["descricao"];
-            this.status = _data["status"];
             this.obraId = _data["obraId"];
             this.encarregadoId = _data["encarregadoId"];
             if (Array.isArray(_data["materiaisSolicitados"])) {
@@ -8461,7 +8565,6 @@ export class CreateSolicitacaoMaterialDto implements ICreateSolicitacaoMaterialD
         data = typeof data === 'object' ? data : {};
         data["dataHora"] = this.dataHora ? this.dataHora.toISOString() : <any>undefined;
         data["descricao"] = this.descricao;
-        data["status"] = this.status;
         data["obraId"] = this.obraId;
         data["encarregadoId"] = this.encarregadoId;
         if (Array.isArray(this.materiaisSolicitados)) {
@@ -8483,7 +8586,6 @@ export class CreateSolicitacaoMaterialDto implements ICreateSolicitacaoMaterialD
 export interface ICreateSolicitacaoMaterialDto {
     dataHora: moment.Moment;
     descricao: string | undefined;
-    status: SolicitacaoMaterialStatus;
     obraId: string | undefined;
     encarregadoId: string | undefined;
     materiaisSolicitados: CreateMaterialSolicitadoDto[] | undefined;
@@ -10509,10 +10611,11 @@ export class MaterialOrcadoDto implements IMaterialOrcadoDto {
     precoItem: number | undefined;
     precoTotal: number | undefined;
     emFalta: boolean;
-    quantidade: string | undefined;
+    quantidade: number;
     unidade: string | undefined;
     especificacao: string | undefined;
     fornecedorId: string | undefined;
+    materialCotadoId: string | undefined;
 
     constructor(data?: IMaterialOrcadoDto) {
         if (data) {
@@ -10535,6 +10638,7 @@ export class MaterialOrcadoDto implements IMaterialOrcadoDto {
             this.unidade = _data["unidade"];
             this.especificacao = _data["especificacao"];
             this.fornecedorId = _data["fornecedorId"];
+            this.materialCotadoId = _data["materialCotadoId"];
         }
     }
 
@@ -10557,6 +10661,7 @@ export class MaterialOrcadoDto implements IMaterialOrcadoDto {
         data["unidade"] = this.unidade;
         data["especificacao"] = this.especificacao;
         data["fornecedorId"] = this.fornecedorId;
+        data["materialCotadoId"] = this.materialCotadoId;
         return data;
     }
 
@@ -10575,10 +10680,11 @@ export interface IMaterialOrcadoDto {
     precoItem: number | undefined;
     precoTotal: number | undefined;
     emFalta: boolean;
-    quantidade: string | undefined;
+    quantidade: number;
     unidade: string | undefined;
     especificacao: string | undefined;
     fornecedorId: string | undefined;
+    materialCotadoId: string | undefined;
 }
 
 export class MaterialOrcadoEntity implements IMaterialOrcadoEntity {
@@ -10591,9 +10697,11 @@ export class MaterialOrcadoEntity implements IMaterialOrcadoEntity {
     deleterUserId: number | undefined;
     deletionTime: moment.Moment | undefined;
     nome: string | undefined;
-    quantidade: string | undefined;
+    quantidade: number;
     unidade: string | undefined;
     especificacao: string | undefined;
+    materialCotadoId: string | undefined;
+    materialCotado: MaterialCotadoEntity;
     fornecedorId: string;
     fornecedor: FornecedorEntity;
     solicitacaoMaterialId: string | undefined;
@@ -10627,6 +10735,8 @@ export class MaterialOrcadoEntity implements IMaterialOrcadoEntity {
             this.quantidade = _data["quantidade"];
             this.unidade = _data["unidade"];
             this.especificacao = _data["especificacao"];
+            this.materialCotadoId = _data["materialCotadoId"];
+            this.materialCotado = _data["materialCotado"] ? MaterialCotadoEntity.fromJS(_data["materialCotado"]) : <any>undefined;
             this.fornecedorId = _data["fornecedorId"];
             this.fornecedor = _data["fornecedor"] ? FornecedorEntity.fromJS(_data["fornecedor"]) : <any>undefined;
             this.solicitacaoMaterialId = _data["solicitacaoMaterialId"];
@@ -10660,6 +10770,8 @@ export class MaterialOrcadoEntity implements IMaterialOrcadoEntity {
         data["quantidade"] = this.quantidade;
         data["unidade"] = this.unidade;
         data["especificacao"] = this.especificacao;
+        data["materialCotadoId"] = this.materialCotadoId;
+        data["materialCotado"] = this.materialCotado ? this.materialCotado.toJSON() : <any>undefined;
         data["fornecedorId"] = this.fornecedorId;
         data["fornecedor"] = this.fornecedor ? this.fornecedor.toJSON() : <any>undefined;
         data["solicitacaoMaterialId"] = this.solicitacaoMaterialId;
@@ -10690,9 +10802,11 @@ export interface IMaterialOrcadoEntity {
     deleterUserId: number | undefined;
     deletionTime: moment.Moment | undefined;
     nome: string | undefined;
-    quantidade: string | undefined;
+    quantidade: number;
     unidade: string | undefined;
     especificacao: string | undefined;
+    materialCotadoId: string | undefined;
+    materialCotado: MaterialCotadoEntity;
     fornecedorId: string;
     fornecedor: FornecedorEntity;
     solicitacaoMaterialId: string | undefined;
@@ -10933,7 +11047,7 @@ export interface IMaterialPedidoCompraEntity {
 export class MaterialSolicitadoDto implements IMaterialSolicitadoDto {
     id: string;
     nome: string | undefined;
-    quantidade: string | undefined;
+    quantidade: number;
     justificativa: string | undefined;
     unidade: string | undefined;
     solicitacaoMaterialId: string;
@@ -10987,7 +11101,7 @@ export class MaterialSolicitadoDto implements IMaterialSolicitadoDto {
 export interface IMaterialSolicitadoDto {
     id: string;
     nome: string | undefined;
-    quantidade: string | undefined;
+    quantidade: number;
     justificativa: string | undefined;
     unidade: string | undefined;
     solicitacaoMaterialId: string;
@@ -11003,7 +11117,7 @@ export class MaterialSolicitadoEntity implements IMaterialSolicitadoEntity {
     deleterUserId: number | undefined;
     deletionTime: moment.Moment | undefined;
     nome: string | undefined;
-    quantidade: string | undefined;
+    quantidade: number;
     unidade: string | undefined;
     justificativa: string | undefined;
     solicitacaoMaterialId: string;
@@ -11087,7 +11201,7 @@ export interface IMaterialSolicitadoEntity {
     deleterUserId: number | undefined;
     deletionTime: moment.Moment | undefined;
     nome: string | undefined;
-    quantidade: string | undefined;
+    quantidade: number;
     unidade: string | undefined;
     justificativa: string | undefined;
     solicitacaoMaterialId: string;
@@ -12014,7 +12128,15 @@ export class OrcamentoDto implements IOrcamentoDto {
     fornecedorId: string | undefined;
     observacaoInterna: string | undefined;
     observacaoFornecedor: string | undefined;
+    valorFrete: number | undefined;
+    condicaoFrete: string | undefined;
+    valorDesconto: number | undefined;
+    condicaoDesconto: string | undefined;
+    enderecoEntregaId: string | undefined;
+    enderecoEntrega: EnderecoDto;
+    retiradaNoFornecedor: boolean;
     total: number | undefined;
+    status: OrcamentoStatus;
     materiaisOrcados: MaterialOrcadoDto[] | undefined;
 
     constructor(data?: IOrcamentoDto) {
@@ -12033,7 +12155,15 @@ export class OrcamentoDto implements IOrcamentoDto {
             this.fornecedorId = _data["fornecedorId"];
             this.observacaoInterna = _data["observacaoInterna"];
             this.observacaoFornecedor = _data["observacaoFornecedor"];
+            this.valorFrete = _data["valorFrete"];
+            this.condicaoFrete = _data["condicaoFrete"];
+            this.valorDesconto = _data["valorDesconto"];
+            this.condicaoDesconto = _data["condicaoDesconto"];
+            this.enderecoEntregaId = _data["enderecoEntregaId"];
+            this.enderecoEntrega = _data["enderecoEntrega"] ? EnderecoDto.fromJS(_data["enderecoEntrega"]) : <any>undefined;
+            this.retiradaNoFornecedor = _data["retiradaNoFornecedor"];
             this.total = _data["total"];
+            this.status = _data["status"];
             if (Array.isArray(_data["materiaisOrcados"])) {
                 this.materiaisOrcados = [] as any;
                 for (let item of _data["materiaisOrcados"])
@@ -12056,7 +12186,15 @@ export class OrcamentoDto implements IOrcamentoDto {
         data["fornecedorId"] = this.fornecedorId;
         data["observacaoInterna"] = this.observacaoInterna;
         data["observacaoFornecedor"] = this.observacaoFornecedor;
+        data["valorFrete"] = this.valorFrete;
+        data["condicaoFrete"] = this.condicaoFrete;
+        data["valorDesconto"] = this.valorDesconto;
+        data["condicaoDesconto"] = this.condicaoDesconto;
+        data["enderecoEntregaId"] = this.enderecoEntregaId;
+        data["enderecoEntrega"] = this.enderecoEntrega ? this.enderecoEntrega.toJSON() : <any>undefined;
+        data["retiradaNoFornecedor"] = this.retiradaNoFornecedor;
         data["total"] = this.total;
+        data["status"] = this.status;
         if (Array.isArray(this.materiaisOrcados)) {
             data["materiaisOrcados"] = [];
             for (let item of this.materiaisOrcados)
@@ -12079,7 +12217,15 @@ export interface IOrcamentoDto {
     fornecedorId: string | undefined;
     observacaoInterna: string | undefined;
     observacaoFornecedor: string | undefined;
+    valorFrete: number | undefined;
+    condicaoFrete: string | undefined;
+    valorDesconto: number | undefined;
+    condicaoDesconto: string | undefined;
+    enderecoEntregaId: string | undefined;
+    enderecoEntrega: EnderecoDto;
+    retiradaNoFornecedor: boolean;
     total: number | undefined;
+    status: OrcamentoStatus;
     materiaisOrcados: MaterialOrcadoDto[] | undefined;
 }
 
@@ -12100,8 +12246,15 @@ export class OrcamentoEntity implements IOrcamentoEntity {
     fornecedor: FornecedorEntity;
     obraId: string | undefined;
     obra: ObraEntity;
+    enderecoEntregaId: string | undefined;
+    enderecoEntrega: EnderecoEntity;
+    retiradaNoFornecedor: boolean;
     observacaoInterna: string | undefined;
     observacaoFornecedor: string | undefined;
+    valorFrete: number | undefined;
+    condicaoFrete: string | undefined;
+    valorDesconto: number | undefined;
+    condicaoDesconto: string | undefined;
     status: OrcamentoStatus;
     total: number | undefined;
     materiaisOrcados: MaterialOrcadoEntity[] | undefined;
@@ -12133,8 +12286,15 @@ export class OrcamentoEntity implements IOrcamentoEntity {
             this.fornecedor = _data["fornecedor"] ? FornecedorEntity.fromJS(_data["fornecedor"]) : <any>undefined;
             this.obraId = _data["obraId"];
             this.obra = _data["obra"] ? ObraEntity.fromJS(_data["obra"]) : <any>undefined;
+            this.enderecoEntregaId = _data["enderecoEntregaId"];
+            this.enderecoEntrega = _data["enderecoEntrega"] ? EnderecoEntity.fromJS(_data["enderecoEntrega"]) : <any>undefined;
+            this.retiradaNoFornecedor = _data["retiradaNoFornecedor"];
             this.observacaoInterna = _data["observacaoInterna"];
             this.observacaoFornecedor = _data["observacaoFornecedor"];
+            this.valorFrete = _data["valorFrete"];
+            this.condicaoFrete = _data["condicaoFrete"];
+            this.valorDesconto = _data["valorDesconto"];
+            this.condicaoDesconto = _data["condicaoDesconto"];
             this.status = _data["status"];
             this.total = _data["total"];
             if (Array.isArray(_data["materiaisOrcados"])) {
@@ -12170,8 +12330,15 @@ export class OrcamentoEntity implements IOrcamentoEntity {
         data["fornecedor"] = this.fornecedor ? this.fornecedor.toJSON() : <any>undefined;
         data["obraId"] = this.obraId;
         data["obra"] = this.obra ? this.obra.toJSON() : <any>undefined;
+        data["enderecoEntregaId"] = this.enderecoEntregaId;
+        data["enderecoEntrega"] = this.enderecoEntrega ? this.enderecoEntrega.toJSON() : <any>undefined;
+        data["retiradaNoFornecedor"] = this.retiradaNoFornecedor;
         data["observacaoInterna"] = this.observacaoInterna;
         data["observacaoFornecedor"] = this.observacaoFornecedor;
+        data["valorFrete"] = this.valorFrete;
+        data["condicaoFrete"] = this.condicaoFrete;
+        data["valorDesconto"] = this.valorDesconto;
+        data["condicaoDesconto"] = this.condicaoDesconto;
         data["status"] = this.status;
         data["total"] = this.total;
         if (Array.isArray(this.materiaisOrcados)) {
@@ -12207,18 +12374,25 @@ export interface IOrcamentoEntity {
     fornecedor: FornecedorEntity;
     obraId: string | undefined;
     obra: ObraEntity;
+    enderecoEntregaId: string | undefined;
+    enderecoEntrega: EnderecoEntity;
+    retiradaNoFornecedor: boolean;
     observacaoInterna: string | undefined;
     observacaoFornecedor: string | undefined;
+    valorFrete: number | undefined;
+    condicaoFrete: string | undefined;
+    valorDesconto: number | undefined;
+    condicaoDesconto: string | undefined;
     status: OrcamentoStatus;
     total: number | undefined;
     materiaisOrcados: MaterialOrcadoEntity[] | undefined;
 }
 
 export enum OrcamentoStatus {
-    Rascunho = "Rascunho",
     Aberto = "Aberto",
-    Finalizado = "Finalizado",
-    Cancelado = "Cancelado",
+    ParcialmenteUtilizado = "ParcialmenteUtilizado",
+    TotalmenteUtilizado = "TotalmenteUtilizado",
+    Descartado = "Descartado",
 }
 
 export class PagedSolicitacaoMaterialResultRequestDto implements IPagedSolicitacaoMaterialResultRequestDto {
@@ -12227,7 +12401,7 @@ export class PagedSolicitacaoMaterialResultRequestDto implements IPagedSolicitac
     keyword: string | undefined;
     obraId: string | undefined;
     encarregadoId: string | undefined;
-    status: string | undefined;
+    status: SolicitacaoMaterialStatusNullable | undefined;
 
     constructor(data?: IPagedSolicitacaoMaterialResultRequestDto) {
         if (data) {
@@ -12281,7 +12455,7 @@ export interface IPagedSolicitacaoMaterialResultRequestDto {
     keyword: string | undefined;
     obraId: string | undefined;
     encarregadoId: string | undefined;
-    status: string | undefined;
+    status: SolicitacaoMaterialStatusNullable | undefined;
 }
 
 export class PagedTarefaInternaResultRequestDto implements IPagedTarefaInternaResultRequestDto {
@@ -12417,12 +12591,17 @@ export class PedidoCompraDto implements IPedidoCompraDto {
     cotacaoId: string | undefined;
     obraId: string | undefined;
     obra: SimpleLookupDto;
-    enderecoEntregaId: string;
+    enderecoEntregaId: string | undefined;
     enderecoEntrega: EnderecoDto;
+    retiradaNoFornecedor: boolean;
     userId: number;
     user: SimpleLookupDto;
     observacaoInterna: string | undefined;
     observacaoFornecedor: string | undefined;
+    valorFrete: number | undefined;
+    condicaoFrete: string | undefined;
+    valorDesconto: number | undefined;
+    condicaoDesconto: string | undefined;
     status: PedidoCompraStatus;
     materiaisPedidosCompra: MaterialPedidoCompraDto[] | undefined;
     isMelhorCompra: boolean;
@@ -12446,10 +12625,15 @@ export class PedidoCompraDto implements IPedidoCompraDto {
             this.obra = _data["obra"] ? SimpleLookupDto.fromJS(_data["obra"]) : <any>undefined;
             this.enderecoEntregaId = _data["enderecoEntregaId"];
             this.enderecoEntrega = _data["enderecoEntrega"] ? EnderecoDto.fromJS(_data["enderecoEntrega"]) : <any>undefined;
+            this.retiradaNoFornecedor = _data["retiradaNoFornecedor"];
             this.userId = _data["userId"];
             this.user = _data["user"] ? SimpleLookupDto.fromJS(_data["user"]) : <any>undefined;
             this.observacaoInterna = _data["observacaoInterna"];
             this.observacaoFornecedor = _data["observacaoFornecedor"];
+            this.valorFrete = _data["valorFrete"];
+            this.condicaoFrete = _data["condicaoFrete"];
+            this.valorDesconto = _data["valorDesconto"];
+            this.condicaoDesconto = _data["condicaoDesconto"];
             this.status = _data["status"];
             if (Array.isArray(_data["materiaisPedidosCompra"])) {
                 this.materiaisPedidosCompra = [] as any;
@@ -12477,10 +12661,15 @@ export class PedidoCompraDto implements IPedidoCompraDto {
         data["obra"] = this.obra ? this.obra.toJSON() : <any>undefined;
         data["enderecoEntregaId"] = this.enderecoEntregaId;
         data["enderecoEntrega"] = this.enderecoEntrega ? this.enderecoEntrega.toJSON() : <any>undefined;
+        data["retiradaNoFornecedor"] = this.retiradaNoFornecedor;
         data["userId"] = this.userId;
         data["user"] = this.user ? this.user.toJSON() : <any>undefined;
         data["observacaoInterna"] = this.observacaoInterna;
         data["observacaoFornecedor"] = this.observacaoFornecedor;
+        data["valorFrete"] = this.valorFrete;
+        data["condicaoFrete"] = this.condicaoFrete;
+        data["valorDesconto"] = this.valorDesconto;
+        data["condicaoDesconto"] = this.condicaoDesconto;
         data["status"] = this.status;
         if (Array.isArray(this.materiaisPedidosCompra)) {
             data["materiaisPedidosCompra"] = [];
@@ -12506,12 +12695,17 @@ export interface IPedidoCompraDto {
     cotacaoId: string | undefined;
     obraId: string | undefined;
     obra: SimpleLookupDto;
-    enderecoEntregaId: string;
+    enderecoEntregaId: string | undefined;
     enderecoEntrega: EnderecoDto;
+    retiradaNoFornecedor: boolean;
     userId: number;
     user: SimpleLookupDto;
     observacaoInterna: string | undefined;
     observacaoFornecedor: string | undefined;
+    valorFrete: number | undefined;
+    condicaoFrete: string | undefined;
+    valorDesconto: number | undefined;
+    condicaoDesconto: string | undefined;
     status: PedidoCompraStatus;
     materiaisPedidosCompra: MaterialPedidoCompraDto[] | undefined;
     isMelhorCompra: boolean;
@@ -12535,12 +12729,17 @@ export class PedidoCompraEntity implements IPedidoCompraEntity {
     orcamento: OrcamentoEntity;
     obraId: string | undefined;
     obra: ObraEntity;
-    enderecoEntregaId: string;
+    enderecoEntregaId: string | undefined;
     enderecoEntrega: EnderecoEntity;
+    retiradaNoFornecedor: boolean;
     userId: number;
     user: User;
     observacaoInterna: string | undefined;
     observacaoFornecedor: string | undefined;
+    valorFrete: number | undefined;
+    condicaoFrete: string | undefined;
+    valorDesconto: number | undefined;
+    condicaoDesconto: string | undefined;
     status: PedidoCompraStatus;
     materiaisPedidosCompra: MaterialPedidoCompraEntity[] | undefined;
     melhorCompraId: string | undefined;
@@ -12577,10 +12776,15 @@ export class PedidoCompraEntity implements IPedidoCompraEntity {
             this.obra = _data["obra"] ? ObraEntity.fromJS(_data["obra"]) : <any>undefined;
             this.enderecoEntregaId = _data["enderecoEntregaId"];
             this.enderecoEntrega = _data["enderecoEntrega"] ? EnderecoEntity.fromJS(_data["enderecoEntrega"]) : <any>undefined;
+            this.retiradaNoFornecedor = _data["retiradaNoFornecedor"];
             this.userId = _data["userId"];
             this.user = _data["user"] ? User.fromJS(_data["user"]) : <any>undefined;
             this.observacaoInterna = _data["observacaoInterna"];
             this.observacaoFornecedor = _data["observacaoFornecedor"];
+            this.valorFrete = _data["valorFrete"];
+            this.condicaoFrete = _data["condicaoFrete"];
+            this.valorDesconto = _data["valorDesconto"];
+            this.condicaoDesconto = _data["condicaoDesconto"];
             this.status = _data["status"];
             if (Array.isArray(_data["materiaisPedidosCompra"])) {
                 this.materiaisPedidosCompra = [] as any;
@@ -12621,10 +12825,15 @@ export class PedidoCompraEntity implements IPedidoCompraEntity {
         data["obra"] = this.obra ? this.obra.toJSON() : <any>undefined;
         data["enderecoEntregaId"] = this.enderecoEntregaId;
         data["enderecoEntrega"] = this.enderecoEntrega ? this.enderecoEntrega.toJSON() : <any>undefined;
+        data["retiradaNoFornecedor"] = this.retiradaNoFornecedor;
         data["userId"] = this.userId;
         data["user"] = this.user ? this.user.toJSON() : <any>undefined;
         data["observacaoInterna"] = this.observacaoInterna;
         data["observacaoFornecedor"] = this.observacaoFornecedor;
+        data["valorFrete"] = this.valorFrete;
+        data["condicaoFrete"] = this.condicaoFrete;
+        data["valorDesconto"] = this.valorDesconto;
+        data["condicaoDesconto"] = this.condicaoDesconto;
         data["status"] = this.status;
         if (Array.isArray(this.materiaisPedidosCompra)) {
             data["materiaisPedidosCompra"] = [];
@@ -12663,12 +12872,17 @@ export interface IPedidoCompraEntity {
     orcamento: OrcamentoEntity;
     obraId: string | undefined;
     obra: ObraEntity;
-    enderecoEntregaId: string;
+    enderecoEntregaId: string | undefined;
     enderecoEntrega: EnderecoEntity;
+    retiradaNoFornecedor: boolean;
     userId: number;
     user: User;
     observacaoInterna: string | undefined;
     observacaoFornecedor: string | undefined;
+    valorFrete: number | undefined;
+    condicaoFrete: string | undefined;
+    valorDesconto: number | undefined;
+    condicaoDesconto: string | undefined;
     status: PedidoCompraStatus;
     materiaisPedidosCompra: MaterialPedidoCompraEntity[] | undefined;
     melhorCompraId: string | undefined;
@@ -14124,6 +14338,7 @@ export class SolicitacaoMaterialDto implements ISolicitacaoMaterialDto {
     descricao: string | undefined;
     resolucao: string | undefined;
     status: SolicitacaoMaterialStatus;
+    readonly statusString: string | undefined;
     obra: ObraDto;
     encarregado: EncarregadoDto;
     obraId: string | undefined;
@@ -14148,6 +14363,7 @@ export class SolicitacaoMaterialDto implements ISolicitacaoMaterialDto {
             this.descricao = _data["descricao"];
             this.resolucao = _data["resolucao"];
             this.status = _data["status"];
+            (<any>this).statusString = _data["statusString"];
             this.obra = _data["obra"] ? ObraDto.fromJS(_data["obra"]) : <any>undefined;
             this.encarregado = _data["encarregado"] ? EncarregadoDto.fromJS(_data["encarregado"]) : <any>undefined;
             this.obraId = _data["obraId"];
@@ -14180,6 +14396,7 @@ export class SolicitacaoMaterialDto implements ISolicitacaoMaterialDto {
         data["descricao"] = this.descricao;
         data["resolucao"] = this.resolucao;
         data["status"] = this.status;
+        data["statusString"] = this.statusString;
         data["obra"] = this.obra ? this.obra.toJSON() : <any>undefined;
         data["encarregado"] = this.encarregado ? this.encarregado.toJSON() : <any>undefined;
         data["obraId"] = this.obraId;
@@ -14212,6 +14429,7 @@ export interface ISolicitacaoMaterialDto {
     descricao: string | undefined;
     resolucao: string | undefined;
     status: SolicitacaoMaterialStatus;
+    statusString: string | undefined;
     obra: ObraDto;
     encarregado: EncarregadoDto;
     obraId: string | undefined;
@@ -14289,6 +14507,7 @@ export class SolicitacaoMaterialEntity implements ISolicitacaoMaterialEntity {
     descricao: string | undefined;
     resolucao: string | undefined;
     status: SolicitacaoMaterialStatus;
+    readonly statusString: string | undefined;
     obraId: string | undefined;
     obra: ObraEntity;
     encarregadoId: string | undefined;
@@ -14321,6 +14540,7 @@ export class SolicitacaoMaterialEntity implements ISolicitacaoMaterialEntity {
             this.descricao = _data["descricao"];
             this.resolucao = _data["resolucao"];
             this.status = _data["status"];
+            (<any>this).statusString = _data["statusString"];
             this.obraId = _data["obraId"];
             this.obra = _data["obra"] ? ObraEntity.fromJS(_data["obra"]) : <any>undefined;
             this.encarregadoId = _data["encarregadoId"];
@@ -14361,6 +14581,7 @@ export class SolicitacaoMaterialEntity implements ISolicitacaoMaterialEntity {
         data["descricao"] = this.descricao;
         data["resolucao"] = this.resolucao;
         data["status"] = this.status;
+        data["statusString"] = this.statusString;
         data["obraId"] = this.obraId;
         data["obra"] = this.obra ? this.obra.toJSON() : <any>undefined;
         data["encarregadoId"] = this.encarregadoId;
@@ -14401,6 +14622,7 @@ export interface ISolicitacaoMaterialEntity {
     descricao: string | undefined;
     resolucao: string | undefined;
     status: SolicitacaoMaterialStatus;
+    statusString: string | undefined;
     obraId: string | undefined;
     obra: ObraEntity;
     encarregadoId: string | undefined;
@@ -14412,10 +14634,27 @@ export interface ISolicitacaoMaterialEntity {
 }
 
 export enum SolicitacaoMaterialStatus {
-    ABERTA = "ABERTA",
-    COTACAO_REALIZADA = "COTACAO_REALIZADA",
-    EM_CCOMPRA = "EM_CCOMPRA",
-    CONCLUIDA = "CONCLUIDA",
+    _0 = 0,
+    _1 = 1,
+    _2 = 2,
+    _3 = 3,
+    _4 = 4,
+    _5 = 5,
+    _6 = 6,
+    _7 = 7,
+    _8 = 8,
+}
+
+export enum SolicitacaoMaterialStatusNullable {
+    _0 = 0,
+    _1 = 1,
+    _2 = 2,
+    _3 = 3,
+    _4 = 4,
+    _5 = 5,
+    _6 = 6,
+    _7 = 7,
+    _8 = 8,
 }
 
 export class SolicitacaoPorObraDashboard implements ISolicitacaoPorObraDashboard {
@@ -15490,7 +15729,7 @@ export interface IUpdateMaterialCotadoDto {
 export class UpdateMaterialSolicitadoDto implements IUpdateMaterialSolicitadoDto {
     id: string;
     nome: string | undefined;
-    quantidade: string | undefined;
+    quantidade: number;
     justificativa: string | undefined;
     unidade: string | undefined;
     solicitacaoMaterialId: string;
@@ -15544,7 +15783,7 @@ export class UpdateMaterialSolicitadoDto implements IUpdateMaterialSolicitadoDto
 export interface IUpdateMaterialSolicitadoDto {
     id: string;
     nome: string | undefined;
-    quantidade: string | undefined;
+    quantidade: number;
     justificativa: string | undefined;
     unidade: string | undefined;
     solicitacaoMaterialId: string;
@@ -15743,7 +15982,6 @@ export class UpdateSolicitacaoMaterialDto implements IUpdateSolicitacaoMaterialD
     encarregadoId: string | undefined;
     encarregado: EncarregadoDto;
     materiaisSolicitados: UpdateMaterialSolicitadoDto[] | undefined;
-    cotacoes: CotacaoDto[] | undefined;
 
     constructor(data?: IUpdateSolicitacaoMaterialDto) {
         if (data) {
@@ -15769,11 +16007,6 @@ export class UpdateSolicitacaoMaterialDto implements IUpdateSolicitacaoMaterialD
                 this.materiaisSolicitados = [] as any;
                 for (let item of _data["materiaisSolicitados"])
                     this.materiaisSolicitados.push(UpdateMaterialSolicitadoDto.fromJS(item));
-            }
-            if (Array.isArray(_data["cotacoes"])) {
-                this.cotacoes = [] as any;
-                for (let item of _data["cotacoes"])
-                    this.cotacoes.push(CotacaoDto.fromJS(item));
             }
         }
     }
@@ -15801,11 +16034,6 @@ export class UpdateSolicitacaoMaterialDto implements IUpdateSolicitacaoMaterialD
             for (let item of this.materiaisSolicitados)
                 data["materiaisSolicitados"].push(item.toJSON());
         }
-        if (Array.isArray(this.cotacoes)) {
-            data["cotacoes"] = [];
-            for (let item of this.cotacoes)
-                data["cotacoes"].push(item.toJSON());
-        }
         return data;
     }
 
@@ -15828,7 +16056,6 @@ export interface IUpdateSolicitacaoMaterialDto {
     encarregadoId: string | undefined;
     encarregado: EncarregadoDto;
     materiaisSolicitados: UpdateMaterialSolicitadoDto[] | undefined;
-    cotacoes: CotacaoDto[] | undefined;
 }
 
 export class UpdateTarefaDto implements IUpdateTarefaDto {

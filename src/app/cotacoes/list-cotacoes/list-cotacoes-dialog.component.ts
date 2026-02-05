@@ -10,30 +10,24 @@ import { CommonModule, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 import { BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
-import {
-    BsDropdownDirective,
-    BsDropdownToggleDirective,
-    BsDropdownMenuDirective
-} from 'ngx-bootstrap/dropdown';
-
 import { TableModule } from 'primeng/table';
 import { PaginatorModule } from 'primeng/paginator';
-import { PrimeTemplate } from 'primeng/api';
-
-import { LocalizePipe } from '@shared/pipes/localize.pipe';
 
 import {
     CompraServiceProxy,
-    CotacaoComOrcamentoDto,
     CotacaoServiceProxy,
     CreateMaterialPedidoCompraDto,
     CreateMelhorCompraDto,
     CreatePedidoCompraDto,
     IntervencaoCompraDto,
     IntervencaoCompraServiceProxy,
+    MaterialCotadoDto,
     MaterialOrcadoDto,
     MelhorCompraStatus,
-    PedidoCompraServiceProxy
+    OrcamentoDto,
+    PedidoCompraServiceProxy,
+    SimpleLookupDto,
+    SimpleLookupWithAdressDto
 } from '../../../shared/service-proxies/service-proxies';
 
 import { CreateCotacaoDialogComponent } from '../create-cotacao/create-cotacao-dialog.component';
@@ -47,8 +41,84 @@ import {
 import { SelecionarEnderecoDialogComponent } from './selecionar-endereco-dialog/selecionar-endereco-dialog.component';
 import { forkJoin } from 'rxjs';
 
+const MENOR_VALOR_TIPO = 'MENOR_VALOR_POR_ITEM';
 
-const MELHOR_COMPRA_ID = 'melhor-compra';
+
+interface CotacaoComOrcamentoViewModel {
+    id: string;
+    solicitacaoMaterialId?: string;
+    obraId?: string;
+    obra?: SimpleLookupWithAdressDto;
+    fornecedor?: SimpleLookupDto;
+    orcamento?: OrcamentoDto;
+    hasOrcamento: boolean;
+    total?: number;
+    displayStatus?: string;
+    observacaoInterna?: string;
+    observacaoFornecedor?: string;
+    materiaisCotados: MaterialCotadoDto[];
+    statusView?: string;
+
+    materiaisAgrupados?: MaterialVMGrupo[];
+}
+
+
+interface FluxoCompraBaseViewModel {
+    id: string;
+    tipo: 'COTACAO' | 'MENOR_VALOR_POR_ITEM';
+
+    materiaisAgrupados: MaterialVMGrupo[];
+
+    enderecoEntrega?: {
+        id?: string;
+        formatado: string;
+        origem: 'PEDIDO' | 'COMPRA';
+    };
+
+    usuarioPedido?: string;
+    compraEfetivada?: InfoCompraFornecedor;
+    displayStatus: string;
+}
+
+interface CotacaoFluxoViewModel extends FluxoCompraBaseViewModel {
+    tipo: 'COTACAO';
+
+    id: string;
+    solicitacaoMaterialId?: string;
+    obraId?: string;
+    obra?: SimpleLookupWithAdressDto;
+    fornecedor?: SimpleLookupDto;
+    orcamento?: OrcamentoDto;
+    hasOrcamento: boolean;
+    total?: number;
+    observacaoInterna?: string;
+    observacaoFornecedor?: string;
+    materiaisCotados: MaterialCotadoDto[]
+    statusView?: string;
+}
+
+
+interface MenorValorPorItemViewModel
+    extends FluxoCompraBaseViewModel {
+
+    tipo: 'MENOR_VALOR_POR_ITEM';
+    id: 'menor-valor-por-item';
+
+    obraId?: string;
+    obra?: SimpleLookupWithAdressDto;
+    solicitacaoMaterialId?: string;
+
+    resumoFrete: {
+        possuiFretePorItem: boolean;
+        fornecedoresComFrete: string[];
+    };
+}
+
+type FluxoCompraViewModel =
+    | CotacaoFluxoViewModel
+    | MenorValorPorItemViewModel;
+
+
 
 type MaterialVMExtended = {
     fornecedorNome?: string;
@@ -61,10 +131,16 @@ type MaterialVMExtended = {
     precoItem?: number | undefined;
     precoTotal?: number | undefined;
     emFalta: boolean;
-    quantidade?: string | undefined;
+    quantidade?: number | undefined;
     unidade?: string | undefined;
     especificacao?: string | undefined;
     fornecedorId?: string | undefined;
+    observacaoInternaOrcamentoOrigem?: string | undefined;
+    observacaoFornecedorOrcamentoOrigem?: string | undefined;
+    valorFreteOrcamentoOrigem?: number | undefined;
+    condicaoFreteOrcamentoOrigem?: string | undefined;
+    valorDescontoOrcamentoOrigem?: number | undefined;
+    condicaoDescontoOrcamentoOrigem?: string | undefined;
 };
 
 interface MaterialVMGrupo {
@@ -83,24 +159,6 @@ interface MaterialVMGrupo {
     opcaoSelecionada?: string;
 }
 
-type CotacaoComOrcamentoViewModel = CotacaoComOrcamentoDto & {
-    materiaisAgrupados?: MaterialVMGrupo[];
-};
-
-type FluxoCompraViewModel = {
-    id?: string;
-    materiaisAgrupados?: MaterialVMGrupo[];
-    enderecoEntrega?: {
-        id?: string;
-        formatado: string;
-        origem: 'PEDIDO' | 'COMPRA';
-    };
-    usuarioPedido?: string;
-
-    compraEfetivada?: InfoCompraFornecedor;
-};
-
-
 type InfoCompraFornecedor = {
     fornecedorNome: string;
     prazoEntrega?: string;
@@ -118,11 +176,6 @@ type InfoCompraFornecedor = {
         FormsModule,
         TableModule,
         PaginatorModule,
-        PrimeTemplate,
-        LocalizePipe,
-        BsDropdownDirective,
-        BsDropdownToggleDirective,
-        BsDropdownMenuDirective
     ],
     animations: [
         trigger('expandCollapse', [
@@ -150,7 +203,7 @@ export class CotacoesListDialogComponent implements OnInit {
     savingCompra = false;
     pedidoOrigemId: string | null = null;
     existePedido: boolean = false;
-    melhorCompraAgrupada: {
+    menorValorPorItemAgrupada: {
         fornecedor: string;
         grupos: MaterialVMGrupo[];
     }[] = [];
@@ -194,9 +247,9 @@ export class CotacoesListDialogComponent implements OnInit {
             ).length > 1;
 
             if (temMaisDeUm) {
-                const melhor = this.buildMelhorCompraCotacao(list);
+                const menoresValoresPorItens = this.buildMenorValorPorItem(list);
 
-                const totalMelhor = this.getTotal(melhor);
+                const totalMelhor = this.getTotal(menoresValoresPorItens);
                 const totaisIndividuais = list.map(c => this.getTotal(c));
                 const menorIndividual = Math.min(...totaisIndividuais);
 
@@ -204,21 +257,32 @@ export class CotacoesListDialogComponent implements OnInit {
                     this.naoCompensaMelhorCompra = true;
                 }
 
-                this.fluxoCompraVM = [...list, melhor];
+                const cotacoesFluxo = this.mapToCotacaoFluxo(list);
+
+                this.fluxoCompraVM = [
+                    ...cotacoesFluxo,
+                    menoresValoresPorItens
+                ];
                 this.expanded = new Array(this.fluxoCompraVM.length).fill(false);
+
             } else {
-                this.fluxoCompraVM = list;
+                this.fluxoCompraVM = this.mapToCotacaoFluxo(list);
                 this.expanded = new Array(this.fluxoCompraVM.length).fill(false);
             }
 
             this.conciliarPedidosECompras(this.fluxoCompraVM, pedidos, compras);
             this.aplicarIntervencoes(this.fluxoCompraVM, intervencoesCompras);
 
-            const melhorCompra = this.fluxoCompraVM.find(c => c.id === MELHOR_COMPRA_ID);
+            const menorValorPorItem = this.fluxoCompraVM.find(
+                (c): c is MenorValorPorItemViewModel =>
+                    c.tipo === 'MENOR_VALOR_POR_ITEM'
+            );
 
-            if (melhorCompra) {
-                this.melhorCompraAgrupada = this.buildGruposPorFornecedor(melhorCompra);
+            if (menorValorPorItem) {
+                this.menorValorPorItemAgrupada =
+                    this.buildGruposPorFornecedor(menorValorPorItem);
             }
+
 
 
             this.loading = false;
@@ -226,18 +290,42 @@ export class CotacoesListDialogComponent implements OnInit {
         });
     }
 
+    private mapToCotacaoFluxo(
+        cotacoes: CotacaoComOrcamentoViewModel[]
+    ): CotacaoFluxoViewModel[] {
+
+        return cotacoes.map(c => ({
+            tipo: 'COTACAO',
+
+            id: c.id,
+            solicitacaoMaterialId: c.solicitacaoMaterialId,
+            obraId: c.obraId,
+            obra: c.obra,
+            fornecedor: c.fornecedor,
+            orcamento: c.orcamento,
+            hasOrcamento: c.hasOrcamento,
+            total: c.total,
+            observacaoInterna: c.observacaoInterna,
+            observacaoFornecedor: c.observacaoFornecedor,
+            materiaisCotados: c.materiaisCotados,
+            statusView: c.statusView,
+
+            displayStatus: c.displayStatus ?? 'Cotação',
+            materiaisAgrupados: c.materiaisAgrupados ?? []
+        }));
+    }
+
     private conciliarPedidosECompras(
-        cotacoes: FluxoCompraViewModel[],
+        fluxos: FluxoCompraViewModel[],
         pedidos: any[],
         compras: any[]
     ): void {
 
-        if (!cotacoes?.length) return;
+        if (!fluxos?.length) return;
 
         const materiaisPedidos = new Set<string>();
         const materiaisComprados = new Set<string>();
 
-        // 🔹 pedidos
         (pedidos || []).forEach(pedido => {
             (pedido.materiaisPedidosCompra || []).forEach((mat: any) => {
                 if (mat.materialOrcadoId) {
@@ -246,7 +334,6 @@ export class CotacoesListDialogComponent implements OnInit {
             });
         });
 
-        // 🔹 compras
         (compras || []).forEach(compra => {
             (compra.materiaisComprados || []).forEach((mat: any) => {
                 if (mat.materialOrcadoId) {
@@ -255,15 +342,15 @@ export class CotacoesListDialogComponent implements OnInit {
             });
         });
 
-        cotacoes.forEach(cotacao => {
+        fluxos.forEach(fluxo => {
 
             // ==========================
             // STATUS DOS MATERIAIS
             // ==========================
             let jaComprado = false;
 
-            if (cotacao.materiaisAgrupados?.length) {
-                cotacao.materiaisAgrupados.forEach(grupo => {
+            if (fluxo.materiaisAgrupados?.length) {
+                fluxo.materiaisAgrupados.forEach(grupo => {
 
                     let foiPedido = false;
                     let foiComprado = false;
@@ -282,19 +369,19 @@ export class CotacoesListDialogComponent implements OnInit {
                     if (grupo.jaComprado) {
                         grupo.removido = false;
                         grupo.selected = grupo.selected ?? grupo.variacoes[0];
-                        if (cotacao.id === MELHOR_COMPRA_ID) {
+                        if (fluxo.tipo === MENOR_VALOR_TIPO) {
                             grupo.prazoEntrega = compras.find(c => c.cotacaoId === grupo.selected?.cotacaoId)?.prazoEntrega;
                             grupo.observacao = compras.find(c => c.cotacaoId === grupo.selected?.cotacaoId)?.observacao;
                         }
                     }
                 });
-                if (cotacao.id !== MELHOR_COMPRA_ID && jaComprado) {
+                if (fluxo.tipo !== MENOR_VALOR_TIPO && jaComprado) {
                     let infos = {
-                        fornecedorNome: compras.find(c => c.cotacaoId === cotacao.id)?.fornecedorNome,
-                        prazoEntrega: compras.find(c => c.cotacaoId === cotacao.id)?.prazoEntrega,
-                        observacao: compras.find(c => c.cotacaoId === cotacao.id)?.observacao,
+                        fornecedorNome: compras.find(c => c.cotacaoId === fluxo.id)?.fornecedorNome,
+                        prazoEntrega: compras.find(c => c.cotacaoId === fluxo.id)?.prazoEntrega,
+                        observacao: compras.find(c => c.cotacaoId === fluxo.id)?.observacao,
                     };
-                    cotacao.compraEfetivada = infos;
+                    fluxo.compraEfetivada = infos;
                 }
             }
 
@@ -304,11 +391,11 @@ export class CotacoesListDialogComponent implements OnInit {
 
             // 🔥 COMPRA
             const compra = (compras || []).find(c =>
-                c.cotacaoId === cotacao.id
+                c.cotacaoId === fluxo.id
             );
 
             if (compra?.enderecoEntrega) {
-                cotacao.enderecoEntrega = {
+                fluxo.enderecoEntrega = {
                     id: compra.enderecoEntrega.id,
                     formatado: this.formatarEndereco(compra.enderecoEntrega),
                     origem: 'COMPRA'
@@ -318,17 +405,17 @@ export class CotacoesListDialogComponent implements OnInit {
 
             // 🔹 PEDIDO
             const pedido = (pedidos || []).find(p =>
-                cotacao.id === MELHOR_COMPRA_ID
+                fluxo.tipo === MENOR_VALOR_TIPO
                     ? p.isMelhorCompra
-                    : p.cotacaoId === cotacao.id
+                    : p.cotacaoId === fluxo.id
             );
 
             if (pedido?.user?.nome) {
-                cotacao.usuarioPedido = pedido.user.nome;
+                fluxo.usuarioPedido = pedido.user.nome;
             }
 
             if (pedido?.enderecoEntrega) {
-                cotacao.enderecoEntrega = {
+                fluxo.enderecoEntrega = {
                     id: pedido.enderecoEntrega.id,
                     formatado: this.formatarEndereco(pedido.enderecoEntrega),
                     origem: 'PEDIDO'
@@ -342,11 +429,11 @@ export class CotacoesListDialogComponent implements OnInit {
         this.pedidoOrigemId = null;
         this.existePedido = false;
 
-        const pedidoMelhorCompra = (pedidos || []).find(p => p.isMelhorCompra);
+        const pedidoMenorValorItem = (pedidos || []).find(p => p.isMelhorCompra);
 
-        if (pedidoMelhorCompra) {
+        if (pedidoMenorValorItem) {
             this.existePedido = true;
-            this.pedidoOrigemId = MELHOR_COMPRA_ID;
+            this.pedidoOrigemId = MENOR_VALOR_TIPO;
             return;
         }
 
@@ -387,6 +474,17 @@ export class CotacoesListDialogComponent implements OnInit {
                 ${endereco.cidade} - ${endereco.uf}, CEP: ${endereco.cep}`;
     }
 
+    canExpand(fluxo: FluxoCompraViewModel): boolean {
+        if (this.isCardDesabilitado(fluxo)) return false;
+
+        if (fluxo.tipo === MENOR_VALOR_TIPO && this.naoCompensaMelhorCompra) {
+            return false;
+        }
+
+        return true;
+    }
+
+
     isCardDesabilitado(cotacao: FluxoCompraViewModel): boolean {
         if (!this.existePedido) return false;
 
@@ -402,7 +500,7 @@ export class CotacoesListDialogComponent implements OnInit {
         const grupos: Record<string, MaterialVMGrupo> = {};
 
         for (const mat of orcamento.materiaisOrcados) {
-            const key = (mat.nome || '').trim();
+            const key = mat.materialCotadoId ?? (mat.nome || '').trim();
 
             if (!grupos[key]) {
                 grupos[key] = {
@@ -415,7 +513,12 @@ export class CotacoesListDialogComponent implements OnInit {
             const v = Object.assign(new MaterialOrcadoDto(), mat) as MaterialVMExtended;
             v.fornecedorNome = cotacao.fornecedor?.nome;
             v.cotacaoId = cotacao.id;
-
+            v.valorDescontoOrcamentoOrigem = orcamento.valorDesconto;
+            v.condicaoDescontoOrcamentoOrigem = orcamento.condicaoDesconto;
+            v.valorFreteOrcamentoOrigem = orcamento.valorFrete;
+            v.condicaoFreteOrcamentoOrigem = orcamento.condicaoFrete;
+            v.observacaoInternaOrcamentoOrigem = cotacao.observacaoInterna;
+            v.observacaoFornecedorOrcamentoOrigem = cotacao.observacaoFornecedor;
             grupos[key].variacoes.push(v);
         }
 
@@ -460,16 +563,25 @@ export class CotacoesListDialogComponent implements OnInit {
             map(([fornecedor, grupos]) => ({ fornecedor, grupos })).sort((a, b) => b.grupos.length - a.grupos.length);
     }
 
-    buildMelhorCompraCotacao(cotacoesComOrcamentos: CotacaoComOrcamentoViewModel[]): CotacaoComOrcamentoViewModel {
+    buildMenorValorPorItem(
+        cotacoes: CotacaoComOrcamentoViewModel[]
+    ): MenorValorPorItemViewModel {
+
         const todasVariacoes: MaterialVMExtended[] = [];
 
-        for (const c_o of cotacoesComOrcamentos) {
-            if (!c_o.hasOrcamento || !c_o.orcamento?.materiaisOrcados) continue;
+        for (const c of cotacoes) {
+            if (!c.hasOrcamento || !c.orcamento?.materiaisOrcados) continue;
 
-            for (const mat of c_o.orcamento.materiaisOrcados) {
-                const v = Object.assign(new MaterialOrcadoDto(), mat) as MaterialVMExtended;
-                v.fornecedorNome = c_o.fornecedor?.nome;
-                v.cotacaoId = c_o.id;
+            for (const mat of c.orcamento.materiaisOrcados) {
+                const v = mat as MaterialVMExtended;
+                v.fornecedorNome = c.fornecedor?.nome;
+                v.cotacaoId = c.id;
+                v.valorDescontoOrcamentoOrigem = c.orcamento?.valorDesconto;
+                v.condicaoDescontoOrcamentoOrigem = c.orcamento?.condicaoDesconto;
+                v.valorFreteOrcamentoOrigem = c.orcamento?.valorFrete;
+                v.condicaoFreteOrcamentoOrigem = c.orcamento?.condicaoFrete;
+                v.observacaoInternaOrcamentoOrigem = c.observacaoInterna;
+                v.observacaoFornecedorOrcamentoOrigem = c.observacaoFornecedor;
                 todasVariacoes.push(v);
             }
         }
@@ -481,7 +593,7 @@ export class CotacoesListDialogComponent implements OnInit {
 
             if (!gruposMap[key]) {
                 gruposMap[key] = {
-                    nome: v.nome ?? key,
+                    nome: key,
                     variacoes: [],
                     selected: null
                 };
@@ -494,41 +606,30 @@ export class CotacoesListDialogComponent implements OnInit {
             g.variacoes.sort(
                 (a, b) => (a.precoTotal ?? Number.MAX_VALUE) - (b.precoTotal ?? Number.MAX_VALUE)
             );
-            const notMissing = g.variacoes.find(x => !x.emFalta);
-            g.selected = notMissing ?? g.variacoes[0] ?? null;
+
+            const disponivel = g.variacoes.find(v => !v.emFalta);
+            g.selected = disponivel ?? g.variacoes[0] ?? null;
         });
 
-        const melhorBase = Object.assign(new CotacaoComOrcamentoDto(), {
-            id: MELHOR_COMPRA_ID,
-            solicitacaoMaterialId: cotacoesComOrcamentos[0]?.solicitacaoMaterialId,
-            solicitacaoMaterial: cotacoesComOrcamentos[0]?.solicitacaoMaterial,
-            fornecedorId: undefined,
-            fornecedor: ({ id: MELHOR_COMPRA_ID, displayName: 'Melhor compra', nome: 'Melhor compra' } as any),
-            obraId: cotacoesComOrcamentos[0]?.obraId,
-            obra: cotacoesComOrcamentos[0]?.obra,
-            observacaoInterna: undefined,
-            observacaoFornecedor: undefined,
-            status: null as any,
-            statusView: undefined,
-            materiaisCotados: undefined,
-            total: undefined,
-            hasOrcamento: true,
-            displayStatus: 'Melhor compra',
-            orcamento: Object.assign(new (Object as any)(), {
-                id: MELHOR_COMPRA_ID,
-                cotacaoId: MELHOR_COMPRA_ID,
-                fornecedorId: undefined,
-                observacaoInterna: undefined,
-                observacaoFornecedor: undefined,
-                total: undefined,
-                materiaisOrcados: undefined
-            })
-        }) as CotacaoComOrcamentoViewModel;
+        return {
+            id: 'menor-valor-por-item',
+            tipo: 'MENOR_VALOR_POR_ITEM',
 
-        melhorBase.materiaisAgrupados = Object.values(gruposMap);
+            obraId: cotacoes[0]?.obraId,
+            obra: cotacoes[0]?.obra,
+            solicitacaoMaterialId: cotacoes[0]?.solicitacaoMaterialId,
 
-        return melhorBase;
+            materiaisAgrupados: Object.values(gruposMap),
+
+            resumoFrete: {
+                possuiFretePorItem: false,
+                fornecedoresComFrete: []
+            },
+
+            displayStatus: 'Menor valor por Item',
+        };
     }
+
 
     trackByFornecedor(index: number, item: any): string {
         return item.fornecedor;
@@ -538,25 +639,25 @@ export class CotacoesListDialogComponent implements OnInit {
         return grupo.nome;
     }
 
-    getTotal(cotacao: any): number {
-        if (!cotacao.hasOrcamento) return cotacao.total ?? 0;
+    getTotal(fluxo: any): number {
+        if (fluxo.tipo !== MENOR_VALOR_TIPO && !fluxo.hasOrcamento) return fluxo.total ?? 0;
 
-        return (cotacao.materiaisAgrupados || [])
+        return (fluxo.materiaisAgrupados || [])
             .filter((g: any) => !g.removido)
             .map((g: any) => g.selected?.precoTotal ?? 0)
             .reduce((a: number, b: number) => a + b, 0);
     }
 
-    getTotalGasto(cotacao: FluxoCompraViewModel): number {
-        return (cotacao.materiaisAgrupados || [])
+    getTotalGasto(fluxo: FluxoCompraViewModel): number {
+        return (fluxo.materiaisAgrupados || [])
             .filter(g => g.jaComprado)
             .map(g => g.selected?.precoTotal ?? 0)
             .reduce((a, b) => a + b, 0);
     }
 
-    getTotalRestante(cotacao: FluxoCompraViewModel): number {
-        const total = this.getTotal(cotacao);
-        const gasto = this.getTotalGasto(cotacao);
+    getTotalRestante(fluxo: FluxoCompraViewModel): number {
+        const total = this.getTotal(fluxo);
+        const gasto = this.getTotalGasto(fluxo);
         return total - gasto;
     }
 
@@ -566,7 +667,7 @@ export class CotacoesListDialogComponent implements OnInit {
     } {
 
         const grupos = fluxo.materiaisAgrupados || [];
-        const isMelhorCompra = fluxo.id === MELHOR_COMPRA_ID;
+        const isMenorValorItem = fluxo.tipo === MENOR_VALOR_TIPO;
 
         if (!grupos.length) {
             return { texto: 'Sem materiais', classe: 'text-muted' };
@@ -576,7 +677,14 @@ export class CotacoesListDialogComponent implements OnInit {
         const comprados = grupos.filter(g => g.jaComprado).length;
         const pedidos = grupos.filter(g => g.feitoPedido).length;
 
-        if (isMelhorCompra) {
+        if (isMenorValorItem) {
+
+            if (this.naoCompensaMelhorCompra) {
+                return {
+                    texto: ' — Um dos fornecedores já possui o menor valor.',
+                    classe: 'text-muted'
+                };
+            }
 
             if (comprados === total) {
                 return {
@@ -594,7 +702,7 @@ export class CotacoesListDialogComponent implements OnInit {
 
             if (pedidos > 0) {
                 return {
-                    texto: ' — Pedido realizado, aguardando compra',
+                    texto: ' — Pedido realizado, aguardando confirmação fornecedor(es)',
                     classe: 'text-primary'
                 };
             }
@@ -605,11 +713,12 @@ export class CotacoesListDialogComponent implements OnInit {
             };
         }
 
-        const pedidoEhMelhorCompra = this.pedidoOrigemId === MELHOR_COMPRA_ID;
 
-        if (pedidoEhMelhorCompra) {
+        const pedidoEhMenorValorItem = this.pedidoOrigemId === MENOR_VALOR_TIPO;
+
+        if (pedidoEhMenorValorItem) {
             return {
-                texto: 'Itens incluídos na Melhor compra',
+                texto: 'Itens incluídos na Menor Valor Item',
                 classe: 'text-muted'
             };
         }
@@ -636,7 +745,7 @@ export class CotacoesListDialogComponent implements OnInit {
         }
 
         return {
-            texto: 'Cotação concluída. Aguardando formalização do pedido.',
+            texto: 'Cotação concluída. Orçamento disponível para formalização do pedido.',
             classe: 'text-muted'
         };
     }
@@ -661,40 +770,42 @@ export class CotacoesListDialogComponent implements OnInit {
         grupo.removido = !grupo.removido;
     }
 
-    async realizarCompra(cotacaoOrcamento: CotacaoComOrcamentoViewModel): Promise<void> {
+    async realizarCompra(fluxo: FluxoCompraViewModel): Promise<void> {
         if (this.savingCompra) return;
 
-        const result = await this.abrirDialogEndereco(cotacaoOrcamento);
+        const result = await this.abrirDialogEndereco(fluxo);
 
         if (!result) return;
 
         this.savingCompra = true;
 
-        if (cotacaoOrcamento.id === MELHOR_COMPRA_ID && !this.naoCompensaMelhorCompra) {
-            this.gerarPedidosMelhorCompra(cotacaoOrcamento, result);
+        if (fluxo.tipo === MENOR_VALOR_TIPO && !this.naoCompensaMelhorCompra) {
+            this.gerarPedidosMelhorCompra(fluxo as MenorValorPorItemViewModel, result);
             return;
         }
 
-        this.gerarPedidoCompra(cotacaoOrcamento, result);
+        this.gerarPedidoCompra(fluxo as CotacaoFluxoViewModel, result);
     }
 
-    private abrirDialogEndereco(cotacaoOrcamento: CotacaoComOrcamentoViewModel): Promise<any> {
+    private abrirDialogEndereco(fluxo: FluxoCompraViewModel): Promise<any> {
         return new Promise(resolve => {
 
-            const endereco = cotacaoOrcamento?.obra?.endereco;
+            const endereco = fluxo?.obra?.endereco;
 
             const enderecoFormatado = endereco
                 ? `${endereco.rua}, ${endereco.numero} - ${endereco.bairro}, ${endereco.cidade} - ${endereco.uf}, CEP: ${endereco.cep}`
                 : '';
 
-            const modalRef = this._modalService.show(SelecionarEnderecoDialogComponent, {
-                class: 'modal-md'
-            });
+            const modalRef = this._modalService.show(
+                SelecionarEnderecoDialogComponent,
+                { class: 'modal-md' }
+            );
 
             modalRef.content.enderecoObraId = endereco?.id;
             modalRef.content.enderecoObraFormatado = enderecoFormatado;
 
             const oldHide = modalRef.hide;
+
             modalRef.hide = () => {
                 const content = modalRef.content;
                 oldHide.apply(modalRef);
@@ -705,28 +816,34 @@ export class CotacoesListDialogComponent implements OnInit {
                 }
 
                 resolve({
-                    usarObra: content.usarEnderecoObra,
-                    endereco: content.endereco,
-                    enderecoObraId: content.enderecoObraId
+                    tipoEntrega: content.tipoEntrega,
+
+                    endereco: content.tipoEntrega === 'OUTRO'
+                        ? content.endereco
+                        : null,
+
+                    enderecoObraId: content.tipoEntrega === 'OBRA'
+                        ? content.enderecoObraId
+                        : null
                 });
             };
         });
     }
 
+
     private gerarPedidosMelhorCompra(
-        cotacaoOrcamento: CotacaoComOrcamentoViewModel,
+        menorValorPorItem: MenorValorPorItemViewModel,
         enderecoResult: any
     ): void {
         abp.ui.setBusy();
         const dto = new CreateMelhorCompraDto();
-        dto.solicitacaoMaterialId = cotacaoOrcamento.solicitacaoMaterialId;
-        dto.obraId = cotacaoOrcamento.obraId;
+        dto.solicitacaoMaterialId = menorValorPorItem.solicitacaoMaterialId;
+        dto.obraId = menorValorPorItem.obraId;
         dto.userId = abp.session.userId;
         dto.status = MelhorCompraStatus.EmAndamento;
-        dto.observacaoInterna = cotacaoOrcamento.observacaoInterna;
-        dto.total = this.getTotal(cotacaoOrcamento);
+        dto.total = this.getTotal(menorValorPorItem);
 
-        dto.pedidosCompra = this.montarPedidosParaMelhorCompra(cotacaoOrcamento, enderecoResult);
+        dto.pedidosCompra = this.montarPedidosParaMelhorCompra(menorValorPorItem, enderecoResult);
 
         this._pedidoCompraService.gerarPedidosMelhorCompra(dto).subscribe(() => {
             this.savingCompra = false;
@@ -738,11 +855,11 @@ export class CotacoesListDialogComponent implements OnInit {
 
 
     private montarPedidosParaMelhorCompra(
-        cotacaoOrcamento: CotacaoComOrcamentoViewModel,
+        menorValorPorItem: MenorValorPorItemViewModel,
         enderecoResult: any
     ): CreatePedidoCompraDto[] {
 
-        const grupos = cotacaoOrcamento.materiaisAgrupados || [];
+        const grupos = menorValorPorItem.materiaisAgrupados || [];
         const pedidosPorFornecedor: { [key: string]: CreatePedidoCompraDto } = {};
 
         grupos
@@ -754,23 +871,35 @@ export class CotacoesListDialogComponent implements OnInit {
                 if (!pedidosPorFornecedor[fornecedor]) {
                     const pedido = new CreatePedidoCompraDto();
 
-                    pedido.solicitacaoMaterialId = cotacaoOrcamento.solicitacaoMaterialId;
+                    pedido.solicitacaoMaterialId = menorValorPorItem.solicitacaoMaterialId;
                     pedido.cotacaoId = v.cotacaoId;
                     pedido.orcamentoId = v.orcamentoId;
-                    pedido.obraId = cotacaoOrcamento.obraId;
+                    pedido.obraId = menorValorPorItem.obraId;
                     pedido.userId = abp.session.userId;
                     pedido.isMelhorCompra = true;
-                    pedido.observacaoInterna = cotacaoOrcamento.observacaoInterna;
                     pedido.materiaisPedidosCompra = [];
 
-                    if (enderecoResult?.usarObra) {
-                        pedido.enderecoEntregaId = enderecoResult.enderecoObraId;
-                    } else {
-                        pedido.enderecoEntrega = enderecoResult.endereco;
+                    pedido.valorFrete = v.valorFreteOrcamentoOrigem;
+                    pedido.condicaoFrete = v.condicaoFreteOrcamentoOrigem;
+                    pedido.valorDesconto = v.valorDescontoOrcamentoOrigem;
+                    pedido.condicaoDesconto = v.condicaoDescontoOrcamentoOrigem;
+
+                    pedido.retiradaNoFornecedor = enderecoResult?.tipoEntrega === 'RETIRADA';
+
+                    if (!pedido.retiradaNoFornecedor) {
+
+                        if (enderecoResult?.tipoEntrega === 'OBRA') {
+                            pedido.enderecoEntregaId = enderecoResult.enderecoObraId;
+                        }
+
+                        if (enderecoResult?.tipoEntrega === 'OUTRO') {
+                            pedido.enderecoEntrega = enderecoResult.endereco;
+                        }
                     }
 
                     pedidosPorFornecedor[fornecedor] = pedido;
                 }
+
 
                 const mat = new CreateMaterialPedidoCompraDto();
                 mat.nome = v.nome;
@@ -778,7 +907,7 @@ export class CotacoesListDialogComponent implements OnInit {
                 mat.unidade = v.unidade;
                 mat.especificacao = v.especificacao;
                 mat.fornecedorId = v.fornecedorId;
-                mat.solicitacaoMaterialId = cotacaoOrcamento.solicitacaoMaterialId;
+                mat.solicitacaoMaterialId = menorValorPorItem.solicitacaoMaterialId;
                 mat.cotacaoId = v.cotacaoId;
                 mat.orcamentoId = v.orcamentoId;
                 mat.materialOrcadoId = v.id;
@@ -792,26 +921,39 @@ export class CotacoesListDialogComponent implements OnInit {
     }
 
     private gerarPedidoCompra(
-        cotacaoOrcamento: CotacaoComOrcamentoViewModel,
+        cotacaoFluxo: CotacaoFluxoViewModel,
         enderecoResult: any
     ): void {
         abp.ui.setBusy();
 
         const dto = new CreatePedidoCompraDto();
-        dto.solicitacaoMaterialId = cotacaoOrcamento.solicitacaoMaterialId;
-        dto.cotacaoId = cotacaoOrcamento.id;
-        dto.obraId = cotacaoOrcamento.obraId;
-        dto.userId = abp.session.userId;
-        dto.observacaoInterna = cotacaoOrcamento.observacaoInterna;
-        dto.observacaoFornecedor = cotacaoOrcamento.observacaoFornecedor;
 
-        if (enderecoResult?.usarObra) {
-            dto.enderecoEntregaId = enderecoResult.enderecoObraId;
-        } else {
-            dto.enderecoEntrega = enderecoResult.endereco;
+        dto.solicitacaoMaterialId = cotacaoFluxo.solicitacaoMaterialId;
+        dto.cotacaoId = cotacaoFluxo.id;
+        dto.obraId = cotacaoFluxo.obraId;
+        dto.userId = abp.session.userId;
+        dto.observacaoInterna = cotacaoFluxo.observacaoInterna;
+        dto.observacaoFornecedor = cotacaoFluxo.observacaoFornecedor;
+        dto.valorFrete = cotacaoFluxo.orcamento.valorFrete;
+        dto.condicaoFrete = cotacaoFluxo.orcamento.condicaoFrete;
+        dto.valorDesconto = cotacaoFluxo.orcamento.valorDesconto;
+        dto.condicaoDesconto = cotacaoFluxo.orcamento.condicaoDesconto;
+
+        dto.retiradaNoFornecedor = enderecoResult?.tipoEntrega === 'RETIRADA';
+
+        if (!dto.retiradaNoFornecedor) {
+
+            if (enderecoResult?.tipoEntrega === 'OBRA') {
+                dto.enderecoEntregaId = enderecoResult.enderecoObraId;
+            }
+
+            if (enderecoResult?.tipoEntrega === 'OUTRO') {
+                dto.enderecoEntrega = enderecoResult.endereco;
+            }
         }
 
-        dto.materiaisPedidosCompra = (cotacaoOrcamento.materiaisAgrupados || [])
+
+        dto.materiaisPedidosCompra = (cotacaoFluxo.materiaisAgrupados || [])
             .filter(g => !g.removido && g.selected)
             .map(g => {
                 const v = g.selected!;
@@ -822,8 +964,8 @@ export class CotacoesListDialogComponent implements OnInit {
                 mat.unidade = v.unidade;
                 mat.especificacao = v.especificacao;
                 mat.fornecedorId = v.fornecedorId;
-                mat.solicitacaoMaterialId = cotacaoOrcamento.solicitacaoMaterialId;
-                mat.cotacaoId = cotacaoOrcamento.id;
+                mat.solicitacaoMaterialId = cotacaoFluxo.solicitacaoMaterialId;
+                mat.cotacaoId = cotacaoFluxo.id;
                 mat.orcamentoId = v.orcamentoId;
                 mat.materialOrcadoId = v.id;
                 mat.precoItem = v.precoItem;
@@ -846,7 +988,7 @@ export class CotacoesListDialogComponent implements OnInit {
 
     isFornecedorPedidoNormal(fluxo: FluxoCompraViewModel): boolean {
         return this.existePedido
-            && this.pedidoOrigemId !== MELHOR_COMPRA_ID
+            && this.pedidoOrigemId !== MENOR_VALOR_TIPO
             && fluxo.id === this.pedidoOrigemId;
     }
 
@@ -868,8 +1010,41 @@ export class CotacoesListDialogComponent implements OnInit {
         return '';
     }
 
-
     isFornecedorDoPedido(fluxo: FluxoCompraViewModel): boolean {
         return this.existePedido && fluxo.id === this.pedidoOrigemId;
     }
+
+    hasFrete(fluxo: any): boolean {
+        return fluxo?.orcamento?.valorFrete != null && fluxo.orcamento.valorFrete > 0;
+    }
+
+    hasDesconto(fluxo: any): boolean {
+        return fluxo?.orcamento?.valorDesconto != null && fluxo.orcamento.valorDesconto > 0;
+    }
+
+
+    getTotalComFreteEDesconto(fluxo: any): number {
+        const totalProdutos = this.getTotal(fluxo);
+        const frete = fluxo.orcamento?.valorFrete ?? 0;
+        const desconto = fluxo.orcamento?.valorDesconto ?? 0;
+
+        return totalProdutos + frete - desconto;
+    }
+
+    menorValorPodeNaoCompensar(): boolean {
+        const menor = this.fluxoCompraVM?.find(
+            f => f.tipo === 'MENOR_VALOR_POR_ITEM'
+        ) as MenorValorPorItemViewModel;
+
+        if (!menor?.materiaisAgrupados?.length) return false;
+
+        return menor.materiaisAgrupados.some(grupo => {
+            const v = grupo.selected;
+            return (
+                (v?.valorFreteOrcamentoOrigem ?? 0) > 0 ||
+                (v?.valorDescontoOrcamentoOrigem ?? 0) > 0
+            );
+        });
+    }
+
 }

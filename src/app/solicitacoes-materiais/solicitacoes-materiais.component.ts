@@ -24,6 +24,7 @@ import { BsDropdownDirective, BsDropdownToggleDirective, BsDropdownMenuDirective
 import * as FileSaver from 'file-saver';
 import { CreateCotacaoDialogComponent } from '../cotacoes/create-cotacao/create-cotacao-dialog.component';
 import { CotacoesListDialogComponent } from '@app/cotacoes/list-cotacoes/list-cotacoes-dialog.component';
+import { SolicitacaoMaterialStatusNullable } from '@shared/service-proxies/service-proxies';
 
 @Component({
     templateUrl: './solicitacoes-materiais.component.html',
@@ -44,8 +45,23 @@ export class SolicitacoesMateriaisComponent extends PagedListingComponentBase<So
 
     solicitacoesMateriais: SolicitacaoMaterialDto[] = [];
     keyword = '';
-    status: SolicitacaoMaterialStatus | null | undefined;
+    status: SolicitacaoMaterialStatusNullable = undefined;
     advancedFiltersVisible = false;
+
+    statusOptions = [
+        { label: this.l('All'), value: undefined },
+
+        { label: 'Aberta', value: SolicitacaoMaterialStatusNullable._0 },
+        { label: 'Cotação em andamento', value: SolicitacaoMaterialStatusNullable._1 },
+        { label: 'Cotação em andamento e orçamento disponível', value: SolicitacaoMaterialStatusNullable._2 },
+        { label: 'Aguardando compra', value: SolicitacaoMaterialStatusNullable._3 },
+        { label: 'Pedido feito, aguardando fornecedor', value: SolicitacaoMaterialStatusNullable._4 },
+        { label: 'Compra parcial', value: SolicitacaoMaterialStatusNullable._5 },
+        { label: 'Compra concluída', value: SolicitacaoMaterialStatusNullable._6 },
+        { label: 'Compra cancelada', value: SolicitacaoMaterialStatusNullable._7 },
+        { label: 'Intervenção necessária', value: SolicitacaoMaterialStatusNullable._8 },
+    ];
+
 
     constructor(
         injector: Injector,
@@ -136,10 +152,42 @@ export class SolicitacoesMateriaisComponent extends PagedListingComponentBase<So
             });
     }
 
+    getStatusViewClass(record: SolicitacaoMaterialDto): string {
+        switch (record.status) {
+            case 0: // Aberta
+                return 'bg-secondary';
+
+            case 1: // CotacaoEmAndamento
+            case 2: // CotacaoEmAndamentoEOrcamentoDisponivel
+                return 'bg-warning text-dark';
+
+            case 3: // AguardandoCompra
+                return 'bg-info';
+
+            case 4: // PedidoFeitoAguardandoFornecedor
+                return 'bg-primary';
+
+            case 5: // CompraParcial
+                return 'bg-orange';
+
+            case 6: // CompraConcluida
+                return 'bg-success';
+
+            case 7: // CompraCancelada
+                return 'bg-danger';
+
+            case 8: // IntervencaoNecessaria (corrigirei abaixo)
+                return 'bg-danger text-white';
+
+            default:
+                return 'bg-light text-dark';
+        }
+    }
+
     private showCreateOrEditDialog(id?: string): void {
         let ref: BsModalRef;
         if (!id) {
-            ref = this._modalService.show(CreateSolicitacaoMaterialDialogComponent, { class: 'modal-lg',backdrop: 'static' });
+            ref = this._modalService.show(CreateSolicitacaoMaterialDialogComponent, { class: 'modal-lg', backdrop: 'static' });
         } else {
             ref = this._modalService.show(EditSolicitacaoMaterialDialogComponent, {
                 class: 'modal-lg',
@@ -219,22 +267,22 @@ export class SolicitacoesMateriaisComponent extends PagedListingComponentBase<So
     }
 
     abrirCotacoes(solicitacao: SolicitacaoMaterialDto): void {
-            if (solicitacao.cotacoes &&  solicitacao.cotacoes.length > 0) {
-                const ref = this._modalService.show(CotacoesListDialogComponent, {
-                    class: 'modal-lg',
-                    initialState: { solicitacaoId: solicitacao.id },
-                    backdrop: 'static'
-                });
+        if (solicitacao.cotacoes && solicitacao.cotacoes.length > 0) {
+            const ref = this._modalService.show(CotacoesListDialogComponent, {
+                class: 'modal-lg',
+                initialState: { solicitacaoId: solicitacao.id },
+                backdrop: 'static'
+            });
 
-                ref.content.onSave.subscribe(() => this.refresh());
-            } else {
-                const ref = this._modalService.show(CreateCotacaoDialogComponent, {
-                    class: 'modal-xl',
-                    initialState: { solicitacaoId: solicitacao.id },
-                    backdrop: 'static'
-                });
+            ref.content.onSave.subscribe(() => this.refresh());
+        } else {
+            const ref = this._modalService.show(CreateCotacaoDialogComponent, {
+                class: 'modal-xl',
+                initialState: { solicitacaoId: solicitacao.id },
+                backdrop: 'static'
+            });
 
-                ref.content.onSave.subscribe(() => this.refresh());
-            }
+            ref.content.onSave.subscribe(() => this.refresh());
+        }
     }
 }

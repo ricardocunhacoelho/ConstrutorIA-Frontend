@@ -17,6 +17,8 @@ import {
     SimpleLookupDto
 } from '../../../shared/service-proxies/service-proxies';
 import { SharedModule } from '@shared/shared.module';
+import { BsModalService } from 'ngx-bootstrap/modal';
+import { SelecionarEnderecoDialogComponent } from '../list-cotacoes//selecionar-endereco-dialog/selecionar-endereco-dialog.component';
 
 @Component({
     templateUrl: './create-cotacao-dialog.component.html',
@@ -26,11 +28,9 @@ import { SharedModule } from '@shared/shared.module';
         FormsModule,
         AbpModalHeaderComponent,
         AbpModalFooterComponent,
-        AbpValidationSummaryComponent,
         TabsetComponent,
         TabDirective,
         LocalizePipe,
-        NgIf,
         SharedModule
     ]
 })
@@ -51,10 +51,12 @@ export class CreateCotacaoDialogComponent extends AppComponentBase implements On
         public _cotacaoService: CotacaoServiceProxy,
         public _solicitacaoService: SolicitacaoMaterialServiceProxy,
         public bsModalRef: BsModalRef,
-        private cd: ChangeDetectorRef
+        private cd: ChangeDetectorRef,
+        private _modalService: BsModalService
     ) {
         super(injector);
     }
+
 
     ngOnInit(): void {
         if (this.solicitacaoId) {
@@ -73,7 +75,7 @@ export class CreateCotacaoDialogComponent extends AppComponentBase implements On
             this.materiais = result.materiaisSolicitados.map(m => {
                 const mat = new CreateMaterialCotadoDto();
                 mat.nome = m.nome;
-                mat.quantidade = m.quantidade;
+                mat.quantidade = String(m.quantidade);
                 mat.unidade = m.unidade;
                 return mat;
             });
@@ -105,26 +107,62 @@ export class CreateCotacaoDialogComponent extends AppComponentBase implements On
         }
     }
 
-    save(): void {
-        if (!this.fornecedoresSelecionados.length) {
-            this.notify.warn('Selecione ao menos um fornecedor');
+    async save(): Promise<void> {
+        if (!this.validar()) {
+            return;
+        }
+
+        const enderecoResult = await this.abrirDialogEndereco();
+        if (!enderecoResult) {
             return;
         }
 
         this.saving = true;
 
-        const cotacoesParaSalvar = this.fornecedoresSelecionados.map(fornecedor => {
+        const cotacoes = this.montarCotacoes(enderecoResult);
+
+        this.salvarCotacoes(cotacoes);
+    }
+
+    private validar(): boolean {
+        if (!this.fornecedoresSelecionados.length) {
+            this.notify.warn('Selecione ao menos um fornecedor');
+            return false;
+        }
+        return true;
+    }
+
+    private montarCotacoes(enderecoResult: any): CreateCotacaoDto[] {
+        return this.fornecedoresSelecionados.map(fornecedor => {
+
             const nova = new CreateCotacaoDto();
+
             nova.fornecedorId = fornecedor.id;
             nova.solicitacaoMaterialId = this.cotacao.solicitacaoMaterialId;
             nova.observacaoInterna = this.cotacao.observacaoInterna;
             nova.observacaoFornecedor = this.cotacao.observacaoFornecedor;
             nova.materiaisCotados = this.materiais;
             nova.obraId = this.solicitacao?.obraId;
+
+            nova.retiradaNoFornecedor = enderecoResult.tipoEntrega === 'RETIRADA';
+
+            if (!nova.retiradaNoFornecedor) {
+
+                if (enderecoResult.tipoEntrega === 'OBRA') {
+                    nova.enderecoEntregaId = enderecoResult.enderecoObraId;
+                }
+
+                if (enderecoResult.tipoEntrega === 'OUTRO') {
+                    nova.enderecoEntrega = enderecoResult.endereco;
+                }
+            }
+
             return nova;
         });
+    }
 
-        this._cotacaoService.createMultiple(cotacoesParaSalvar)
+    private salvarCotacoes(cotacoes: CreateCotacaoDto[]): void {
+        this._cotacaoService.createMultiple(cotacoes)
             .subscribe(() => {
                 this.notify.info('Cotações criadas com sucesso');
                 this.bsModalRef.hide();
@@ -134,7 +172,50 @@ export class CreateCotacaoDialogComponent extends AppComponentBase implements On
             });
     }
 
+
     isFornecedorSelecionado(fornecedor: SimpleLookupDto): boolean {
         return this.fornecedoresSelecionados.some(f => f.id === fornecedor.id);
     }
+
+    private abrirDialogEndereco(): Promise<any> {
+        return new Promise(resolve => {
+
+            const endereco = this.solicitacao?.obra?.endereco;
+
+            const enderecoFormatado = endereco
+                ? `${endereco.rua}, ${endereco.numero} - ${endereco.bairro}, ${endereco.cidade} - ${endereco.uf}, CEP: ${endereco.cep}`
+                : '';
+
+            const modalRef = this._modalService.show(
+                SelecionarEnderecoDialogComponent,
+                { class: 'modal-md' }
+            );
+
+            modalRef.content.enderecoObraId = endereco?.id;
+            modalRef.content.enderecoObraFormatado = enderecoFormatado;
+
+            const oldHide = modalRef.hide;
+
+            modalRef.hide = () => {
+                const content = modalRef.content;
+                oldHide.apply(modalRef);
+
+                if (!content.confirmado) {
+                    resolve(null);
+                    return;
+                }
+
+                resolve({
+                    tipoEntrega: content.tipoEntrega,
+                    endereco: content.tipoEntrega === 'OUTRO'
+                        ? content.endereco
+                        : null,
+                    enderecoObraId: content.tipoEntrega === 'OBRA'
+                        ? content.enderecoObraId
+                        : null
+                });
+            };
+        });
+    }
+
 }

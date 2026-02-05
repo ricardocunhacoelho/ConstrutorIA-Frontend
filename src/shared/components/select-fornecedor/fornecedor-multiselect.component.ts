@@ -15,13 +15,6 @@ import { LocalizePipe } from '@shared/pipes/localize.pipe';
     imports: [
         CommonModule,
         FormsModule,
-        AbpModalHeaderComponent,
-        AbpModalFooterComponent,
-        AbpValidationSummaryComponent,
-        TabsetComponent,
-        TabDirective,
-        LocalizePipe,
-        NgIf
     ]
 })
 export class FornecedorMultiselectComponent {

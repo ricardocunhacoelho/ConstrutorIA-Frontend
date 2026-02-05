@@ -73,37 +73,24 @@
                                 <div class="row">
                                     <div class="col-md-6">
                                         <div class="form-group row mb-0">
-                                            <label class="col-md-3 col-form-label">
+                                            <label class="col-md-1 col-form-label">
                                                 {{ 'Status' | localize }}
                                             </label>
-                                            <div class="col-md-9 pt-2">
-                                                <div class="custom-control custom-radio d-inline">
-                                                    <input type="radio" class="custom-control-input" id="statusAll"
-                                                        name="statusTodos" [(ngModel)]="status" [value]="undefined"
-                                                        checked />
-                                                    <label class="custom-control-label" for="statusAll">
-                                                        {{ 'All' | localize }}
-                                                    </label>
-                                                </div>
-                                                <div class="custom-control custom-radio d-inline mx-3">
-                                                    <input type="radio" class="custom-control-input" id="statusAberta"
-                                                        name="statusAberto" [(ngModel)]="status" [value]="'ABERTA'" />
-                                                    <label class="custom-control-label" for="statusAberta">
-                                                        {{ 'Aberta' | localize }}
-                                                    </label>
-                                                </div>
-                                                <div class="custom-control custom-radio d-inline">
-                                                    <input type="radio" class="custom-control-input"
-                                                        id="statusConcluida" name="statusConcluido" [(ngModel)]="status"
-                                                        [value]="'CONCLUIDA'" />
-                                                    <label class="custom-control-label" for="statusConcluida">
-                                                        {{ 'Concluida' | localize }}
-                                                    </label>
-                                                </div>
+
+                                            <div class="col-md-9">
+                                                <select class="form-control" [(ngModel)]="status" (change)="refresh()"
+                                                    name="statusSelect">
+
+                                                    <option *ngFor="let s of statusOptions" [ngValue]="s.value">
+                                                        {{ s.label }}
+                                                    </option>
+
+                                                </select>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
+
                                 <div class="row mt-2">
                                     <div class="col-md-6">
                                         <div class="form-group row mb-0">
@@ -189,13 +176,11 @@
                                     <td>{{ record.obra.nome }}</td>
                                     <td>{{ record.encarregado.nome }}</td>
                                     <td>
-                                        <span class="badge" [ngClass]="{
-                                            'bg-warning text-dark': record.status === 'ABERTA',
-                                            'bg-success': record.status === 'CONCLUIDA'
-                                            }">
-                                            {{ record.status }}
+                                        <span class="badge" [ngClass]="getStatusViewClass(record)">
+                                            {{ record.statusString }}
                                         </span>
                                     </td>
+
 
                                     <td>
                                         <ul *ngIf="record.materiaisSolicitados?.length > 0">

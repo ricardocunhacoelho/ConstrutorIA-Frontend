@@ -36,23 +36,48 @@
 
             </tab>
 
-            <tab [heading]="'Observações(opcional)' | localize" class="pt-3 px-2">
+            <tab [heading]="'Observações (opcional)' | localize" class="pt-3 px-2">
+
+                <!-- Observação Interna -->
                 <div class="form-group row">
-                    <label class="col-md-3 col-form-label">Observação Interna</label>
+                    <label class="col-md-3 col-form-label">
+                        Observação Interna
+                    </label>
+
                     <div class="col-md-9">
-                        <textarea class="form-control" [(ngModel)]="cotacao.observacaoInterna"
-                            name="obsInterna"></textarea>
+                        <textarea class="form-control" rows="3" [(ngModel)]="cotacao.observacaoInterna"
+                            name="obsInterna" placeholder="Uso interno apenas. Não será enviada ao fornecedor.
+Ex: anotações administrativas, fornecedor preferencial, prazos combinados internamente.">
+            </textarea>
+
+                        <small class="form-text text-muted">
+                            Uso exclusivo da equipe interna. Este conteúdo <strong>não será enviado</strong> ao
+                            fornecedor.
+                        </small>
                     </div>
                 </div>
 
-                <div class="form-group row mt-2">
-                    <label class="col-md-3 col-form-label">Observação Fornecedor</label>
+                <!-- Observação Fornecedor -->
+                <div class="form-group row mt-3">
+                    <label class="col-md-3 col-form-label">
+                        Observação para o Fornecedor
+                    </label>
+
                     <div class="col-md-9">
-                        <textarea class="form-control" [(ngModel)]="cotacao.observacaoFornecedor"
-                            name="obsFornecedor"></textarea>
+                        <textarea class="form-control" rows="3" [(ngModel)]="cotacao.observacaoFornecedor"
+                            name="obsFornecedor" placeholder="Esta observação será enviada junto com a lista de materiais. 
+Ex: informar prazo de entrega, condições de pagamento, possibilidade de marca equivalente.">
+                        </textarea>
+
+                        <small class="form-text text-warning">
+                            ⚠️ Atenção: esta observação será enviada diretamente ao fornecedor junto da lista de
+                            materiais.
+                        </small>
                     </div>
                 </div>
+
             </tab>
+
 
             <tab [heading]="'Fornecedores' | localize" class="pt-3 px-2">
                 <app-fornecedor-multiselect [fornecedoresDisponiveis]="fornecedoresDisponiveis"
