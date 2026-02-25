@@ -1,0 +1,42 @@
+.alerta-cotacao {
+  position: relative;
+  padding-right: 3rem;
+
+  .close {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+
+    width: 28px;
+    height: 28px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    border-radius: 4px;
+
+    background: transparent;
+    color: #fff;
+
+    font-size: 18px;
+    font-weight: 600;
+
+    opacity: 1;
+    padding: 0;
+    line-height: 1;
+    transition: all 0.2s ease;
+  }
+
+  .close:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: #fff;
+    transform: scale(1.05);
+  }
+
+  .close span {
+    position: relative;
+    top: -1px; // micro ajuste visual
+  }
+}

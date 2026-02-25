@@ -1,0 +1,91 @@
+<form class="form-horizontal" autocomplete="off" #createSolicitacaoModal="ngForm" (ngSubmit)="save()">
+    <abp-modal-header [title]="'CreateSolicitacao' | localize" (onCloseClick)="bsModalRef.hide()"></abp-modal-header>
+    <div class="modal-body">
+        <tabset>
+            <tab [heading]="'Detalhes da Solicitação' | localize" class="pt-3 px-2">
+                <div class="form-group row">
+                    <label class="col-md-3 col-form-label" for="descricao">Descrição</label>
+                    <div class="col-md-9">
+                        <textarea class="form-control" id="descricao" name="descricao"
+                            [(ngModel)]="solicitacao.descricao" required>
+                        </textarea>
+                    </div>
+                </div>
+
+                <div *ngFor="let mat of materiais; let i = index" class="border rounded p-3 mb-3">
+                    <div class="form-group row">
+                        <label class="col-md-3 col-form-label">Material</label>
+                        <div class="col-md-9">
+                            <input type="text" class="form-control" [(ngModel)]="mat.nome" name="mat_nome_{{i}}"
+                                required placeholder="Ex: Cimento CP II" />
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-md-3 col-form-label">Quantidade</label>
+                        <div class="col-md-3">
+                            <input type="number" class="form-control" [(ngModel)]="mat.quantidade"
+                                name="mat_quantidade_{{i}}" required min="0.01" step="0.01" placeholder="Ex: 10" />
+                        </div>
+                        <label class="col-md-1 col-form-label mr-2">Unidade</label>
+                        <div class="col">
+                            <select class="form-control" [(ngModel)]="mat.unidadeSelecionada"
+                                name="mat_unidade_sel_{{i}}" required>
+
+                                <option [ngValue]="null" disabled>
+                                    Selecione a unidade
+                                </option>
+
+                                <optgroup label="Unidades padrão">
+                                    <option *ngFor="let u of unidadesPadrao" [ngValue]="u">
+                                        {{ u }}
+                                    </option>
+                                </optgroup>
+
+                                <optgroup label="Unidades com complemento">
+                                    <option *ngFor="let u of unidadesParaComplementar" [ngValue]="u">
+                                        {{ u }}
+                                    </option>
+                                </optgroup>
+                            </select>
+
+                            <div class="mt-2" *ngIf="exigeComplemento(mat.unidadeSelecionada)">
+                                <input type="text" class="form-control" [(ngModel)]="mat.unidadeComplemento"
+                                    name="mat_unidade_comp_{{i}}" required
+                                    placeholder="Ex: 50kg, 18 litros, 100 unidades" />
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="text-end">
+                        <button type="button" class="btn btn-danger btn-sm"
+                            (click)="removerMaterial(i)">Remover</button>
+                    </div>
+                </div>
+
+                <div class="text-start mt-2">
+                    <button type="button" class="btn btn-primary" (click)="adicionarMaterial()">+ Adicionar
+                        Material</button>
+                </div>
+            </tab>
+
+            <tab [heading]="'Obra/Encarregado' | localize" class="pt-3 px-2">
+                <div class="form-group row">
+                    <label class="col-md-3 col-form-label">Obra / Encarregado</label>
+                    <div class="col-md-9">
+                        <select class="form-control" [(ngModel)]="selectedEncarregado"
+                            (ngModelChange)="onEncarregadoChange()" name="encarregadoSelect">
+                            <option *ngFor="let e of encarregadosComObras" [ngValue]="e">
+                                {{ e.nomeObra }} (Encarregado: {{ e.nomeEncarregado }})
+                            </option>
+                        </select>
+                    </div>
+                </div>
+            </tab>
+        </tabset>
+    </div>
+
+    <abp-modal-footer [cancelDisabled]="saving"
+        [saveDisabled]="!createSolicitacaoModal.form.valid || !possuiMateriais || saving"
+        (onCancelClick)="bsModalRef.hide()">
+    </abp-modal-footer>
+</form>

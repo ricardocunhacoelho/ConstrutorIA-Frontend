@@ -1,0 +1,185 @@
+<div class="financeiro-dialog">
+
+    <!-- ===== RESUMO FINANCEIRO ===== -->
+    <div class="resumo-cards">
+
+        <div class="card resumo receita">
+            <div class="titulo">Receitas</div>
+            <div class="valor">
+                {{ totalReceitas | currency:'BRL' }}
+            </div>
+        </div>
+
+        <div class="card resumo despesa">
+            <div class="titulo">Despesas</div>
+            <div class="valor">
+                {{ totalDespesas | currency:'BRL' }}
+            </div>
+        </div>
+
+        <div class="card resumo saldo" [ngClass]="saldo >= 0 ? 'positivo' : 'negativo'">
+            <div class="titulo">Saldo</div>
+            <div class="valor">
+                {{ saldo | currency:'BRL' }}
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- ===== FILTROS ===== -->
+    <div class="filtros">
+
+        <div class="filtros-header">
+            Filtros
+        </div>
+
+        <div class="filtros-body">
+
+            <!-- PERÍODO -->
+            <div class="grupo-periodo">
+
+                <label class="label-grupo">Período</label>
+
+                <div class="periodo-inputs">
+                    <input type="date" class="form-control form-control-sm" [(ngModel)]="dataInicio">
+
+                    <span class="ate">até</span>
+
+                    <input type="date" class="form-control form-control-sm" [(ngModel)]="dataFim">
+                </div>
+
+            </div>
+
+            <!-- NATUREZA -->
+            <div class="grupo-natureza">
+
+                <label class="label-grupo">Natureza</label>
+
+                <select class="form-control form-control-sm" [(ngModel)]="natureza">
+                    <option [ngValue]="undefined">Todas</option>
+                    <option [ngValue]="0">Receita</option>
+                    <option [ngValue]="1">Despesa</option>
+                </select>
+
+            </div>
+
+            <!-- FORNECEDOR -->
+            <div class="grupo-fornecedor">
+
+                <label class="label-grupo">Fornecedor</label>
+
+                <select class="form-control form-control-sm" [(ngModel)]="fornecedorId">
+
+                    <option [ngValue]="undefined">Todos</option>
+
+                    <option *ngFor="let f of fornecedores" [ngValue]="f.id">
+                        {{ f.nome }}
+                    </option>
+
+                </select>
+
+            </div>
+
+            <!-- BOTÕES -->
+            <div class="grupo-botoes">
+
+                <button class="btn btn-sm bg-blue" (click)="list()">
+                    <i class="fa fa-search"></i>
+                    Buscar
+                </button>
+
+                <button class="btn btn-sm btn-outline-secondary" (click)="clearFilters()">
+                    Limpar
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ===== TABELA ===== -->
+    <div class="tabela-container">
+
+        <p-table #dataTable [value]="lancamentos" [lazy]="true" (onLazyLoad)="list($event)" [scrollable]="true"
+            scrollHeight="300px" [paginator]="false">
+
+            <ng-template pTemplate="header">
+                <tr>
+                    <th>Data</th>
+                    <th>Descrição</th>
+                    <th>Tipo</th>
+                    <th>Status</th>
+                    <th class="text-right">Valor</th>
+                    <th style="width:130px"></th>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="body" let-record>
+                <tr>
+
+                    <td>{{ record.dataLancamento | date:'shortDate' }}</td>
+
+                    <td>
+                        <div class="descricao">
+                            {{ record.descricao }}
+                            <small *ngIf="record.compraFornecedor">
+                                Compra - {{ record.compraFornecedor }}
+                            </small>
+                        </div>
+                    </td>
+
+                    <td>
+                        <span class="badge" [ngClass]="record.natureza === 0 ? 'bg-success' : 'bg-danger'">
+                            {{ record.natureza === 0 ? 'Receita' : 'Despesa' }}
+                        </span>
+                    </td>
+
+                    <td>
+                        <span class="badge" [ngClass]="record.status === 0 ? 'bg-success' : 'bg-secondary'">
+                            {{ record.statusString }}
+                        </span>
+                    </td>
+
+                    <td class="text-right valor" [ngClass]="{
+                        'positivo': record.natureza === 0 && record.status === 0,
+                        'negativo': record.natureza === 1 && record.status === 0,
+                        'estornado': record.status === 1
+                    }">
+                        {{ record.valorPago | currency:'BRL' }}
+                    </td>
+
+                    <td class="acoes">
+
+                        <button class="btn btn-sm btn-light" (click)="verDetalhes(record)">
+                            <i class="fa fa-eye"></i>
+                        </button>
+
+                    </td>
+
+                </tr>
+            </ng-template>
+
+        </p-table>
+
+    </div>
+
+
+    <!-- ===== RODAPÉ ===== -->
+    <div class="rodape">
+
+        <p-paginator #paginator (onPageChange)="list($event)" [totalRecords]="totalCount" [rows]="10"
+            [rowsPerPageOptions]="[10,50,100,500,1000]">
+        </p-paginator>
+
+
+        <button class="btn bg-green" (click)="createLancamento()">
+            <i class="fa fa-plus"></i>
+            Novo Lançamento
+        </button>
+
+    </div>
+
+</div>

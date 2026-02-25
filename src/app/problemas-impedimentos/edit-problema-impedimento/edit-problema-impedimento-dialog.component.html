@@ -1,0 +1,77 @@
+﻿<form class="form-horizontal" autocomplete="off" #editProblemaModal="ngForm" (ngSubmit)="save()">
+    <abp-modal-header [title]="'EditProblemaImpedimento' | localize" (onCloseClick)="bsModalRef.hide()"></abp-modal-header>
+    
+    <div class="modal-body">
+        <div class="form-group row">
+            <label class="col-md-3 col-form-label" for="descricao">Descrição</label>
+            <div class="col-md-9">
+                <textarea class="form-control" id="descricao" name="descricao"
+                    [(ngModel)]="problema.descricao" maxlength="256"
+                    placeholder="Digite a descrição do problema"
+                    [disabled]="problema.status === 'CONCLUIDO'"></textarea>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label class="col-md-3 col-form-label" for="local">Local</label>
+            <div class="col-md-9">
+                <input type="text" class="form-control" id="local" name="local"
+                    [(ngModel)]="problema.local" placeholder="Local do problema"
+                    [disabled]="problema.status === 'CONCLUIDO'" />
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label class="col-md-3 col-form-label" for="impacto">Impacto</label>
+            <div class="col-md-9">
+                <textarea class="form-control" id="impacto" name="impacto"
+                    [(ngModel)]="problema.impacto" placeholder="Impacto do problema"
+                    [disabled]="problema.status === 'CONCLUIDO'"></textarea>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label class="col-md-3 col-form-label" for="urgencia">Urgência</label>
+            <div class="col-md-9">
+                <select class="form-control" [(ngModel)]="problema.urgencia" name="urgencia"
+                    [disabled]="problema.status === 'CONCLUIDO'">
+                    <option *ngFor="let nivel of niveisUrgencia" [value]="nivel">{{ nivel }}</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label class="col-md-3 col-form-label" for="prazoRetorno">Prazo de Retorno</label>
+            <div class="col-md-9">
+                <input type="text" class="form-control" id="prazoRetorno" name="prazoRetorno"
+                    [(ngModel)]="problema.prazoRetorno" placeholder="Prazo para resolver o problema"
+                    [disabled]="problema.status === 'CONCLUIDO'" />
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label class="col-md-3 col-form-label" for="observacao">Observação</label>
+            <div class="col-md-9">
+                <textarea class="form-control" id="observacao" name="observacao"
+                    [(ngModel)]="problema.observacao" placeholder="Observações adicionais"
+                    [disabled]="problema.status === 'CONCLUIDO'"></textarea>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label class="col-md-3 col-form-label">Obra / Encarregado</label>
+            <div class="col-md-9">
+                <select class="form-control" [(ngModel)]="selectedEncarregado" (ngModelChange)="onEncarregadoChange()"
+                        name="encarregadoSelect" [disabled]="problema.status === 'CONCLUIDO'">
+                    <option *ngFor="let e of encarregadosComObras" [ngValue]="e">
+                        {{ e.nomeObra }} (Encarregado: {{ e.nomeEncarregado }})
+                    </option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <abp-modal-footer [cancelDisabled]="saving" [saveDisabled]="!editProblemaModal.form.valid || saving"
+                      (onCancelClick)="bsModalRef.hide()">
+    </abp-modal-footer>
+</form>

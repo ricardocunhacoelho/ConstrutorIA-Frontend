@@ -1,0 +1,83 @@
+<form class="form-horizontal" autocomplete="off" #createProblemaModal="ngForm" (ngSubmit)="save()">
+    <abp-modal-header [title]="'CreateProblemaImpedimento' | localize" (onCloseClick)="bsModalRef.hide()"></abp-modal-header>
+
+    <div class="modal-body">
+        <tabset>
+            <tab [heading]="'Detalhes do Problema/Impedimento' | localize" class="pt-3 px-2">
+
+                <div class="form-group row">
+                    <label class="col-md-3 col-form-label" for="descricao">Descrição</label>
+                    <div class="col-md-9">
+                        <textarea class="form-control" id="descricao" name="descricao"
+                                  [(ngModel)]="problema.descricao" maxlength="512"
+                                  placeholder="Descreva o problema ou impedimento"></textarea>
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <label class="col-md-3 col-form-label" for="local">Local</label>
+                    <div class="col-md-9">
+                        <input type="text" class="form-control" id="local" name="local"
+                               [(ngModel)]="problema.local" maxlength="256"
+                               placeholder="Informe o local do problema/impedimento" />
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <label class="col-md-3 col-form-label" for="impacto">Impacto</label>
+                    <div class="col-md-9">
+                        <textarea class="form-control" id="impacto" name="impacto"
+                                  [(ngModel)]="problema.impacto" maxlength="512"
+                                  placeholder="Informe o impacto do problema"></textarea>
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <label class="col-md-3 col-form-label" for="urgencia">Urgência</label>
+                    <div class="col-md-9">
+                        <select class="form-control" id="urgencia" name="urgencia" [(ngModel)]="problema.urgencia">
+                            <option *ngFor="let u of urgencias" [ngValue]="u">{{ u }}</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <label class="col-md-3 col-form-label" for="prazoRetorno">Prazo de Retorno</label>
+                    <div class="col-md-9">
+                        <input type="text" class="form-control" id="prazoRetorno" name="prazoRetorno"
+                               [(ngModel)]="problema.prazoRetorno"
+                               placeholder="Informe o prazo de retorno estimado" />
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <label class="col-md-3 col-form-label" for="observacao">Observações</label>
+                    <div class="col-md-9">
+                        <textarea class="form-control" id="observacao" name="observacao"
+                                  [(ngModel)]="problema.observacao" maxlength="512"
+                                  placeholder="Observações adicionais"></textarea>
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <label class="col-md-3 col-form-label">Obra / Encarregado</label>
+                    <div class="col-md-9">
+                        <select class="form-control" [(ngModel)]="selectedEncarregado" (ngModelChange)="onEncarregadoChange()" name="encarregadoSelect">
+                            <option *ngFor="let e of encarregadosComObras" [ngValue]="e">
+                                {{ e.nomeObra }} (Encarregado: {{ e.nomeEncarregado }})
+                            </option>
+                        </select>
+                    </div>
+                </div>
+
+            </tab>
+        </tabset>
+    </div>
+
+    <abp-modal-footer [cancelDisabled]="saving" [saveDisabled]="!createProblemaModal.form.valid || saving"
+                     (onCancelClick)="bsModalRef.hide()">
+        <button type="submit" class="btn btn-success" [disabled]="saving">
+            {{ 'Create' | localize }}
+        </button>
+    </abp-modal-footer>
+</form>

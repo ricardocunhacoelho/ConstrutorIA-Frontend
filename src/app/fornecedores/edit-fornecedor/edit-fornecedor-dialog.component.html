@@ -1,0 +1,120 @@
+﻿<form class="form-horizontal" autocomplete="off" #editFornecedorModal="ngForm" (ngSubmit)="save()">
+    <abp-modal-header [title]="'EditFornecedor' | localize" (onCloseClick)="bsModalRef.hide()"></abp-modal-header>
+
+    <div class="modal-body">
+        <tabset>
+            <tab [heading]="'FornecedorDetails' | localize" class="pt-3 px-2">
+                <div class="form-group row required">
+                    <label class="col-md-3 col-form-label" for="nomeFantasia">Nome Fantasia</label>
+                    <div class="col-md-9">
+                        <input type="text" class="form-control" id="nomeFantasia" name="nomeFantasia" required
+                            maxlength="128" [(ngModel)]="fornecedor.nomeFantasia" #nomeFantasiaModel="ngModel"
+                            #nomeFantasiaEl />
+                        <abp-validation-summary [control]="nomeFantasiaModel"
+                            [controlEl]="nomeFantasiaEl"></abp-validation-summary>
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <label class="col-md-3 col-form-label" for="razaoSocial">Razão Social</label>
+                    <div class="col-md-9">
+                        <input type="text" class="form-control" id="razaoSocial" name="razaoSocial" maxlength="128"
+                            [(ngModel)]="fornecedor.razaoSocial" #razaoSocialModel="ngModel" #razaoSocialEl />
+                        <abp-validation-summary [control]="razaoSocialModel"
+                            [controlEl]="razaoSocialEl"></abp-validation-summary>
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <label class="col-md-3 col-form-label" for="cpfOrCnpj">CPF/CNPJ</label>
+                    <div class="col-md-9">
+                        <input type="text" class="form-control" id="cpfOrCnpj" name="cpfOrCnpj" maxlength="18"
+                            [(ngModel)]="fornecedor.cpfOrCnpj" #cpfOrCnpjModel="ngModel" #cpfOrCnpjEl />
+                        <abp-validation-summary [control]="cpfOrCnpjModel"
+                            [controlEl]="cpfOrCnpjEl"></abp-validation-summary>
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <label class="col-md-3 col-form-label" for="email">Email</label>
+                    <div class="col-md-9">
+                        <input type="email" class="form-control" id="email" name="email" maxlength="128"
+                            [(ngModel)]="fornecedor.email" #emailModel="ngModel" #emailEl />
+                        <abp-validation-summary [control]="emailModel" [controlEl]="emailEl"></abp-validation-summary>
+                    </div>
+                </div>
+            </tab>
+
+            <tab [heading]="'Endereco' | localize" class="pt-3 px-2">
+                <div class="form-group row">
+                    <label class="col-md-3 col-form-label" for="rua">Rua</label>
+                    <div class="col-md-9">
+                        <input type="text" class="form-control" id="rua" name="rua" maxlength="128"
+                            [(ngModel)]="fornecedor.endereco.rua" required />
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <label class="col-md-3 col-form-label" for="numeroEndereco">Número</label>
+                    <div class="col-md-9">
+                        <input type="text" class="form-control" id="numeroEndereco" name="numeroEndereco" maxlength="16"
+                            [(ngModel)]="fornecedor.endereco.numero" required />
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <label class="col-md-3 col-form-label" for="bairro">Bairro</label>
+                    <div class="col-md-9">
+                        <input type="text" class="form-control" id="bairro" name="bairro" maxlength="64"
+                            [(ngModel)]="fornecedor.endereco.bairro" required />
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <label class="col-md-3 col-form-label" for="cidade">Cidade</label>
+                    <div class="col-md-9">
+                        <input type="text" class="form-control" id="cidade" name="cidade" maxlength="64"
+                            [(ngModel)]="fornecedor.endereco.cidade" required />
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <label class="col-md-3 col-form-label" for="uf">UF</label>
+                    <div class="col-md-9">
+                        <input type="text" class="form-control" id="uf" name="uf" maxlength="2"
+                            [(ngModel)]="fornecedor.endereco.uf" required />
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <label class="col-md-3 col-form-label" for="cep">CEP</label>
+                    <div class="col-md-9">
+                        <input type="text" class="form-control" id="cep" name="cep" maxlength="10"
+                            [(ngModel)]="fornecedor.endereco.cep" required />
+                    </div>
+                </div>
+            </tab>
+
+            <tab [heading]="'Telefone' | localize" class="pt-3 px-2">
+                <div class="form-group row">
+                    <label class="col-md-3 col-form-label" for="ddd">DDD</label>
+                    <div class="col-md-3">
+                        <input type="text" class="form-control" id="ddd" name="ddd"
+                            [(ngModel)]="fornecedor.telefone.ddd" required maxlength="3" pattern="^[0-9]{2,3}$"
+                            title="DDD deve conter 2 ou 3 dígitos numéricos" />
+                    </div>
+
+                    <label class="col-md-1 col-form-label" for="numero">Número</label>
+                    <div class="col-md-5">
+                        <input type="text" class="form-control" id="numero" name="numero"
+                            [(ngModel)]="fornecedor.telefone.numero" required maxlength="10" pattern="^[0-9]{8,10}$"
+                            title="Número deve conter entre 8 e 10 dígitos numéricos" />
+                    </div>
+                </div>
+            </tab>
+        </tabset>
+    </div>
+
+    <abp-modal-footer [cancelDisabled]="saving" [saveDisabled]="!editFornecedorModal.form.valid || saving"
+        (onCancelClick)="bsModalRef.hide()"></abp-modal-footer>
+</form>

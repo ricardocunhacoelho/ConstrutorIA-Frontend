@@ -1,0 +1,36 @@
+<div class="fornecedor-multiselect">
+  <!-- Campo de busca -->
+  <input
+    type="text"
+    placeholder="Pesquisar fornecedor..."
+    class="form-control mb-2"
+    [(ngModel)]="searchTerm"
+  />
+
+  <!-- Fornecedores selecionados (tags) -->
+  <div class="tags mb-2">
+    <span *ngFor="let fornecedor of fornecedoresSelecionados" class="tag">
+      {{ fornecedor.nome }}
+      <button type="button" class="remove-btn" (click)="removerFornecedor(fornecedor)">×</button>
+    </span>
+  </div>
+
+  <!-- Lista de fornecedores -->
+  <div class="lista-fornecedores">
+    <div
+      *ngFor="let fornecedor of fornecedoresFiltrados"
+      class="form-check"
+    >
+      <input
+        type="checkbox"
+        class="form-check-input"
+        [checked]="isSelecionado(fornecedor)"
+        (change)="toggleFornecedor(fornecedor)"
+        id="fornecedor-{{ fornecedor.id }}"
+      />
+      <label class="form-check-label" for="fornecedor-{{ fornecedor.id }}">
+        {{ fornecedor.nome }}
+      </label>
+    </div>
+  </div>
+</div>

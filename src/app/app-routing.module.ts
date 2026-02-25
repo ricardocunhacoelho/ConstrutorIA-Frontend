@@ -27,6 +27,42 @@ import { AppComponent } from './app.component';
                         canActivate: [AppRouteGuard],
                     },
                     {
+                        path: 'obras',
+                        loadChildren: () => import('./obras/obras.module').then((m) => m.ObrasModule),
+                        data: { permission: 'Pages.Obras' },
+                        canActivate: [AppRouteGuard],
+                    },
+                    {
+                        path: 'solicitacoes-materiais',
+                        loadChildren: () => import('./solicitacoes-materiais/solicitacoes-materiais.module').then((m) => m.SolicitacoesMateriaisModule),
+                        data: { permission: 'Pages.SolicitacoesMateriais' },
+                        canActivate: [AppRouteGuard],
+                    },
+                    {
+                        path: 'problemas-impedimentos',
+                        loadChildren: () => import('./problemas-impedimentos/problemas-impedimentos.module').then((m) => m.ProblemasImpedimentosModule),
+                        data: { permission: 'Pages.ProblemasImpedimentos' },
+                        canActivate: [AppRouteGuard],
+                    },
+                    {
+                        path: 'tarefas',
+                        loadChildren: () => import('./tarefas/tarefas.module').then((m) => m.TarefasModule),
+                        data: { permission: 'Pages.Tarefas' },
+                        canActivate: [AppRouteGuard],
+                    },
+                    {
+                        path: 'escritorio-tarefas',
+                        loadChildren: () => import('./tarefas-internas/tarefas-internas.module').then((m) => m.TarefasInternasModule),
+                        data: { permission: 'Pages.TarefasInternas' },
+                        canActivate: [AppRouteGuard],
+                    },
+                    {
+                        path: 'fornecedores',
+                        loadChildren: () => import('./fornecedores/fornecedores.module').then((m) => m.FornecedoresModule),
+                        data: { permission: 'Pages.Fornecedores' },
+                        canActivate: [AppRouteGuard],
+                    },
+                    {
                         path: 'roles',
                         loadChildren: () => import('./roles/roles.module').then((m) => m.RolesModule),
                         data: { permission: 'Pages.Roles' },
@@ -49,4 +85,4 @@ import { AppComponent } from './app.component';
     ],
     exports: [RouterModule],
 })
-export class AppRoutingModule {}
+export class AppRoutingModule { }

@@ -26,6 +26,11 @@ import { TableModule } from 'primeng/table';
 import { AutoCompleteModule } from 'primeng/autocomplete';
 import { PaginatorModule } from 'primeng/paginator';
 import { ProgressBarModule } from 'primeng/progressbar';
+import { FornecedorMultiselectComponent } from './components/select-fornecedor/fornecedor-multiselect.component';
+import { ConfirmarPagamentoDialogComponent } from './components/confirmar-pagamento-dialog/confirmar-pagamento-dialog.component.';
+import { EstornarLancamentoModalComponent } from './components/confirmar-pagamento-dialog/estornar-lancamento-modal/estornar-lancamento-modal.component';
+
+import { NgxMaskDirective, NgxMaskPipe, provideNgxMask } from 'ngx-mask';
 
 @NgModule({
     imports: [
@@ -48,6 +53,11 @@ import { ProgressBarModule } from 'primeng/progressbar';
         LocalizePipe,
         BusyDirective,
         EqualValidator,
+        FornecedorMultiselectComponent,
+        ConfirmarPagamentoDialogComponent,
+        EstornarLancamentoModalComponent,
+        NgxMaskDirective,
+        NgxMaskPipe,
     ],
     exports: [
         AbpPaginationControlsComponent,
@@ -65,13 +75,23 @@ import { ProgressBarModule } from 'primeng/progressbar';
         TabsModule,
         TableModule,
         PaginatorModule,
+        FornecedorMultiselectComponent,
+        ConfirmarPagamentoDialogComponent,
+        EstornarLancamentoModalComponent
     ],
+    providers: [provideNgxMask()],
 })
 export class SharedModule {
     static forRoot(): ModuleWithProviders<SharedModule> {
         return {
             ngModule: SharedModule,
-            providers: [AppSessionService, AppUrlService, AppAuthService, AppRouteGuard, LayoutStoreService],
+            providers: [
+                AppSessionService,
+                AppUrlService,
+                AppAuthService,
+                AppRouteGuard,
+                LayoutStoreService
+            ],
         };
     }
 }

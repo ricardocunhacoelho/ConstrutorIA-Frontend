@@ -1,0 +1,134 @@
+<div class="modal-header">
+    <h5 class="modal-title">
+        {{ abaAtiva === 'ENDERECO' ? 'Endereço de entrega' : 'Forma de pagamento' }}
+    </h5>
+
+    <button type="button" class="btn-close" (click)="cancelar()">
+        <i class="fa fa-times"></i>
+    </button>
+</div>
+
+<div class="modal-body">
+
+    <!-- Tabs (só aparecem se tiver pagamento) -->
+    <ul class="nav nav-tabs mb-3" *ngIf="selecionarFormaPagamento">
+        <li class="nav-item">
+            <a class="nav-link" [class.active]="abaAtiva === 'ENDERECO'" (click)="abaAtiva = 'ENDERECO'">
+                Endereço
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link" [class.active]="abaAtiva === 'PAGAMENTO'" [class.disabled]="abaAtiva === 'ENDERECO'">
+                Pagamento
+            </a>
+        </li>
+    </ul>
+
+    <!-- ABA ENDEREÇO -->
+    <div *ngIf="abaAtiva === 'ENDERECO'">
+
+        <!-- SEU CÓDIGO ATUAL DE ENDEREÇO (sem mudar nada) -->
+        <div class="endereco-option mb-3" [class.selected]="tipoEntrega === 'OBRA'" (click)="tipoEntrega = 'OBRA'">
+
+            <div class="card shadow-sm p-3 cursor-pointer">
+                <strong class="d-block mb-1 fs-5">Endereço da obra</strong>
+
+                <div class="text-muted fs-7">
+                    {{ enderecoObraFormatado }}
+                </div>
+
+                <small class="text-success fs-7 mt-3" *ngIf="tipoEntrega === 'OBRA'">
+                    <i class="fa fa-check-circle mr-1"></i>
+                    Selecionado
+                </small>
+            </div>
+        </div>
+
+        <div class="form-check mb-2">
+            <input class="form-check-input" type="radio" id="optOutro" [(ngModel)]="tipoEntrega" value="OUTRO">
+            <label class="form-check-label" for="optOutro">
+                Informar outro endereço
+            </label>
+        </div>
+
+        <div class="form-check mb-4">
+            <input class="form-check-input" type="radio" id="optRetirada" [(ngModel)]="tipoEntrega" value="RETIRADA">
+            <label class="form-check-label" for="optRetirada">
+                Retirar com o fornecedor
+            </label>
+        </div>
+
+        <div *ngIf="tipoEntrega === 'OUTRO'">
+            <!-- inputs de endereço -->
+        </div>
+
+    </div>
+
+    <!-- ABA PAGAMENTO -->
+    <div *ngIf="abaAtiva === 'PAGAMENTO'">
+
+        <p class="text-muted mb-3">
+            O pagamento não é realizado pelo agente IA.
+            Esta informação será enviada ao fornecedor como preferência do cliente.
+        </p>
+
+        <div class="form-check mb-2">
+            <input class="form-check-input" type="radio" id="pgPix" name="formaPagamento" value="PIX"
+                [(ngModel)]="formaPagamento">
+
+            <label class="form-check-label" for="pgPix">
+                PIX
+            </label>
+        </div>
+
+        <div class="form-check mb-2">
+            <input class="form-check-input" type="radio" id="pgCredito" name="formaPagamento" value="CREDITO"
+                [(ngModel)]="formaPagamento">
+
+            <label class="form-check-label" for="pgCredito">
+                Cartão de crédito
+            </label>
+        </div>
+
+        <div class="form-check mb-2">
+            <input class="form-check-input" type="radio" id="pgDebito" name="formaPagamento" value="DEBITO"
+                [(ngModel)]="formaPagamento">
+
+            <label class="form-check-label" for="pgDebito">
+                Cartão de débito
+            </label>
+        </div>
+
+        <div class="form-check mb-2">
+            <input class="form-check-input" type="radio" id="pgDinheiro" name="formaPagamento" value="DINHEIRO"
+                [(ngModel)]="formaPagamento">
+
+            <label class="form-check-label" for="pgDinheiro">
+                Dinheiro
+            </label>
+        </div>
+
+        <div class="form-check mb-2">
+            <input class="form-check-input" type="radio" id="pgFaturado" name="formaPagamento" value="FATURADO"
+                [(ngModel)]="formaPagamento">
+
+            <label class="form-check-label" for="pgFaturado">
+                Faturado / a prazo
+            </label>
+        </div>
+
+
+    </div>
+
+</div>
+
+<div class="modal-footer">
+    <button class="btn btn-secondary" (click)="cancelar()">Cancelar</button>
+
+    <button class="btn btn-primary" (click)="confirmar()">
+        {{ selecionarFormaPagamento && abaAtiva === 'ENDERECO'
+        ? 'Continuar'
+        : 'Confirmar' }}
+    </button>
+</div>

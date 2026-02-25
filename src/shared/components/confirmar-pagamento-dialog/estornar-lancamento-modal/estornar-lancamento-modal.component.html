@@ -1,0 +1,52 @@
+<div class="modal-header">
+  <h4 class="modal-title text-danger">
+    <i class="fa fa-exclamation-triangle me-2"></i>
+    Confirmar Estorno
+  </h4>
+
+  <button type="button" class="btn-close" (click)="cancelar()">
+    <i class="fa fa-times"></i>
+  </button>
+</div>
+
+<div class="modal-body">
+
+  <div class="alert alert-danger">
+    <strong>Atenção!</strong><br>
+    Você está prestes a estornar este lançamento.<br>
+    Após confirmar:
+    <ul class="mb-1">
+      <li>O valor não será mais somado ao custo da obra.</li>
+      <li>O lançamento ficará marcado como <strong>ESTORNADO</strong>.</li>
+      <li>Esta ação ficará registrada com data e usuário.</li>
+    </ul>
+  </div>
+
+  <div class="form-group mt-3">
+    <label><strong>Motivo do Estorno</strong></label>
+    <textarea
+      class="form-control motivo-textarea"
+      rows="4"
+      [(ngModel)]="motivo"
+      placeholder="Descreva o motivo do estorno..."
+    ></textarea>
+  </div>
+
+</div>
+
+<div class="modal-footer">
+
+  <button class="btn btn-secondary" (click)="cancelar()">
+    Cancelar
+  </button>
+
+  <button
+    class="btn btn-danger"
+    (click)="confirmar()"
+    [disabled]="!motivo || motivo.trim().length === 0">
+
+    <i class="fa fa-undo me-1"></i>
+    Confirmar Estorno
+  </button>
+
+</div>

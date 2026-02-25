@@ -1,8 +1,7 @@
-import { Component, Injector, OnInit } from '@angular/core';
+import { Component, Injector, OnInit, ChangeDetectorRef } from '@angular/core';
 import { AppComponentBase } from '@shared/app-component-base';
-import { Router, RouterEvent, NavigationEnd, PRIMARY_OUTLET, RouterLink } from '@angular/router';
+import { Router, RouterEvent, NavigationEnd, RouterLink } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
-import { filter } from 'rxjs/operators';
 import { MenuItem } from '@shared/layout/menu-item';
 import { NgTemplateOutlet } from '@angular/common';
 import { CollapseDirective } from 'ngx-bootstrap/collapse';
@@ -10,6 +9,7 @@ import { CollapseDirective } from 'ngx-bootstrap/collapse';
 @Component({
     selector: 'sidebar-menu',
     templateUrl: './sidebar-menu.component.html',
+    styleUrls: ['./sidebar-menu.component.scss'],
     standalone: true,
     imports: [NgTemplateOutlet, RouterLink, CollapseDirective],
 })
@@ -22,7 +22,8 @@ export class SidebarMenuComponent extends AppComponentBase implements OnInit {
 
     constructor(
         injector: Injector,
-        private router: Router
+        private router: Router,
+        private cdr: ChangeDetectorRef
     ) {
         super(injector);
     }
@@ -31,43 +32,33 @@ export class SidebarMenuComponent extends AppComponentBase implements OnInit {
         this.menuItems = this.getMenuItems();
         this.patchMenuItems(this.menuItems);
 
-        this.router.events.subscribe((event: NavigationEnd) => {
-            const currentUrl = event.url !== '/' ? event.url : this.homeRoute;
-            const primaryUrlSegmentGroup = this.router.parseUrl(currentUrl).root.children[PRIMARY_OUTLET];
-            if (primaryUrlSegmentGroup) {
-                this.activateMenuItems('/' + primaryUrlSegmentGroup.toString());
+        this.activateMenuItems(this.router.url !== '/' ? this.router.url : this.homeRoute);
+
+        this.router.events.subscribe((event) => {
+            if (event instanceof NavigationEnd) {
+                const currentUrl = event.urlAfterRedirects !== '/' ? event.urlAfterRedirects : this.homeRoute;
+                this.activateMenuItems(currentUrl);
+                this.cdr.detectChanges();
             }
         });
     }
 
     getMenuItems(): MenuItem[] {
         return [
-            new MenuItem(this.l('About'), '/app/about', 'fas fa-info-circle'),
             new MenuItem(this.l('HomePage'), '/app/home', 'fas fa-home'),
-            new MenuItem(this.l('Roles'), '/app/roles', 'fas fa-theater-masks', 'Pages.Roles'),
-            new MenuItem(this.l('Tenants'), '/app/tenants', 'fas fa-building', 'Pages.Tenants'),
-            new MenuItem(this.l('Users'), '/app/users', 'fas fa-users', 'Pages.Users'),
-            new MenuItem(this.l('MultiLevelMenu'), '', 'fas fa-circle', '', [
-                new MenuItem('ASP.NET Boilerplate', '', 'fas fa-dot-circle', '', [
-                    new MenuItem('Home', 'https://aspnetboilerplate.com?ref=abptmpl', 'far fa-circle'),
-                    new MenuItem('Templates', 'https://aspnetboilerplate.com/Templates?ref=abptmpl', 'far fa-circle'),
-                    new MenuItem('Samples', 'https://aspnetboilerplate.com/Samples?ref=abptmpl', 'far fa-circle'),
-                    new MenuItem(
-                        'Documents',
-                        'https://aspnetboilerplate.com/Pages/Documents?ref=abptmpl',
-                        'far fa-circle'
-                    ),
-                ]),
-                new MenuItem('ASP.NET Zero', '', 'fas fa-dot-circle', '', [
-                    new MenuItem('Home', 'https://aspnetzero.com?ref=abptmpl', 'far fa-circle'),
-                    new MenuItem('Features', 'https://aspnetzero.com/Features?ref=abptmpl', 'far fa-circle'),
-                    new MenuItem('Pricing', 'https://aspnetzero.com/Pricing?ref=abptmpl#pricing', 'far fa-circle'),
-                    new MenuItem('Faq', 'https://aspnetzero.com/Faq?ref=abptmpl', 'far fa-circle'),
-                    new MenuItem('Documents', 'https://aspnetzero.com/Documents?ref=abptmpl', 'far fa-circle'),
-                ]),
+            new MenuItem(this.l('Obras'), '/app/obras', 'fas fa-building'),
+            new MenuItem(this.l('Fornecedores'), '/app/fornecedores', 'fa fa-truck'),
+            new MenuItem(this.l('Tarefas'), '', 'fas fa-tasks', '', [
+                new MenuItem(this.l('Tarefas Obras'), '/app/tarefas', 'fa-solid fa-hammer'),
+                new MenuItem(this.l('Tarefas Internas'), '/app/escritorio-tarefas', 'fa-solid fa-stapler'),
             ]),
+            new MenuItem(this.l('Solicitações Materiais'), '/app/solicitacoes-materiais', 'fa fa-shopping-bag'),
+            new MenuItem(this.l('Problemas/Impedimentos'), '/app/problemas-impedimentos', 'fa fa-exclamation-triangle'),
+            new MenuItem(this.l('Roles'), '/app/roles', 'fas fa-theater-masks', 'Pages.Roles'),
+            new MenuItem(this.l('Users'), '/app/users', 'fas fa-users', 'Pages.Users'),
         ];
     }
+
 
     patchMenuItems(items: MenuItem[], parentId?: number): void {
         items.forEach((item: MenuItem, index: number) => {
@@ -105,7 +96,7 @@ export class SidebarMenuComponent extends AppComponentBase implements OnInit {
 
     findMenuItemsByUrl(url: string, items: MenuItem[], foundedItems: MenuItem[] = []): MenuItem[] {
         items.forEach((item: MenuItem) => {
-            if (item.route === url) {
+            if (item.route && url.startsWith(item.route)) {
                 foundedItems.push(item);
             } else if (item.children) {
                 this.findMenuItemsByUrl(url, item.children, foundedItems);
@@ -113,6 +104,7 @@ export class SidebarMenuComponent extends AppComponentBase implements OnInit {
         });
         return foundedItems;
     }
+
 
     activateMenuItem(item: MenuItem): void {
         item.isActive = true;

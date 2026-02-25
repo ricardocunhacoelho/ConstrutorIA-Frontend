@@ -1,0 +1,23 @@
+.modal-header {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+
+  h4 {
+    font-weight: 600;
+  }
+}
+
+.motivo-textarea {
+  resize: none;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+
+  &:focus {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+  }
+}
+
+.modal-footer {
+  border-top: 1px solid #dee2e6;
+}

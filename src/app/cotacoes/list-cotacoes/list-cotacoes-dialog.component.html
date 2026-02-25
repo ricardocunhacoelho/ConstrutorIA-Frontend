@@ -1,0 +1,769 @@
+<div class="modal-header d-flex align-items-center justify-content-between">
+  <h5 class="modal-title">Cotações e Orçamentos</h5>
+
+  <button type="button" class="btn-close" aria-label="Close" (click)="bsModalRef.hide()">
+    <i class="fa fa-times"></i>
+  </button>
+</div>
+
+
+<div class="modal-body">
+  <div *ngIf="loading" class="text-center my-4">
+    <i class="fa fa-spinner fa-spin"></i> Carregando cotações e orçamentos...
+  </div>
+
+  <div *ngIf="!loading && fluxoCompraVM.length === 0" class="text-center text-muted my-4">
+    Nenhuma cotação encontrada.
+  </div>
+
+  <h5 *ngIf="fluxoCompraVM && fluxoCompraVM.length > 0" class="mb-3">
+    {{ obraNome }}
+  </h5>
+
+  <div *ngFor="let fluxo of fluxoCompraVM; let i = index" class="mb-3">
+    <div class="card shadow-sm rounded-3" [class.disabled-card]="isCardDesabilitado(fluxo)"
+      [class.opacity-50]="isCardDesabilitado(fluxo)">
+
+
+      <div class="card-body d-flex justify-content-between align-items-center cursor-pointer"
+        (click)="canExpand(fluxo) && toggleExpand(i)">
+        <!-- HEADER: se for Menor Valor por item, mostra só o título "Menor Valor por item" e obra -->
+        <ng-container *ngIf="fluxo.tipo === 'MENOR_VALOR_POR_ITEM'; else normalHeader">
+          <div class="flex-grow-1 pr-4" [class.opacity-50]="naoCompensaMelhorCompra">
+
+            <h5 *ngIf="existePedido" class="mb-2"
+              [ngClass]="naoCompensaMelhorCompra ? 'text-secondary' : 'text-success'">
+              <strong>Menor valor por item</strong> {{ getResumoStatus(fluxo).texto }}
+            </h5>
+
+            <h6 *ngIf="!existePedido" class="mb-2"
+              [ngClass]="naoCompensaMelhorCompra ? 'text-secondary' : 'text-success'">
+              <strong>Menor valor por item</strong> {{ getResumoStatus(fluxo).texto }}
+            </h6>
+
+            <div>
+              <h7 class="mb-0">
+                Preço total dos produtos: {{ getTotal(fluxo) | currency:'BRL' }}
+              </h7>
+
+              <!-- Só aparece se já houve gasto -->
+              <h6 *ngIf="getTotalGasto(fluxo) > 0" class="text-success fw-semibold">
+                Compras efetivadas: {{ getTotalGasto(fluxo) | currency:'BRL' }}
+              </h6>
+            </div>
+
+
+            <!-- MENSAGEM QUANDO NÃO COMPENSA -->
+            <p *ngIf="naoCompensaMelhorCompra" class="mt-2 fw-bold small">
+              Não existe Menor valor por item — um dos fornecedores já possui o menor valor.
+            </p>
+
+            <div
+              *ngIf="!naoCompensaMelhorCompra && fluxo.tipo === 'MENOR_VALOR_POR_ITEM' && menorValorPodeNaoCompensar()"
+              class="mt-2 fw-semibold d-flex align-items-start gap-1">
+
+              <span>
+                <strong>Atenção:</strong> alguns itens do <strong>Menor valor por item</strong> possuem
+                <strong>frete</strong>
+                ou <strong>desconto</strong> vinculados no orçamento de origem, isto pode alterar o valor final ao
+                separar os pedidos.
+              </span>
+            </div>
+
+
+          </div>
+        </ng-container>
+
+
+        <!-- HEADER NORMAL (fornecedor, status, obra) -->
+        <ng-template #normalHeader>
+          <div class="flex-grow-1 pr-4" [ngClass]="getHeaderClass(fluxo)">
+
+            <!-- 🔥 FORNECEDOR COM PEDIDO NORMAL -->
+            <h5 class="mb-1" *ngIf="isFornecedorPedidoNormal(fluxo)">
+              <strong>Fornecedor:</strong> {{ fluxo.fornecedor?.nome }} {{ getResumoStatus(fluxo).texto }}
+            </h5>
+
+            <span *ngIf="hasIntervencaoPendenteFluxo(fluxo) && isFornecedorPedidoNormal(fluxo)"
+              class="badge bg-danger mt-1">
+              <i class="fas fa-exclamation-triangle me-1 mr-2"></i>
+              Ação necessária para continuar a compra
+            </span>
+
+            <!-- 🔹 DEFAULT (exatamente como era) -->
+            <h6 class="mb-1" *ngIf="!isFornecedorPedidoNormal(fluxo)">
+              <strong>Fornecedor:</strong> {{ fluxo.fornecedor?.nome }}
+            </h6>
+
+            <div *ngIf="!fluxo.hasOrcamento">
+              <p class="mb-0 small fw-semibold">
+                Aguardando orçamento do fornecedor - {{ fluxo.statusView }}
+              </p>
+            </div>
+
+            <!-- 🔥 RESUMO INTELIGENTE (continua igual) -->
+            <p class="mb-0 small fw-semibold" *ngIf="fluxo.hasOrcamento && !isFornecedorPedidoNormal(fluxo)"
+              [ngClass]="getResumoStatus(fluxo).classe">
+              {{ getResumoStatus(fluxo).texto }}
+            </p>
+
+            <p class="mb-0 mt-1 fw-bold d-flex flex-wrap align-items-center gap-2"
+              *ngIf="fluxo.hasOrcamento && !isFornecedorPedidoNormal(fluxo)">
+
+              <!-- TOTAL -->
+              <span class="mr-2">
+                <strong>Total:</strong>
+
+                <span class="fs-6">
+                  {{ getTotalComFreteEDesconto(fluxo) | currency:'BRL' }}
+                </span>
+              </span>
+
+              <!-- DETALHES -->
+              <span class="small text-muted fw-normal">
+
+                ( Produtos {{ getTotal(fluxo) | currency:'BRL' }}
+
+                <ng-container *ngIf="hasFrete(fluxo)">
+                  • <span class="text-danger"> Frete +{{ fluxo.orcamento.valorFrete | currency:'BRL' }}</span>
+                </ng-container>
+
+                <ng-container *ngIf="hasDesconto(fluxo)">
+                  • <span class="text-success">
+                    Desconto -{{ fluxo.orcamento.valorDesconto | currency:'BRL' }}
+                  </span>
+                  <span>
+                    ({{ fluxo.orcamento.condicaoDesconto }})
+                  </span>
+                </ng-container>
+                )
+              </span>
+
+            </p>
+
+
+          </div>
+        </ng-template>
+
+
+        <button class="btn btn-sm" (click)="canExpand(fluxo) && toggleExpand(i); $event.stopPropagation()"
+          [disabled]="!canExpand(fluxo)" [ngClass]="fluxo.tipo === 'MENOR_VALOR_POR_ITEM'
+        ? 'btn-melhor-compra'
+        : 'btn-outline-secondary'">
+
+          <i class="fa" [ngClass]="expanded[i] ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+        </button>
+
+
+      </div>
+
+
+      <div class="px-3 pb-3" *ngIf="expanded[i]" @expandCollapse>
+
+        <hr />
+
+        <!-- OBSERVAÇÕES -->
+        <div *ngIf="fluxo.observacaoFornecedor">
+          <strong>Observação p/ fornecedor:</strong>
+          <p>{{ fluxo.observacaoFornecedor }}</p>
+        </div>
+
+        <div *ngIf="fluxo.observacaoInterna">
+          <strong>Observação interna:</strong>
+          <p>{{ fluxo.observacaoInterna }}</p>
+        </div>
+
+        <!-- SEM ORÇAMENTO: VISUAL ANTIGO -->
+        <div *ngIf="fluxo.tipo === 'COTACAO' && !fluxo.hasOrcamento">
+
+          <h6 class="mb-2 mt-3">Materiais:</h6>
+
+          <ul class="list-group small">
+            <li *ngFor="let mat of fluxo.materiaisCotados"
+              class="list-group-item d-flex justify-content-between align-items-center">
+              {{ mat.nome }}
+              <span class="badge bg-secondary">
+                {{ mat.quantidade }} {{ mat.unidade }}
+              </span>
+            </li>
+          </ul>
+
+          <p class="mt-4">Aguardando orçamento do fornecedor</p>
+        </div>
+
+        <div *ngIf="fluxo.tipo === 'MENOR_VALOR_POR_ITEM' || fluxo.hasOrcamento">
+
+          <ng-container *ngIf="fluxo.tipo === 'MENOR_VALOR_POR_ITEM'; else materiaisNormal">
+
+            <div class="mb-2 mt-2">
+              <p *ngIf="fluxo.usuarioPedido" class="text-muted">
+                <i class="fa fa-user me-1 mr-2"></i>
+                <strong>Usuário responsável pelo pedido:</strong> {{ fluxo.usuarioPedido }}
+              </p>
+
+              <p *ngIf="fluxo.compraEfetivada && fluxo.compraEfetivada.observacao" class="mt-3 text-muted">
+                <i class="fa fa-comment-alt me-1 mr-2"></i>
+                <strong class="mr-2">Observação:</strong>
+                {{ fluxo.compraEfetivada.observacao }}
+              </p>
+
+              <p *ngIf="fluxo.compraEfetivada && fluxo.compraEfetivada.prazoEntrega" class="mt-3 text-muted">
+                <i class="fa fa-clock me-1 mr-2"></i>
+                <strong class="mr-2">Prazo de entrega:</strong>
+                {{ fluxo.compraEfetivada.prazoEntrega | date:"dd/MM/yyyy (EEEE)" }}
+              </p>
+
+              <p *ngIf="fluxo.enderecoEntrega" class="mt-3 text-muted">
+                <i class="fa fa-map-marker-alt me-1 mr-2"></i>
+                <strong>Endereço de entrega:</strong> {{ fluxo.enderecoEntrega.formatado }}
+              </p>
+            </div>
+
+            <div class="divider mt-3 mb-4"></div>
+
+            <h6 class="mb-0">
+              <strong>Fornecedores:</strong>
+            </h6>
+
+            <div *ngFor="let bloco of this.menorValorPorItemAgrupada; trackBy: trackByFornecedor" class="mt-3">
+              <div>
+                <h6 class="mb-3">
+                  <strong class="mr-2">{{ bloco.fornecedor }}</strong>
+                  <span class="badge bg-secondary ms-2">
+                    {{ bloco.grupos.length }} itens
+                  </span>
+                </h6>
+
+                <div *ngIf="bloco.prazoEntrega || bloco.observacao" class="mb-2">
+                  <p *ngIf="bloco.prazoEntrega" class="mb-2 small text-muted">
+                    <i class="fa fa-clock me-1 mr-2"></i>
+                    <strong class="mr-2">Prazo de entrega:</strong>
+                    {{ bloco.prazoEntrega | date:"dd/MM/yyyy (EEEE)" }}
+                  </p>
+
+                  <p *ngIf="bloco.observacao" class="small text-muted">
+                    <i class="fa fa-comment-alt me-1 mr-2"></i>
+                    <strong class="mr-2">Observação:</strong>
+                    {{ bloco.observacao }}
+                  </p>
+                </div>
+
+                <p *ngIf="getInfoPagamentoBloco(bloco) as info" class="small mb-3" [ngClass]="info.classe">
+                  <i class="fa fa-info-circle me-1 mr-1"></i>
+                  {{ info.texto }}
+                </p>
+
+                <div *ngIf="todosCompradosBloco(bloco)" class="bloco-pagamento-acoes">
+                  <button type="button" class="btn-confirmar-pagamento" [ngClass]="{
+                    'btn-pagamento-confirmado': bloco.pagamentoConfirmado
+                  }" [disabled]="bloco.pagamentoConfirmado" (click)="confirmarPagamentoMenorValorItem(bloco)">
+                    <i class="fa" [ngClass]="bloco.pagamentoConfirmado ? 'fa-check-circle' : 'fa-credit-card'">
+                    </i>
+
+                    <span>
+                      {{ bloco.pagamentoConfirmado
+                      ? 'Pagamento Confirmado'
+                      : 'Confirmar Pagamento' }}
+                    </span>
+                  </button>
+                </div>
+
+                <div *ngFor="let grupo of bloco.grupos; trackBy: trackByGrupo">
+
+                  <div class="card p-3 border material-card" [class.material-disabled]="grupo.removido">
+
+                    <!-- 🔁 CARD ORIGINAL (INALTERADO) -->
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                      <h6 class="mb-0">
+                        {{ grupo.nome | titlecase }}
+                      </h6>
+
+                      <button type="button" class="btn btn-sm" *ngIf="getStatusGrupo(grupo, bloco) as status"
+                        [disabled]="status !== null" [ngClass]="
+                        status === 'PAGO'
+                          ? 'btn-success'
+                          : status === 'CONCLUIDO'
+                            ? 'btn-primary'
+                            : status === 'PEDIDO'
+                              ? 'btn-info'
+                              : (grupo.removido ? 'btn-primary btn-pulse' : 'btn-outline-danger')
+                      " (click)="
+                        !status &&
+                        removerGrupo(bloco, grupo);
+                        $event.stopPropagation()
+                      " [title]="
+                        status === 'PAGO'
+                          ? 'Pagamento confirmado — item bloqueado'
+                          : status === 'CONCLUIDO'
+                            ? 'Item já comprado — não pode ser removido'
+                            : status === 'PEDIDO'
+                              ? 'Item já foi pedido — aguardando compra'
+                              : (grupo.removido ? 'Adicionar item novamente' : 'Remover item')
+                      ">
+                        <i class="fa" [ngClass]="
+                          status === 'PAGO'
+                            ? 'fa-check-circle'
+                            : status === 'CONCLUIDO'
+                              ? 'fa-wallet'
+                              : status === 'PEDIDO'
+                                ? 'fa-hourglass-half'
+                                : (grupo.removido ? 'fa-plus' : 'fa-times')
+                        "></i>
+                      </button>
+                    </div>
+
+                    <div *ngIf="hasIntervencaoPendente(grupo)" class="alert alert-warning mt-2">
+
+                      <strong>{{ grupo.intervencao?.tipoView }}</strong>
+                      <p class="mb-2">{{ grupo.intervencao?.descricao }}</p>
+
+                      <!-- FALTA DE MATERIAL -->
+                      <ng-container *ngIf="grupo.intervencao?.tipo === 'FaltaMaterial'">
+
+                        <!-- NÃO tem sugestão -->
+                        <div *ngIf="!grupo.intervencao.materialSugeridoEspecificacao">
+                          <label class="form-check">
+                            <input type="radio" [(ngModel)]="grupo.opcaoSelecionada" value="OUTRO_FORNECEDOR">
+                            Fazer pedido com outro fornecedor
+                          </label>
+                        </div>
+
+                        <!-- TEM sugestão -->
+                        <div *ngIf="grupo.intervencao.materialSugeridoEspecificacao">
+                          <label class="form-check">
+                            <input type="radio" [(ngModel)]="grupo.opcaoSelecionada" value="ACEITAR_SUGESTAO">
+                            Seguir com material sugerido —
+                            {{ grupo.intervencao.materialSugeridoEspecificacao }}
+                            ({{ grupo.intervencao.materialSugeridoPrecoItem | currency:'BRL' }})
+                          </label>
+
+                          <label class="form-check mt-1">
+                            <input type="radio" [(ngModel)]="grupo.opcaoSelecionada" value="OUTRO_FORNECEDOR">
+                            Tentar outro fornecedor
+                          </label>
+                        </div>
+                      </ng-container>
+
+                      <!-- SUGESTÃO DO FORNECEDOR -->
+                      <ng-container *ngIf="grupo.intervencao?.tipo === 'SugestaoFornecedor'">
+                        <label class="form-check">
+                          <input type="radio" [(ngModel)]="grupo.opcaoSelecionada" value="ACEITAR_SUGESTAO">
+                          Aceitar sugestão —
+                          {{ grupo.intervencao.materialSugeridoEspecificacao }}
+                          ({{ grupo.intervencao.materialSugeridoPrecoItem | currency:'BRL' }})
+                        </label>
+
+                        <label class="form-check mt-1">
+                          <input type="radio" [(ngModel)]="grupo.opcaoSelecionada" value="MANTER_ORIGINAL">
+                          Manter material original
+                        </label>
+                      </ng-container>
+
+                      <!-- PRAZO INDISPONÍVEL -->
+                      <ng-container *ngIf="grupo.intervencao?.tipo === 'PrazoIndisponivel'">
+                        <label class="form-check">
+                          <input type="radio" [(ngModel)]="grupo.opcaoSelecionada" value="OUTRO_FORNECEDOR">
+                          Fazer pedido com outro fornecedor
+                        </label>
+                      </ng-container>
+
+                      <button class="btn btn-sm btn-success mt-2" [disabled]="!grupo.opcaoSelecionada"
+                        (click)="resolverIntervencao(grupo)">
+                        Resolver
+                      </button>
+
+                    </div>
+
+                    <div class="variacoes-wrapper" [class.variacoes-disabled]="grupo.removido">
+
+                      <div *ngFor="let v of grupo.variacoes" class="form-check mb-4">
+                        <input class="form-check-input" type="radio" [name]="fluxo.id + '-' + grupo.nome" [value]="v"
+                          [(ngModel)]="grupo.selected"
+                          [disabled]="grupo.removido || grupo.feitoPedido|| grupo.jaComprado" />
+
+
+                        <label class="form-check-label w-100">
+                          <div class="d-flex justify-content-between align-items-center">
+
+                            <!-- Lado esquerdo: descrição -->
+                            <div>
+                              <div>
+                                <strong *ngIf="v.especificacao">{{ v.especificacao }}</strong>
+                              </div>
+
+                              <small class="text-muted">
+                                {{ v.quantidade }} {{ v.unidade }}
+                                <span *ngIf="v.precoItem">
+                                  • {{ v.precoItem | currency:'BRL' }} / un
+                                </span>
+                                <br *ngIf="fluxo.tipo === 'MENOR_VALOR_POR_ITEM' && v.fornecedorNome" />
+
+                                <span class="text-muted"
+                                  *ngIf="fluxo.tipo === 'MENOR_VALOR_POR_ITEM' && v.fornecedorNome">
+                                  Fornecedor: <strong>{{ v.fornecedorNome }}</strong>
+                                </span>
+                              </small>
+
+                            </div>
+
+                            <!-- Lado direito: total -->
+                            <div class="text-end">
+                              <div class="fw-bold">
+                                {{ v.precoTotal | currency:'BRL' }}
+                              </div>
+
+                              <small *ngIf="v.emFalta" class="text-danger">
+                                Em falta
+                              </small>
+                            </div>
+
+                          </div>
+                        </label>
+
+
+
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="text-end mb-5">
+                <p class="mb-0 fw-bold">
+
+                  <span>
+                    Total — {{ bloco.fornecedor }}:
+                    <span class="fs-6">
+                      {{ getTotalBloco(bloco) | currency:'BRL' }}
+                    </span>
+                  </span>
+
+                  
+
+                  <span class="small text-muted fw-normal ms-2">
+
+                    ( Produtos {{ getTotalBloco(bloco) | currency:'BRL' }}
+
+                    <ng-container *ngIf="getFreteBloco(bloco) > 0">
+                      • <span class="text-danger">
+                        Frete: {{ getFreteBloco(bloco) | currency:'BRL' }}
+                      </span>
+                    </ng-container>
+
+                    <ng-container *ngIf="getDescontoBloco(bloco) > 0">
+                      • <span class="text-success">
+                        Desconto: -{{ getDescontoBloco(bloco) | currency:'BRL' }}
+                        <span class="text-muted">
+                          ({{ getCondicaoDescontoBloco(bloco) }})
+                        </span>
+                      </span>
+                    </ng-container>
+
+                    <ng-container *ngIf="getFreteBloco(bloco) > 0 || getDescontoBloco(bloco) > 0">
+                      • <span class="text-muted">
+                        Isso pode alterar o valor do pedido, consulte o orçamento original e avalie se a divisão de
+                        fornecedores vale a pena nestas condições.
+                      </span>
+                    </ng-container>
+
+                    )
+
+                  </span>
+
+                </p>
+              </div>
+
+
+            </div>
+
+          </ng-container>
+
+
+          <ng-template #materiaisNormal>
+
+            <div class="mb-2">
+              <p *ngIf="fluxo.usuarioPedido" class="text-muted">
+                <i class="fa fa-user me-1 mr-2"></i>
+                <strong>Usuário responsável pelo pedido:</strong> {{ fluxo.usuarioPedido }}
+              </p>
+
+              <p *ngIf="fluxo.compraEfetivada && fluxo.compraEfetivada.observacao" class="mt-3 text-muted">
+                <i class="fa fa-comment-alt me-1 mr-2"></i>
+                <strong class="mr-2">Observação:</strong>
+                {{ fluxo.compraEfetivada.observacao }}
+              </p>
+
+              <p *ngIf="fluxo.compraEfetivada && fluxo.compraEfetivada.prazoEntrega" class="mt-3 text-muted">
+                <i class="fa fa-clock me-1 mr-2"></i>
+                <strong class="mr-2">Prazo de entrega:</strong>
+                {{ fluxo.compraEfetivada.prazoEntrega | date:"dd/MM/yyyy (EEEE)" }}
+              </p>
+
+              <p *ngIf="fluxo.enderecoEntrega" class="mt-3 text-muted">
+                <i class="fa fa-map-marker-alt me-1 mr-2"></i>
+                <strong>Endereço de entrega:</strong> {{ fluxo.enderecoEntrega.formatado }}
+              </p>
+            </div>
+
+            <div class="divider mt-3 mb-4"></div>
+
+            <p *ngIf="getInfoPagamentoFluxo(fluxo) as info" class="mt-2 mb-4 small" [ngClass]="info.classe">
+              <i class="fa fa-info-circle me-1 mr-1"></i>
+              {{ info.texto }}
+            </p>
+
+            <div *ngIf="todosCompradosFluxo(fluxo)" class="bloco-pagamento-acoes">
+              <button type="button" class="btn-confirmar-pagamento" [disabled]="fluxo.pagamentoConfirmado"
+                (click)="confirmarPagamentoPedido(fluxo)">
+                <i class="fa" [ngClass]="fluxo.pagamentoConfirmado ? 'fa-check-circle' : 'fa-credit-card'">
+                </i>
+
+                <span>
+                  {{ fluxo.pagamentoConfirmado
+                  ? 'Pagamento Confirmado'
+                  : 'Confirmar Pagamento' }}
+                </span>
+              </button>
+            </div>
+
+            <div *ngFor="let grupo of fluxo.materiaisAgrupados">
+              <div class="card mt-3 p-3 border material-card" [class.material-disabled]="grupo.removido">
+
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <h6 class="mb-0">
+                    {{ grupo.nome | titlecase }}
+                  </h6>
+
+                  <!-- BOTÃO REMOVER / ADICIONAR -->
+                  <button type="button" class="btn btn-sm" [disabled]="isGrupoBloqueado(grupo, fluxo)" [ngClass]="
+                    isGrupoPago(grupo, fluxo)
+                      ? 'btn-success'
+                      : isGrupoConcluido(grupo, fluxo)
+                        ? 'btn-primary'
+                        : isGrupoPedido(grupo, fluxo)
+                          ? 'btn-info'
+                          : (grupo.removido ? 'btn-success btn-pulse' : 'btn-outline-danger')
+                  " (click)="
+                      !isGrupoBloqueado(grupo, fluxo) &&
+                      removerGrupo(fluxo, grupo);
+                      $event.stopPropagation()
+                    " [title]="
+                      isGrupoPago(grupo, fluxo)
+                        ? 'Pagamento já confirmado — não pode ser alterado'
+                        : isGrupoConcluido(grupo, fluxo)
+                          ? 'Pedido concluído — não pode ser removido'
+                          : isGrupoPedido(grupo, fluxo)
+                            ? 'Pedido já realizado — aguardando conclusão'
+                            : (grupo.removido ? 'Adicionar item novamente' : 'Remover item')
+                    ">
+                    <i class="fa" [ngClass]="
+                      isGrupoPago(grupo, fluxo)
+                        ? 'fa-check-circle'
+                        : isGrupoConcluido(grupo, fluxo)
+                          ? 'fa-wallet'
+                          : isGrupoPedido(grupo, fluxo)
+                            ? 'fa-hourglass-half'
+                            : (grupo.removido ? 'fa-plus' : 'fa-times')
+                    ">
+                    </i>
+
+                  </button>
+
+                </div>
+
+                <div *ngIf="hasIntervencaoPendente(grupo)" class="alert alert-warning mt-2">
+
+                  <strong>{{ grupo.intervencao?.tipoView }}</strong>
+                  <p class="mb-2">{{ grupo.intervencao?.descricao }}</p>
+
+                  <!-- FALTA DE MATERIAL -->
+                  <ng-container *ngIf="grupo.intervencao?.tipo === 'FaltaMaterial'">
+
+                    <!-- NÃO tem sugestão -->
+                    <div *ngIf="!grupo.intervencao.materialSugeridoEspecificacao">
+                      <label class="form-check">
+                        <input type="radio" [(ngModel)]="grupo.opcaoSelecionada" value="OUTRO_FORNECEDOR">
+                        Fazer pedido com outro fornecedor
+                      </label>
+                    </div>
+
+                    <!-- TEM sugestão -->
+                    <div *ngIf="grupo.intervencao.materialSugeridoEspecificacao">
+                      teste
+                      <label class="form-check">
+                        <input type="radio" [(ngModel)]="grupo.opcaoSelecionada" value="ACEITAR_SUGESTAO">
+                        Seguir com material sugerido —
+                        {{ grupo.intervencao.materialSugeridoEspecificacao }}
+                        ({{ grupo.intervencao.materialSugeridoPrecoItem | currency:'BRL' }})
+                      </label>
+
+                      <label class="form-check mt-1">
+                        <input type="radio" [(ngModel)]="grupo.opcaoSelecionada" value="OUTRO_FORNECEDOR">
+                        Tentar outro fornecedor
+                      </label>
+                    </div>
+                  </ng-container>
+
+                  <!-- SUGESTÃO DO FORNECEDOR -->
+                  <ng-container *ngIf="grupo.intervencao?.tipo === 'SugestaoFornecedor'">
+                    <label class="form-check">
+                      <input type="radio" [(ngModel)]="grupo.opcaoSelecionada" value="ACEITAR_SUGESTAO">
+                      Aceitar sugestão —
+                      {{ grupo.intervencao.materialSugeridoEspecificacao }}
+                      ({{ grupo.intervencao.materialSugeridoPrecoItem | currency:'BRL' }})
+                    </label>
+
+                    <label class="form-check mt-1">
+                      <input type="radio" [(ngModel)]="grupo.opcaoSelecionada" value="MANTER_ORIGINAL">
+                      Manter material original
+                    </label>
+                  </ng-container>
+
+                  <!-- PRAZO INDISPONÍVEL -->
+                  <ng-container *ngIf="grupo.intervencao?.tipo === 'PrazoIndisponivel'">
+                    <label class="form-check">
+                      <input type="radio" [(ngModel)]="grupo.opcaoSelecionada" value="OUTRO_FORNECEDOR">
+                      Fazer pedido com outro fornecedor
+                    </label>
+                  </ng-container>
+
+                  <button class="btn btn-sm btn-success mt-2" [disabled]="!grupo.opcaoSelecionada"
+                    (click)="resolverIntervencao(grupo)">
+                    Resolver
+                  </button>
+
+                </div>
+
+                <!-- VARIAÇÕES -->
+                <div class="variacoes-wrapper" [class.variacoes-disabled]="grupo.removido">
+
+                  <div *ngFor="let v of grupo.variacoes" class="form-check mb-4">
+                    <input class="form-check-input" type="radio" [name]="fluxo.id + '-' + grupo.nome" [value]="v"
+                      [(ngModel)]="grupo.selected"
+                      [disabled]="grupo.removido || grupo.feitoPedido|| grupo.jaComprado" />
+
+
+                    <label class="form-check-label w-100">
+                      <div class="d-flex justify-content-between align-items-center">
+
+                        <!-- Lado esquerdo: descrição -->
+                        <div>
+                          <div>
+                            <strong *ngIf="v.especificacao">{{ v.especificacao }}</strong>
+                          </div>
+
+                          <small class="text-muted">
+                            {{ v.quantidade }} {{ v.unidade }}
+                            <span *ngIf="v.precoItem">
+                              • {{ v.precoItem | currency:'BRL' }} / un
+                            </span>
+                            <br *ngIf="fluxo.tipo === 'MENOR_VALOR_POR_ITEM' && v.fornecedorNome" />
+
+                            <span class="text-muted" *ngIf="fluxo.tipo === 'MENOR_VALOR_POR_ITEM' && v.fornecedorNome">
+                              Fornecedor: <strong>{{ v.fornecedorNome }}</strong>
+                            </span>
+                          </small>
+
+                        </div>
+
+                        <!-- Lado direito: total -->
+                        <div class="text-end">
+                          <div class="fw-bold">
+                            {{ v.precoTotal | currency:'BRL' }}
+                          </div>
+
+                          <small *ngIf="v.emFalta" class="text-danger">
+                            Em falta
+                          </small>
+                        </div>
+
+                      </div>
+                    </label>
+
+
+
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </ng-template>
+
+          <div class="divider mt-3 mb-4"></div>
+
+
+          <div class="mt-4">
+
+            <p class="mb-1 small text-muted">
+              Produtos:
+              <strong class="text-dark">
+                {{ getTotal(fluxo) | currency:'BRL' }}
+              </strong>
+            </p>
+
+            <p *ngIf="hasDesconto(fluxo)" class="mb-1 small text-muted">
+              Desconto:
+              <strong class="text-success">
+                -{{ fluxo.orcamento.valorDesconto | currency:'BRL' }}
+              </strong>
+              <span *ngIf="fluxo.orcamento.condicaoDesconto">
+                ({{ fluxo.orcamento.condicaoDesconto }})
+              </span>
+            </p>
+
+            <!-- FRETE -->
+            <p *ngIf="hasFrete(fluxo)" class="mb-1 small text-muted">
+              Frete:
+              <strong class="text-danger">
+                +{{ fluxo.orcamento.valorFrete | currency:'BRL' }}
+              </strong>
+              <span *ngIf="fluxo.orcamento.condicaoFrete">
+                ({{ fluxo.orcamento.condicaoFrete }})
+              </span>
+            </p>
+
+            <!-- TOTAL FINAL -->
+            <div class="d-flex justify-content-between align-items-center mt-2 mb-2">
+
+              <h5 *ngIf="fluxo.tipo === 'COTACAO'" class="mb-0 fw-bold">
+                Total
+                <span class="text-dark">
+                  {{ getTotalComFreteEDesconto(fluxo) | currency:'BRL' }}
+                </span>
+              </h5>
+
+              <h5 *ngIf="fluxo.tipo === 'MENOR_VALOR_POR_ITEM'" class="mb-0 fw-bold">
+                Total
+                <span class="text-dark">
+                  {{ getTotal(fluxo) | currency:'BRL' }}
+                </span>
+              </h5>
+
+              <button class="btn btn-success" (click)="realizarCompra(fluxo)"
+                [disabled]="savingCompra || loading || existePedido">
+                Realizar compra
+              </button>
+
+            </div>
+
+            <!-- JÁ GASTO -->
+            <p *ngIf="getTotalGasto(fluxo) > 0" class="mt-2 fw-semibold text-success">
+              Já gasto: {{ getTotalGasto(fluxo) | currency:'BRL' }}
+            </p>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="modal-footer">
+  <button type="button" class="btn btn-primary" (click)="novaCotacao()"
+    [disabled]="loading || savingCompra || existePedido">
+    + Nova cotação
+  </button>
+</div>
