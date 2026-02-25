@@ -14,17 +14,24 @@ import { TableModule } from 'primeng/table';
 import { PaginatorModule } from 'primeng/paginator';
 
 import {
+    CompraDto,
     CompraServiceProxy,
+    CotacaoComOrcamentoDto,
+    CotacaoDto,
     CotacaoServiceProxy,
+    CreateEnderecoDto,
     CreateMaterialPedidoCompraDto,
     CreateMelhorCompraDto,
     CreatePedidoCompraDto,
+    FormaPagamento,
     IntervencaoCompraDto,
     IntervencaoCompraServiceProxy,
     MaterialCotadoDto,
     MaterialOrcadoDto,
     MelhorCompraStatus,
+    ObraLancamentoFinanceiroServiceProxy,
     OrcamentoDto,
+    PedidoCompraDto,
     PedidoCompraServiceProxy,
     SimpleLookupDto,
     SimpleLookupWithAdressDto
@@ -40,8 +47,18 @@ import {
 } from '@angular/animations';
 import { SelecionarEnderecoDialogComponent } from './selecionar-endereco-dialog/selecionar-endereco-dialog.component';
 import { forkJoin } from 'rxjs';
+import { ConfirmarPagamentoDialogComponent } from '@shared/components/confirmar-pagamento-dialog/confirmar-pagamento-dialog.component.';
+
 
 const MENOR_VALOR_TIPO = 'MENOR_VALOR_POR_ITEM';
+
+
+interface ResultadoEnderecoPagamento {
+    tipoEntrega: 'OBRA' | 'OUTRO' | 'RETIRADA';
+    endereco?: CreateEnderecoDto;
+    enderecoObraId?: string;
+    formaPagamento?: 'PIX' | 'CREDITO' | 'DEBITO' | 'DINHEIRO' | 'FATURADO';
+}
 
 
 interface CotacaoComOrcamentoViewModel {
@@ -58,6 +75,7 @@ interface CotacaoComOrcamentoViewModel {
     observacaoFornecedor?: string;
     materiaisCotados: MaterialCotadoDto[];
     statusView?: string;
+    retiradaNoFornecedor?: boolean;
 
     materiaisAgrupados?: MaterialVMGrupo[];
 }
@@ -72,11 +90,12 @@ interface FluxoCompraBaseViewModel {
     enderecoEntrega?: {
         id?: string;
         formatado: string;
-        origem: 'PEDIDO' | 'COMPRA';
+        origem: 'COMPRA' | 'PEDIDO' | 'ORCAMENTO';
     };
 
     usuarioPedido?: string;
     compraEfetivada?: InfoCompraFornecedor;
+    pagamentoConfirmado?: InfoPagamentoCompra;
     displayStatus: string;
 }
 
@@ -165,6 +184,12 @@ type InfoCompraFornecedor = {
     observacao?: string;
 };
 
+type InfoPagamentoCompra = {
+    data?: string;
+    valor?: number;
+    formaPagamento?: any;
+};
+
 @Component({
     selector: 'app-cotacoes-list-dialog',
     standalone: true,
@@ -194,6 +219,10 @@ export class CotacoesListDialogComponent implements OnInit {
     @Input() solicitacaoId: string;
     @Output() onSave = new EventEmitter<void>();
 
+    pedidosCache?: PedidoCompraDto[];
+    cotacoesCache?: CotacaoComOrcamentoDto[];
+    comprasCache?: CompraDto[];
+
     fluxoCompraVM: FluxoCompraViewModel[] = [];
     obraNome: string = '';
     expandedIndex: number | null = null;
@@ -204,8 +233,12 @@ export class CotacoesListDialogComponent implements OnInit {
     pedidoOrigemId: string | null = null;
     existePedido: boolean = false;
     menorValorPorItemAgrupada: {
+        fornecedorId: string;
         fornecedor: string;
         grupos: MaterialVMGrupo[];
+        prazoEntrega?: string;
+        observacao?: string;
+        pagamentoConfirmado?: InfoPagamentoCompra;
     }[] = [];
 
     constructor(
@@ -214,6 +247,7 @@ export class CotacoesListDialogComponent implements OnInit {
         private _pedidoCompraService: PedidoCompraServiceProxy,
         private _compraService: CompraServiceProxy,
         private _intervencaoCompraService: IntervencaoCompraServiceProxy,
+        private _obraLancamentoFinanceiroService: ObraLancamentoFinanceiroServiceProxy,
         private _modalService: BsModalService,
         private cdr: ChangeDetectorRef
     ) { }
@@ -230,7 +264,12 @@ export class CotacoesListDialogComponent implements OnInit {
             pedidos: this._pedidoCompraService.getAllBySolicitacao(this.solicitacaoId),
             compras: this._compraService.getAllBySolicitacao(this.solicitacaoId),
             intervencoesCompras: this._intervencaoCompraService.getAllBySolicitacao(this.solicitacaoId),
-        }).subscribe(({ cotacoesComOrcamento, pedidos, compras, intervencoesCompras }) => {
+            lancamentos: this._obraLancamentoFinanceiroService.getAllBySolicitacao(this.solicitacaoId)
+        }).subscribe(({ cotacoesComOrcamento, pedidos, compras, intervencoesCompras, lancamentos }) => {
+
+            this.pedidosCache = pedidos;
+            this.cotacoesCache = cotacoesComOrcamento;
+            this.comprasCache = compras;
 
             this.obraNome = cotacoesComOrcamento[0]?.obra?.nome || '';
 
@@ -283,7 +322,7 @@ export class CotacoesListDialogComponent implements OnInit {
                     this.buildGruposPorFornecedor(menorValorPorItem);
             }
 
-
+            this.conciliarPagamentos(this.fluxoCompraVM, compras, lancamentos);
 
             this.loading = false;
             this.cdr.detectChanges();
@@ -311,7 +350,14 @@ export class CotacoesListDialogComponent implements OnInit {
             statusView: c.statusView,
 
             displayStatus: c.displayStatus ?? 'Cotação',
-            materiaisAgrupados: c.materiaisAgrupados ?? []
+            materiaisAgrupados: c.materiaisAgrupados ?? [],
+            enderecoEntrega: !c.retiradaNoFornecedor && c.orcamento?.enderecoEntrega?.id
+                ? {
+                    id: c.orcamento.enderecoEntrega.id,
+                    formatado: this.formatarEndereco(c.orcamento.enderecoEntrega),
+                    origem: 'ORCAMENTO'
+                }
+                : null
         }));
     }
 
@@ -394,15 +440,6 @@ export class CotacoesListDialogComponent implements OnInit {
                 c.cotacaoId === fluxo.id
             );
 
-            if (compra?.enderecoEntrega) {
-                fluxo.enderecoEntrega = {
-                    id: compra.enderecoEntrega.id,
-                    formatado: this.formatarEndereco(compra.enderecoEntrega),
-                    origem: 'COMPRA'
-                };
-                return; // encerra só essa cotação
-            }
-
             // 🔹 PEDIDO
             const pedido = (pedidos || []).find(p =>
                 fluxo.tipo === MENOR_VALOR_TIPO
@@ -414,6 +451,15 @@ export class CotacoesListDialogComponent implements OnInit {
                 fluxo.usuarioPedido = pedido.user.nome;
             }
 
+            if (compra?.enderecoEntrega) {
+                fluxo.enderecoEntrega = {
+                    id: compra.enderecoEntrega.id,
+                    formatado: this.formatarEndereco(compra.enderecoEntrega),
+                    origem: 'COMPRA'
+                };
+                return;
+            }
+
             if (pedido?.enderecoEntrega) {
                 fluxo.enderecoEntrega = {
                     id: pedido.enderecoEntrega.id,
@@ -421,6 +467,7 @@ export class CotacoesListDialogComponent implements OnInit {
                     origem: 'PEDIDO'
                 };
             }
+
         });
 
         // ==========================
@@ -467,6 +514,67 @@ export class CotacoesListDialogComponent implements OnInit {
         });
     }
 
+    private conciliarPagamentos(
+        fluxos: FluxoCompraViewModel[],
+        compras: CompraDto[],
+        lancamentos: any[]
+    ): void {
+
+        if (!lancamentos?.length) return;
+
+        fluxos.forEach(fluxo => {
+
+            // ============================
+            // COTAÇÃO NORMAL
+            // ============================
+            if (fluxo.tipo !== MENOR_VALOR_TIPO) {
+
+                const compra = compras.find(c => c.cotacaoId === fluxo.id);
+                if (!compra) return;
+
+                const lancamento = lancamentos.find(l => l.compraId === compra.id);
+
+                if (lancamento) {
+                    fluxo.pagamentoConfirmado = {
+                        data: lancamento.dataLancamento,
+                        valor: lancamento.valorPago,
+                        formaPagamento: lancamento.formaDePagamentoString
+                    };
+                }
+
+                return;
+            }
+
+            // ============================
+            // MENOR VALOR POR ITEM
+            // ============================
+
+            this.menorValorPorItemAgrupada?.forEach(bloco => {
+
+                const compra = compras.find(c =>
+                    c.fornecedorId === bloco.fornecedorId &&
+                    c.isMelhorCompra
+                );
+
+                if (!compra) return;
+
+                const lancamento = lancamentos.find(l =>
+                    l.compraId === compra.id
+                );
+
+                if (lancamento) {
+                    bloco.pagamentoConfirmado = {
+                        data: lancamento.dataLancamento,
+                        valor: lancamento.valorPago,
+                        formaPagamento: lancamento.formaDePagamentoString
+                    };
+                }
+            });
+
+        });
+    }
+
+
     private formatarEndereco(endereco: any): string {
         if (!endereco) return 'Endereço não informado';
 
@@ -485,11 +593,17 @@ export class CotacoesListDialogComponent implements OnInit {
     }
 
 
-    isCardDesabilitado(cotacao: FluxoCompraViewModel): boolean {
+    isCardDesabilitado(fluxo: FluxoCompraViewModel): boolean {
+
         if (!this.existePedido) return false;
 
-        return cotacao.id !== this.pedidoOrigemId;
+        if (this.pedidoOrigemId === MENOR_VALOR_TIPO) {
+            return fluxo.tipo !== MENOR_VALOR_TIPO;
+        }
+
+        return fluxo.id !== this.pedidoOrigemId;
     }
+
 
     groupMateriaisFromOrcamento(
         orcamento: any,
@@ -535,33 +649,52 @@ export class CotacoesListDialogComponent implements OnInit {
     private buildGruposPorFornecedor(
         cotacao: FluxoCompraViewModel
     ): {
+        fornecedorId: string;
         fornecedor: string;
         grupos: MaterialVMGrupo[];
+        prazoEntrega?: string;
+        observacao?: string;
     }[] {
 
-        const map = new Map<string, MaterialVMGrupo[]>();
+        const map = new Map<string, {
+            fornecedorNome: string;
+            grupos: MaterialVMGrupo[];
+        }>();
 
         (cotacao.materiaisAgrupados || [])
             .filter(g => !g.removido && g.selected)
             .forEach(g => {
-                const fornecedor =
+
+                const fornecedorId = g.selected!.fornecedorId;
+                const fornecedorNome =
                     g.selected?.fornecedorNome || 'Fornecedor não informado';
 
-                if (!map.has(fornecedor)) {
-                    map.set(fornecedor, []);
+                if (!map.has(fornecedorId)) {
+                    map.set(fornecedorId, {
+                        fornecedorNome,
+                        grupos: []
+                    });
                 }
 
-                map.get(fornecedor)!.push(g);
+                map.get(fornecedorId)!.grupos.push(g);
             });
 
-        map.forEach(grupos => {
-            grupos.sort((a, b) =>
-                a.nome.localeCompare(b.nome, 'pt-BR', { sensitivity: 'base' })
-            );
-        });
-        return Array.from(map.entries()).
-            map(([fornecedor, grupos]) => ({ fornecedor, grupos })).sort((a, b) => b.grupos.length - a.grupos.length);
+        return Array.from(map.entries())
+            .map(([fornecedorId, value]) => {
+
+                const grupoComprado = value.grupos.find(g => g.jaComprado);
+
+                return {
+                    fornecedorId,
+                    fornecedor: value.fornecedorNome,
+                    grupos: value.grupos,
+                    prazoEntrega: grupoComprado?.prazoEntrega,
+                    observacao: grupoComprado?.observacao
+                };
+            })
+            .sort((a, b) => b.grupos.length - a.grupos.length);
     }
+
 
     buildMenorValorPorItem(
         cotacoes: CotacaoComOrcamentoViewModel[]
@@ -666,6 +799,13 @@ export class CotacoesListDialogComponent implements OnInit {
         classe: string;
     } {
 
+        if (fluxo.pagamentoConfirmado) {
+            return {
+                texto: 'Pagamento realizado e custo lançado na obra',
+                classe: 'text-success'
+            };
+        }
+
         const grupos = fluxo.materiaisAgrupados || [];
         const isMenorValorItem = fluxo.tipo === MENOR_VALOR_TIPO;
 
@@ -683,13 +823,6 @@ export class CotacoesListDialogComponent implements OnInit {
                 return {
                     texto: ' — Um dos fornecedores já possui o menor valor.',
                     classe: 'text-muted'
-                };
-            }
-
-            if (comprados === total) {
-                return {
-                    texto: ' — Todos os itens comprados',
-                    classe: 'text-success'
                 };
             }
 
@@ -713,19 +846,18 @@ export class CotacoesListDialogComponent implements OnInit {
             };
         }
 
-
         const pedidoEhMenorValorItem = this.pedidoOrigemId === MENOR_VALOR_TIPO;
 
         if (pedidoEhMenorValorItem) {
             return {
-                texto: 'Itens incluídos na Menor Valor Item',
+                texto: 'Itens incluídos no "Menor Valor Item"',
                 classe: 'text-muted'
             };
         }
 
         if (comprados === total) {
             return {
-                texto: 'Todos os itens comprados',
+                texto: '- Pedido concluído, aguardando confirmação de pagamento',
                 classe: 'text-success'
             };
         }
@@ -739,7 +871,7 @@ export class CotacoesListDialogComponent implements OnInit {
 
         if (pedidos > 0) {
             return {
-                texto: '— Pedido realizado, buscando efetivação de compra',
+                texto: '— Pedido realizado, aguardando confirmação do fornecedor',
                 classe: 'text-primary'
             };
         }
@@ -748,6 +880,133 @@ export class CotacoesListDialogComponent implements OnInit {
             texto: 'Cotação concluída. Orçamento disponível para formalização do pedido.',
             classe: 'text-muted'
         };
+    }
+
+    getInfoPagamentoBloco(bloco: any): { texto: string; classe: string } | null {
+
+        if (bloco.pagamentoConfirmado) {
+
+            const data = new Date(bloco.pagamentoConfirmado.data);
+
+            const dataFormatada =
+                data.toLocaleDateString('pt-BR') + ' ' +
+                data.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+            return {
+                texto: `Pagamento confirmado em ${dataFormatada}. Valor: R$ ${bloco.pagamentoConfirmado.valor.toFixed(2)}. Forma de pagamento: ${bloco.pagamentoConfirmado.formaPagamento}. Custo já lançado na obra.`,
+                classe: 'text-success'
+            };
+        }
+
+        const grupos = (bloco.grupos || [])
+            .filter(g => !g.removido);
+
+        if (!grupos.length) return null;
+
+        const todosComprados = this.todosCompradosBloco(bloco);
+        const algumPedido = grupos.some(g => g.feitoPedido);
+        const algumNaoComprado = grupos.some(g => !g.jaComprado);
+
+        if (todosComprados) {
+            return {
+                texto: `Pedido concluído. O setor financeiro deve entrar em contato com o fornecedor ${bloco.fornecedor} para realizar o pagamento. Após o pagamento, confirme e lance o custo do pedido na obra.`,
+                classe: 'text-primary'
+            };
+        }
+
+        if (algumPedido && algumNaoComprado) {
+            return {
+                texto: 'Aguardando confirmação do fornecedor.',
+                classe: 'text-info'
+            };
+        }
+
+        return null;
+    }
+
+    getTotalBloco(bloco: any): number {
+        return (bloco.grupos || [])
+            .filter(g => !g.removido && g.selected)
+            .map(g => g.selected?.precoTotal ?? 0)
+            .reduce((a, b) => a + b, 0);
+    }
+
+    getFreteBloco(bloco: any): number {
+        const grupo = (bloco.grupos || []).find(g => !g.removido && g.selected);
+        return grupo?.selected?.valorFreteOrcamentoOrigem ?? 0;
+    }
+
+    getDescontoBloco(bloco: any): number {
+        const grupo = (bloco.grupos || []).find(g => !g.removido && g.selected);
+        return grupo?.selected?.valorDescontoOrcamentoOrigem ?? 0;
+    }
+
+    getCondicaoDescontoBloco(bloco: any): string {
+        const grupo = (bloco.grupos || []).find(g => !g.removido && g.selected);
+        return grupo?.selected?.condicaoDescontoOrcamentoOrigem ?? '';
+    }
+
+    getTotalComFreteEDescontoBloco(bloco: any): number {
+        const totalProdutos = this.getTotalBloco(bloco);
+        const frete = this.getFreteBloco(bloco);
+        const desconto = this.getDescontoBloco(bloco);
+
+        return totalProdutos + frete - desconto;
+    }
+
+    todosCompradosBloco(bloco: any): boolean {
+        const grupos = (bloco.grupos || []).filter(g => !g.removido);
+        return grupos.length > 0 && grupos.every(g => g.jaComprado);
+    }
+
+
+    getInfoPagamentoFluxo(fluxo: any): { texto: string; classe: string } | null {
+
+        if (fluxo.pagamentoConfirmado) {
+
+            const data = new Date(fluxo.pagamentoConfirmado.data);
+
+            const dataFormatada =
+                data.toLocaleDateString('pt-BR') + ' ' +
+                data.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+            return {
+                texto: `Pagamento confirmado em ${dataFormatada}. Valor: R$ ${fluxo.pagamentoConfirmado.valor.toFixed(2)}. Forma de pagamento: ${fluxo.pagamentoConfirmado.formaPagamento}. Custo já lançado na obra.`,
+                classe: 'text-success'
+            };
+        }
+
+        const gruposParaCompra = (fluxo.materiaisAgrupados || [])
+            .filter(g => !g.removido);
+
+        if (!gruposParaCompra.length) return null;
+
+        const todosComprados = this.todosCompradosFluxo(fluxo);
+        const algumPedido = gruposParaCompra.some(g => g.feitoPedido);
+        const algumNaoComprado = gruposParaCompra.some(g => !g.jaComprado);
+
+        if (todosComprados) {
+            return {
+                texto: `Lembre-se: O setor financeiro deve entrar em contato com o fornecedor ${fluxo.fornecedor?.nome} para realizar o pagamento. Após o pagamento, confirme e lance o custo do pedido na obra.`,
+                classe: 'text-primary'
+            };
+        }
+
+        if (algumPedido && algumNaoComprado) {
+            return {
+                texto: 'Aguardando confirmação do fornecedor.',
+                classe: 'text-info'
+            };
+        }
+
+        return null;
+    }
+
+    todosCompradosFluxo(fluxo: any): boolean {
+        const grupos = (fluxo.materiaisAgrupados || [])
+            .filter(g => !g.removido);
+
+        return grupos.length > 0 && grupos.every(g => g.jaComprado);
     }
 
 
@@ -787,22 +1046,29 @@ export class CotacoesListDialogComponent implements OnInit {
         this.gerarPedidoCompra(fluxo as CotacaoFluxoViewModel, result);
     }
 
-    private abrirDialogEndereco(fluxo: FluxoCompraViewModel): Promise<any> {
+    private abrirDialogEndereco(
+        fluxo: FluxoCompraViewModel
+    ): Promise<ResultadoEnderecoPagamento> {
         return new Promise(resolve => {
 
             const endereco = fluxo?.obra?.endereco;
-
             const enderecoFormatado = endereco
                 ? `${endereco.rua}, ${endereco.numero} - ${endereco.bairro}, ${endereco.cidade} - ${endereco.uf}, CEP: ${endereco.cep}`
                 : '';
 
             const modalRef = this._modalService.show(
                 SelecionarEnderecoDialogComponent,
-                { class: 'modal-md' }
+                {
+                    class: 'modal-md',
+                    backdrop: 'static',
+                    keyboard: false
+                }
             );
 
             modalRef.content.enderecoObraId = endereco?.id;
             modalRef.content.enderecoObraFormatado = enderecoFormatado;
+
+            modalRef.content.selecionarFormaPagamento = true;
 
             const oldHide = modalRef.hide;
 
@@ -817,19 +1083,17 @@ export class CotacoesListDialogComponent implements OnInit {
 
                 resolve({
                     tipoEntrega: content.tipoEntrega,
-
                     endereco: content.tipoEntrega === 'OUTRO'
                         ? content.endereco
                         : null,
-
                     enderecoObraId: content.tipoEntrega === 'OBRA'
                         ? content.enderecoObraId
-                        : null
+                        : null,
+                    formaPagamento: content.formaPagamento ?? null
                 });
             };
         });
     }
-
 
     private gerarPedidosMelhorCompra(
         menorValorPorItem: MenorValorPorItemViewModel,
@@ -850,7 +1114,10 @@ export class CotacoesListDialogComponent implements OnInit {
             this.onSave.emit();
             this.bsModalRef.hide();
             abp.ui.clearBusy();
+
+            this.cdr.detectChanges();
         });
+
     }
 
 
@@ -860,15 +1127,17 @@ export class CotacoesListDialogComponent implements OnInit {
     ): CreatePedidoCompraDto[] {
 
         const grupos = menorValorPorItem.materiaisAgrupados || [];
-        const pedidosPorFornecedor: { [key: string]: CreatePedidoCompraDto } = {};
+        const pedidosPorFornecedor = new Map<string, CreatePedidoCompraDto>();
 
         grupos
             .filter(g => !g.removido && g.selected)
             .forEach(g => {
-                const v = g.selected!;
-                const fornecedor = v.fornecedorNome || 'desconhecido';
 
-                if (!pedidosPorFornecedor[fornecedor]) {
+                const v = g.selected!;
+                const fornecedorId = v.fornecedorId;
+
+                if (!pedidosPorFornecedor.has(fornecedorId)) {
+
                     const pedido = new CreatePedidoCompraDto();
 
                     pedido.solicitacaoMaterialId = menorValorPorItem.solicitacaoMaterialId;
@@ -878,35 +1147,31 @@ export class CotacoesListDialogComponent implements OnInit {
                     pedido.userId = abp.session.userId;
                     pedido.isMelhorCompra = true;
                     pedido.materiaisPedidosCompra = [];
+                    pedido.fornecedorId = fornecedorId;
 
                     pedido.valorFrete = v.valorFreteOrcamentoOrigem;
                     pedido.condicaoFrete = v.condicaoFreteOrcamentoOrigem;
                     pedido.valorDesconto = v.valorDescontoOrcamentoOrigem;
                     pedido.condicaoDesconto = v.condicaoDescontoOrcamentoOrigem;
+                    pedido.formaDePagamento = this.mapFormaPagamento(enderecoResult?.formaPagamento);
 
-                    pedido.retiradaNoFornecedor = enderecoResult?.tipoEntrega === 'RETIRADA';
-
-                    if (!pedido.retiradaNoFornecedor) {
-
-                        if (enderecoResult?.tipoEntrega === 'OBRA') {
-                            pedido.enderecoEntregaId = enderecoResult.enderecoObraId;
-                        }
-
-                        if (enderecoResult?.tipoEntrega === 'OUTRO') {
-                            pedido.enderecoEntrega = enderecoResult.endereco;
-                        }
+                    if (enderecoResult?.tipoEntrega === 'OBRA') {
+                        pedido.enderecoEntregaId = enderecoResult.enderecoObraId;
+                    } else if (enderecoResult?.tipoEntrega === 'OUTRO') {
+                        pedido.enderecoEntrega = enderecoResult.endereco;
+                    } else if (enderecoResult?.tipoEntrega === 'RETIRADA') {
+                        pedido.retiradaNoFornecedor = true;
                     }
 
-                    pedidosPorFornecedor[fornecedor] = pedido;
+                    pedidosPorFornecedor.set(fornecedorId, pedido);
                 }
-
 
                 const mat = new CreateMaterialPedidoCompraDto();
                 mat.nome = v.nome;
                 mat.quantidade = String(v.quantidade);
                 mat.unidade = v.unidade;
                 mat.especificacao = v.especificacao;
-                mat.fornecedorId = v.fornecedorId;
+                mat.fornecedorId = fornecedorId;
                 mat.solicitacaoMaterialId = menorValorPorItem.solicitacaoMaterialId;
                 mat.cotacaoId = v.cotacaoId;
                 mat.orcamentoId = v.orcamentoId;
@@ -914,11 +1179,13 @@ export class CotacoesListDialogComponent implements OnInit {
                 mat.precoItem = v.precoItem;
                 mat.precoTotal = v.precoTotal;
 
-                pedidosPorFornecedor[fornecedor].materiaisPedidosCompra.push(mat);
+                pedidosPorFornecedor.get(fornecedorId)!
+                    .materiaisPedidosCompra.push(mat);
             });
 
-        return Object.values(pedidosPorFornecedor);
+        return Array.from(pedidosPorFornecedor.values());
     }
+
 
     private gerarPedidoCompra(
         cotacaoFluxo: CotacaoFluxoViewModel,
@@ -927,7 +1194,6 @@ export class CotacoesListDialogComponent implements OnInit {
         abp.ui.setBusy();
 
         const dto = new CreatePedidoCompraDto();
-
         dto.solicitacaoMaterialId = cotacaoFluxo.solicitacaoMaterialId;
         dto.cotacaoId = cotacaoFluxo.id;
         dto.obraId = cotacaoFluxo.obraId;
@@ -938,20 +1204,18 @@ export class CotacoesListDialogComponent implements OnInit {
         dto.condicaoFrete = cotacaoFluxo.orcamento.condicaoFrete;
         dto.valorDesconto = cotacaoFluxo.orcamento.valorDesconto;
         dto.condicaoDesconto = cotacaoFluxo.orcamento.condicaoDesconto;
+        dto.orcamentoId = cotacaoFluxo.orcamento.id;
+        dto.formaDePagamento = this.mapFormaPagamento(enderecoResult?.formaPagamento);
+        dto.fornecedorId = cotacaoFluxo.fornecedor.id;
 
-        dto.retiradaNoFornecedor = enderecoResult?.tipoEntrega === 'RETIRADA';
 
-        if (!dto.retiradaNoFornecedor) {
-
-            if (enderecoResult?.tipoEntrega === 'OBRA') {
-                dto.enderecoEntregaId = enderecoResult.enderecoObraId;
-            }
-
-            if (enderecoResult?.tipoEntrega === 'OUTRO') {
-                dto.enderecoEntrega = enderecoResult.endereco;
-            }
+        if (enderecoResult?.tipoEntrega === 'OBRA') {
+            dto.enderecoEntregaId = enderecoResult.enderecoObraId;
+        } else if (enderecoResult?.tipoEntrega === 'OUTRO') {
+            dto.enderecoEntrega = enderecoResult.endereco;
+        } else if (enderecoResult?.tipoEntrega === 'RETIRADA') {
+            dto.retiradaNoFornecedor = true;
         }
-
 
         dto.materiaisPedidosCompra = (cotacaoFluxo.materiaisAgrupados || [])
             .filter(g => !g.removido && g.selected)
@@ -999,20 +1263,50 @@ export class CotacoesListDialogComponent implements OnInit {
     }
 
     getHeaderClass(fluxo: FluxoCompraViewModel): string {
-        if (this.hasIntervencaoPendenteFluxo(fluxo) && this.isFornecedorDoPedido(fluxo)) {
+
+        if (fluxo.pagamentoConfirmado) {
+            return 'header-pagamento-confirmado';
+        }
+
+        if (
+            this.isFornecedorDoPedido(fluxo) &&
+            this.hasIntervencaoPendenteFluxo(fluxo)
+        ) {
             return 'header-intervencao';
         }
 
-        if (this.isFornecedorDoPedido(fluxo) && this.isFornecedorDoPedido(fluxo)) {
-            return 'header-pedido';
+        if (
+            this.isFornecedorDoPedido(fluxo) &&
+            this.isPedidoConcluido(fluxo)
+        ) {
+            return 'header-pedido-concluido';
+        }
+
+        if (
+            this.isFornecedorDoPedido(fluxo) &&
+            this.isPedidoFeitoMasNaoConcluido(fluxo)
+        ) {
+            return 'header-pedido-feito';
         }
 
         return '';
     }
 
+
     isFornecedorDoPedido(fluxo: FluxoCompraViewModel): boolean {
         return this.existePedido && fluxo.id === this.pedidoOrigemId;
     }
+
+    isPedidoConcluido(fluxo: FluxoCompraViewModel): boolean {
+        const grupos = fluxo.materiaisAgrupados || [];
+        return grupos.length > 0 && grupos.every(g => g.jaComprado);
+    }
+
+    isPedidoFeitoMasNaoConcluido(fluxo: FluxoCompraViewModel): boolean {
+        const grupos = fluxo.materiaisAgrupados || [];
+        return grupos.some(g => g.feitoPedido) && !this.isPedidoConcluido(fluxo);
+    }
+
 
     hasFrete(fluxo: any): boolean {
         return fluxo?.orcamento?.valorFrete != null && fluxo.orcamento.valorFrete > 0;
@@ -1047,4 +1341,95 @@ export class CotacoesListDialogComponent implements OnInit {
         });
     }
 
+    private mapFormaPagamento(
+        valor?: 'PIX' | 'CREDITO' | 'DEBITO' | 'DINHEIRO' | 'FATURADO'
+    ): FormaPagamento {
+        switch (valor) {
+            case 'PIX':
+                return FormaPagamento._1;
+            case 'CREDITO':
+                return FormaPagamento._2;
+            case 'DEBITO':
+                return FormaPagamento._3;
+            case 'DINHEIRO':
+                return FormaPagamento._4;
+            case 'FATURADO':
+                return FormaPagamento._5;
+            default:
+                return FormaPagamento._0;
+        }
+    }
+
+    private abrirModalConfirmacaoPagamento(compraId: string): void {
+
+        if (!compraId) {
+            abp.notify.warn('Pedido não localizado.');
+            return;
+        }
+
+        const modalRef = this._modalService.show(
+            ConfirmarPagamentoDialogComponent,
+            {
+                class: 'modal-lg',
+                backdrop: 'static',
+                keyboard: false,
+                initialState: {
+                    compraId: compraId,
+                    modo: 'confirmar'
+                }
+            }
+        );
+
+        modalRef.content.onConfirmado?.subscribe(() => {
+            this.loadCotacoes();
+            this.onSave.emit();
+        });
+    }
+
+    confirmarPagamentoPedido(fluxo: FluxoCompraViewModel): void {
+
+        const compra = this.comprasCache.find(p =>
+            p.cotacaoId === fluxo.id
+        );
+
+        this.abrirModalConfirmacaoPagamento(compra?.id);
+    }
+
+    confirmarPagamentoMenorValorItem(bloco: any): void {
+
+        const compra = this.comprasCache.find(p =>
+            p.isMelhorCompra &&
+            p.fornecedorId === bloco.fornecedorId
+        );
+
+        this.abrirModalConfirmacaoPagamento(compra?.id);
+    }
+
+    getStatusGrupo(
+        grupo: MaterialVMGrupo,
+        contexto: { pagamentoConfirmado?: any }
+    ): 'PAGO' | 'CONCLUIDO' | 'PEDIDO' | null {
+
+        if (contexto?.pagamentoConfirmado) return 'PAGO';
+        if (grupo.jaComprado) return 'CONCLUIDO';
+        if (grupo.feitoPedido) return 'PEDIDO';
+
+        return null;
+    }
+
+    isGrupoPago(grupo: MaterialVMGrupo, fluxo: FluxoCompraViewModel): boolean {
+        return this.getStatusGrupo(grupo, fluxo) === 'PAGO';
+    }
+
+    isGrupoConcluido(grupo: MaterialVMGrupo, fluxo: FluxoCompraViewModel): boolean {
+        return this.getStatusGrupo(grupo, fluxo) === 'CONCLUIDO';
+    }
+
+    isGrupoPedido(grupo: MaterialVMGrupo, fluxo: FluxoCompraViewModel): boolean {
+        return this.getStatusGrupo(grupo, fluxo) === 'PEDIDO';
+    }
+
+    isGrupoBloqueado(grupo: MaterialVMGrupo, contexto: any): boolean {
+        return this.getStatusGrupo(grupo, contexto) !== null;
+    }
 }

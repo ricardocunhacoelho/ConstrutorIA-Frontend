@@ -14,6 +14,7 @@ import * as ApiServiceProxies from './service-proxies';
         ApiServiceProxies.AccountServiceProxy,
         ApiServiceProxies.ConfigurationServiceProxy,
         ApiServiceProxies.ObraServiceProxy,
+        ApiServiceProxies.ObraLancamentoFinanceiroServiceProxy,
         ApiServiceProxies.SolicitacaoMaterialServiceProxy,
         ApiServiceProxies.ProblemaImpedimentoServiceProxy,
         ApiServiceProxies.TarefaServiceProxy,

@@ -1,0 +1,157 @@
+.financeiro-dialog {
+
+    padding: 20px 24px;
+    background: #f8f9fa;
+
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+
+    max-height: 80vh;
+
+    .resumo-cards {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 12px;
+
+        .resumo {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+
+            .titulo {
+                font-size: 0.8rem;
+                opacity: 0.8;
+            }
+
+            .valor {
+                font-size: 1.3rem;
+                font-weight: 600;
+            }
+        }
+
+        .receita {
+            background: #e9f9ef;
+            color: #198754;
+        }
+
+        .despesa {
+            background: #fdeaea;
+            color: #dc3545;
+        }
+
+        .saldo.positivo {
+            background: #eef6ff;
+            color: #0d6efd;
+        }
+
+        .saldo.negativo {
+            background: #fdeaea;
+            color: #dc3545;
+        }
+    }
+
+    .tabela-container {
+        border: 1px solid #eee;
+        border-radius: 6px;
+        overflow: hidden;
+    }
+
+    .valor.positivo {
+        color: #198754;
+        font-weight: 600;
+    }
+
+    .valor.negativo {
+        color: #dc3545;
+        font-weight: 600;
+    }
+
+    .descricao small {
+        display: block;
+        font-size: 0.75rem;
+        opacity: 0.6;
+    }
+
+    .rodape {
+        margin-top: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .filtros {
+
+        padding: 16px;
+        border-radius: 12px;
+        background: white;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+
+        .filtros-header {
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+            opacity: .7;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+        }
+
+        .filtros-body {
+            display: flex;
+            align-items: flex-end;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+
+        .label-grupo {
+            font-size: 0.75rem;
+            margin-bottom: 4px;
+            display: block;
+            opacity: .6;
+            text-transform: uppercase;
+            letter-spacing: .4px;
+        }
+
+        .grupo-periodo {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .periodo-inputs {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+
+            input {
+                width: 190px;
+            }
+
+            .ate {
+                font-size: 0.85rem;
+                opacity: .6;
+            }
+        }
+
+        .grupo-natureza {
+            display: flex;
+            flex-direction: column;
+
+            select {
+                width: 200px;
+            }
+        }
+
+        .grupo-botoes {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+    }
+
+    .valor.estornado {
+        text-decoration: line-through;
+        opacity: 0.6;
+        color: #6c757d !important;
+    }
+
+}

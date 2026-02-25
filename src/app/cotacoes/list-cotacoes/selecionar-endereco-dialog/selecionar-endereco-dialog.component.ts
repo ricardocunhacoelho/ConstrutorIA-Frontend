@@ -13,33 +13,46 @@ import { FormsModule } from '@angular/forms';
 })
 export class SelecionarEnderecoDialogComponent {
 
+    selecionarFormaPagamento = false;
+
+    abaAtiva: 'ENDERECO' | 'PAGAMENTO' = 'ENDERECO';
+
     tipoEntrega: 'OBRA' | 'OUTRO' | 'RETIRADA' = 'OBRA';
-
     endereco: CreateEnderecoDto = new CreateEnderecoDto();
-
     enderecoObraFormatado: string;
     enderecoObraId: string;
+
+    formaPagamento?: 'PIX' | 'CREDITO' | 'DEBITO' | 'DINHEIRO' | 'FATURADO';
 
     confirmado = false;
 
     constructor(public bsModalRef: BsModalRef) { }
 
+
     confirmar() {
 
         if (this.tipoEntrega === 'OUTRO') {
-
             const { rua, numero, bairro, cidade, uf, cep } = this.endereco;
-
             if (!rua || !numero || !bairro || !cidade || !uf || !cep) {
                 abp.notify.warn('Preencha todos os campos do endereço antes de continuar.');
                 return;
             }
         }
 
-        this.confirmado = true;
+        if (this.selecionarFormaPagamento && this.abaAtiva === 'ENDERECO') {
+            this.abaAtiva = 'PAGAMENTO';
+            return;
+        }
 
+        if (this.selecionarFormaPagamento && !this.formaPagamento) {
+            abp.notify.warn('Selecione a forma de pagamento.');
+            return;
+        }
+
+        this.confirmado = true;
         this.bsModalRef.hide();
     }
+
 
     cancelar() {
         this.confirmado = false;

@@ -23,6 +23,7 @@ import { SelecionarEnderecoDialogComponent } from '../list-cotacoes//selecionar-
 @Component({
     templateUrl: './create-cotacao-dialog.component.html',
     standalone: true,
+    styleUrls: ['./create-cotacao-dialog.component.scss'],
     imports: [
         CommonModule,
         FormsModule,
@@ -46,6 +47,8 @@ export class CreateCotacaoDialogComponent extends AppComponentBase implements On
     solicitacaoId?: string;
     solicitacao?: SolicitacaoMaterialDto;
 
+    mostrarAlerta = true;
+
     constructor(
         injector: Injector,
         public _cotacaoService: CotacaoServiceProxy,
@@ -57,8 +60,9 @@ export class CreateCotacaoDialogComponent extends AppComponentBase implements On
         super(injector);
     }
 
-
     ngOnInit(): void {
+        this.mostrarAlerta = true;
+
         if (this.solicitacaoId) {
             this.carregarSolicitacao();
         } else {
@@ -67,6 +71,7 @@ export class CreateCotacaoDialogComponent extends AppComponentBase implements On
 
         this.carregarFornecedores();
     }
+
 
     carregarSolicitacao(): void {
         this._solicitacaoService.get(this.solicitacaoId!).subscribe((result) => {
@@ -144,17 +149,12 @@ export class CreateCotacaoDialogComponent extends AppComponentBase implements On
             nova.materiaisCotados = this.materiais;
             nova.obraId = this.solicitacao?.obraId;
 
-            nova.retiradaNoFornecedor = enderecoResult.tipoEntrega === 'RETIRADA';
-
-            if (!nova.retiradaNoFornecedor) {
-
-                if (enderecoResult.tipoEntrega === 'OBRA') {
-                    nova.enderecoEntregaId = enderecoResult.enderecoObraId;
-                }
-
-                if (enderecoResult.tipoEntrega === 'OUTRO') {
-                    nova.enderecoEntrega = enderecoResult.endereco;
-                }
+            if (enderecoResult?.tipoEntrega === 'OBRA') {
+                nova.enderecoEntregaId = enderecoResult.enderecoObraId;
+            } else if (enderecoResult?.tipoEntrega === 'OUTRO') {
+                nova.enderecoEntrega = enderecoResult.endereco;
+            } else if (enderecoResult?.tipoEntrega === 'RETIRADA') {
+                nova.retiradaNoFornecedor = true;
             }
 
             return nova;
@@ -188,7 +188,11 @@ export class CreateCotacaoDialogComponent extends AppComponentBase implements On
 
             const modalRef = this._modalService.show(
                 SelecionarEnderecoDialogComponent,
-                { class: 'modal-md' }
+                {
+                    class: 'modal-md',
+                    backdrop: 'static',
+                    keyboard: false
+                }
             );
 
             modalRef.content.enderecoObraId = endereco?.id;

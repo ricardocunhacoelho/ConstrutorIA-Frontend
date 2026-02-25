@@ -112,11 +112,11 @@
                                         {{ 'Data Inicio' | localize }}
                                         <p-sortIcon field="dataInicio"></p-sortIcon>
                                     </th>
-                                        <th style="min-width: 150px" pSortableColumn="dataTermino">
+                                    <th style="min-width: 150px" pSortableColumn="dataTermino">
                                         {{ 'Termino Previsto' | localize }}
                                         <p-sortIcon field="dataTermino"></p-sortIcon>
                                     </th>
-                                    <th style="min-width: 130px">
+                                    <th style="min-width: 200px">
                                         {{ 'Actions' | localize }}
                                     </th>
                                 </tr>
@@ -145,12 +145,15 @@
                                         </span>
                                     </td>
                                     <td>
-                                        <button type="button" class="btn btn-sm bg-secondary"
+                                        <button type="button" class="btn btn-sm bg-info"
+                                            (click)="financeiroObra(record)">
+                                            <i class="fas fa-dollar-sign"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm bg-secondary mx-2"
                                             (click)="editObra(record)">
                                             <i class="fas fa-pencil-alt"></i>
                                         </button>
-                                        <button type="button" class="btn btn-sm bg-danger mx-2"
-                                            (click)="delete(record)">
+                                        <button type="button" class="btn btn-sm bg-danger" (click)="delete(record)">
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </td>

@@ -11,6 +11,7 @@
     opacity: 0;
     transform: translateY(-6px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -72,12 +73,12 @@ button.btn-outline-success {
 
 .card {
   transition: background-color 0.25s ease, box-shadow 0.25s ease;
-    border: 1px solid #949997 !important;
+  border: 1px solid #949997 !important;
 
 }
 
 .card.bg-light {
-  box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
 }
 
 .border-success {
@@ -89,28 +90,86 @@ button.btn-outline-success {
   opacity: 0.6;
 }
 
-.card-completo{
+.card-completo {
   background-color: #f1fcf5 !important;
 }
 
 .btn-melhor-compra {
-  background-color: #28a745 !important; /* verde */
+  background-color: #28a745 !important;
+  /* verde */
   border-color: #28a745 !important;
   color: white !important;
 }
 
 .btn-melhor-compra i {
-  color: white !important; /* seta branca */
+  color: white !important;
+  /* seta branca */
 }
 
 .disabled-card {
   pointer-events: none;
 }
 
-.header-pedido {
-  color: #fd7e14; // laranja Bootstrap
+.header-pedido-concluido {
+  color: #007bff !important; // verde bootstrap
+  font-weight: 600;
+}
+
+.header-pedido-feito {
+  color: #17a2b8 !important; // info escurecido
+  font-weight: 600;
 }
 
 .header-intervencao {
-  color: #dc3545; // vermelho Bootstrap
+  color: #dc3545; // vermelho
+  font-weight: 600;
+}
+
+.header-pagamento-confirmado {
+  color: #28a745 !important; // verde
+  font-weight: 600;
+}
+
+
+.divider {
+  height: 1px;
+  width: 100%;
+  background-color: #dee2e6;
+}
+
+.bloco-pagamento-acoes {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1.5rem;
+}
+
+.btn-confirmar-pagamento {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid #007bff;
+
+  background-color: #007bff;
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.85rem;
+
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(0, 123, 255, 0.25);
+}
+
+.btn-confirmar-pagamento:disabled {
+  background-color: #e7f1ff;
+  border-color: #28a745;
+  color: #28a745;
+  cursor: default;
+  box-shadow: none;
+  opacity: 0.95;
+}
+
+.btn-confirmar-pagamento i {
+  font-size: 0.95rem;
 }

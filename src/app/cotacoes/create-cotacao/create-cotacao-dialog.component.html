@@ -3,6 +3,24 @@
     <div class="modal-body">
         <tabset>
             <tab [heading]="'Detalhes da Cotação' | localize" class="pt-3 px-2">
+                <div *ngIf="mostrarAlerta" class="alert alert-danger alert-dismissible fade show mb-4 alerta-cotacao"
+                    role="alert">
+
+                    <button type="button" class="close" aria-label="Fechar" (click)="mostrarAlerta = false">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+
+                    <strong>Atenção ao preencher os materiais:</strong><br><br>
+
+                    • Confira se a <strong>descrição</strong> do material está clara e completa.<br>
+                    • Verifique se a <strong>quantidade</strong> e a <strong>unidade</strong> estão corretas.<br>
+                    • Certifique-se de que as especificações necessárias estejam incluídas.<br><br>
+
+                    As informações cadastradas aqui serão enviadas aos fornecedores para solicitação de orçamento.
+                    Dados incorretos ou incompletos podem resultar em cotações equivocadas.
+                </div>
+
+
 
                 <div *ngFor="let mat of materiais; let i = index" class="border rounded p-3 mb-3">
                     <div class="form-group row">

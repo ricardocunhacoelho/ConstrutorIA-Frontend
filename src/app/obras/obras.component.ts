@@ -13,6 +13,7 @@ import { Paginator, PaginatorModule } from 'primeng/paginator';
 import { FormsModule } from '@angular/forms';
 import { CommonModule, NgIf } from '@angular/common';
 import { LocalizePipe } from '@shared/pipes/localize.pipe';
+import { FinanceiroObraDialogComponent } from './financeiro-obra/financeiro-obra-dialog.component';
 
 @Component({
     templateUrl: './obras.component.html',
@@ -46,6 +47,10 @@ export class ObrasComponent extends PagedListingComponentBase<ObraDto> {
 
     editObra(obra: ObraDto): void {
         this.showCreateOrEditObraDialog(obra.id);
+    }
+
+    financeiroObra(obra: ObraDto): void {
+        this.showFinanceiroObraDialog(obra.id);
     }
 
     clearFilters(): void {
@@ -110,6 +115,24 @@ export class ObrasComponent extends PagedListingComponentBase<ObraDto> {
         }
 
         createOrEditObraDialog.content.onSave.subscribe(() => {
+            this.refresh();
+        });
+    }
+
+    private showFinanceiroObraDialog(id?: string): void {
+        let financeiroObraDialog: BsModalRef;
+        if (id) {
+            financeiroObraDialog = this._modalService.show(FinanceiroObraDialogComponent, {
+                class: 'modal-xlg',
+                initialState: {
+                    obraId: id,
+                },
+            });
+        } else {
+            abp.notify.error(this.l('Erro ao buscar obra'));
+        }
+
+        financeiroObraDialog.content.onSave.subscribe(() => {
             this.refresh();
         });
     }

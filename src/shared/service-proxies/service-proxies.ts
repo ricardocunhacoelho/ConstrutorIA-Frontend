@@ -153,6 +153,62 @@ export class CompraServiceProxy {
     }
 
     /**
+     * @param idCompra (optional) 
+     * @return OK
+     */
+    get(idCompra: string | undefined): Observable<CompraDto> {
+        let url_ = this.baseUrl + "/api/services/app/Compra/Get?";
+        if (idCompra === null)
+            throw new Error("The parameter 'idCompra' cannot be null.");
+        else if (idCompra !== undefined)
+            url_ += "idCompra=" + encodeURIComponent("" + idCompra) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGet(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGet(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<CompraDto>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<CompraDto>;
+        }));
+    }
+
+    protected processGet(response: HttpResponseBase): Observable<CompraDto> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = CompraDto.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
      * @param idSolicitacao (optional) 
      * @return OK
      */
@@ -1209,6 +1265,64 @@ export class FornecedorServiceProxy {
     }
 
     /**
+     * @return OK
+     */
+    getForSelect(): Observable<SimpleLookupDto[]> {
+        let url_ = this.baseUrl + "/api/services/app/Fornecedor/GetForSelect";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetForSelect(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetForSelect(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<SimpleLookupDto[]>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<SimpleLookupDto[]>;
+        }));
+    }
+
+    protected processGetForSelect(response: HttpResponseBase): Observable<SimpleLookupDto[]> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200.push(SimpleLookupDto.fromJS(item));
+            }
+            else {
+                result200 = <any>null;
+            }
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
      * @param body (optional) 
      * @return OK
      */
@@ -2070,6 +2184,336 @@ export class ObraServiceProxy {
         if (status === 200) {
             return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
             return _observableOf(null as any);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+}
+
+@Injectable()
+export class ObraLancamentoFinanceiroServiceProxy {
+    private http: HttpClient;
+    private baseUrl: string;
+    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+
+    constructor(@Inject(HttpClient) http: HttpClient, @Optional() @Inject(API_BASE_URL) baseUrl?: string) {
+        this.http = http;
+        this.baseUrl = baseUrl ?? "";
+    }
+
+    /**
+     * @param id (optional) 
+     * @return OK
+     */
+    get(id: string | undefined): Observable<ObraLancamentoFinanceiroDto> {
+        let url_ = this.baseUrl + "/api/services/app/ObraLancamentoFinanceiro/Get?";
+        if (id === null)
+            throw new Error("The parameter 'id' cannot be null.");
+        else if (id !== undefined)
+            url_ += "Id=" + encodeURIComponent("" + id) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGet(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGet(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<ObraLancamentoFinanceiroDto>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<ObraLancamentoFinanceiroDto>;
+        }));
+    }
+
+    protected processGet(response: HttpResponseBase): Observable<ObraLancamentoFinanceiroDto> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = ObraLancamentoFinanceiroDto.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param obraId (optional) 
+     * @param fornecedorId (optional) 
+     * @param dataInicio (optional) 
+     * @param dataFim (optional) 
+     * @param natureza (optional) 
+     * @param tipo (optional) 
+     * @param skipCount (optional) 
+     * @param maxResultCount (optional) 
+     * @return OK
+     */
+    getAll(obraId: string | undefined, fornecedorId: string | undefined, dataInicio: moment.Moment | undefined, dataFim: moment.Moment | undefined, natureza: NaturezaLancamentoNullable | null | undefined, tipo: ObraLancamentoTipoNullable | null | undefined, skipCount: number | undefined, maxResultCount: number | undefined): Observable<ObraLancamentoFinanceiroListDtoPagedResultDto> {
+        let url_ = this.baseUrl + "/api/services/app/ObraLancamentoFinanceiro/GetAll?";
+        if (obraId === null)
+            throw new Error("The parameter 'obraId' cannot be null.");
+        else if (obraId !== undefined)
+            url_ += "ObraId=" + encodeURIComponent("" + obraId) + "&";
+        if (fornecedorId === null)
+            throw new Error("The parameter 'fornecedorId' cannot be null.");
+        else if (fornecedorId !== undefined)
+            url_ += "FornecedorId=" + encodeURIComponent("" + fornecedorId) + "&";
+        if (dataInicio === null)
+            throw new Error("The parameter 'dataInicio' cannot be null.");
+        else if (dataInicio !== undefined)
+            url_ += "DataInicio=" + encodeURIComponent(dataInicio ? "" + dataInicio.toISOString() : "") + "&";
+        if (dataFim === null)
+            throw new Error("The parameter 'dataFim' cannot be null.");
+        else if (dataFim !== undefined)
+            url_ += "DataFim=" + encodeURIComponent(dataFim ? "" + dataFim.toISOString() : "") + "&";
+        if (natureza !== undefined && natureza !== null)
+            url_ += "Natureza=" + encodeURIComponent("" + natureza) + "&";
+        if (tipo !== undefined && tipo !== null)
+            url_ += "Tipo=" + encodeURIComponent("" + tipo) + "&";
+        if (skipCount === null)
+            throw new Error("The parameter 'skipCount' cannot be null.");
+        else if (skipCount !== undefined)
+            url_ += "SkipCount=" + encodeURIComponent("" + skipCount) + "&";
+        if (maxResultCount === null)
+            throw new Error("The parameter 'maxResultCount' cannot be null.");
+        else if (maxResultCount !== undefined)
+            url_ += "MaxResultCount=" + encodeURIComponent("" + maxResultCount) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetAll(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetAll(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<ObraLancamentoFinanceiroListDtoPagedResultDto>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<ObraLancamentoFinanceiroListDtoPagedResultDto>;
+        }));
+    }
+
+    protected processGetAll(response: HttpResponseBase): Observable<ObraLancamentoFinanceiroListDtoPagedResultDto> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = ObraLancamentoFinanceiroListDtoPagedResultDto.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param id (optional) 
+     * @return OK
+     */
+    getAllBySolicitacao(id: string | undefined): Observable<ObraLancamentoFinanceiroDto[]> {
+        let url_ = this.baseUrl + "/api/services/app/ObraLancamentoFinanceiro/GetAllBySolicitacao?";
+        if (id === null)
+            throw new Error("The parameter 'id' cannot be null.");
+        else if (id !== undefined)
+            url_ += "Id=" + encodeURIComponent("" + id) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetAllBySolicitacao(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetAllBySolicitacao(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<ObraLancamentoFinanceiroDto[]>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<ObraLancamentoFinanceiroDto[]>;
+        }));
+    }
+
+    protected processGetAllBySolicitacao(response: HttpResponseBase): Observable<ObraLancamentoFinanceiroDto[]> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200.push(ObraLancamentoFinanceiroDto.fromJS(item));
+            }
+            else {
+                result200 = <any>null;
+            }
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param body (optional) 
+     * @return OK
+     */
+    create(body: CreateObraLancamentoFinanceiroDto | undefined): Observable<ObraLancamentoFinanceiroDto> {
+        let url_ = this.baseUrl + "/api/services/app/ObraLancamentoFinanceiro/Create";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processCreate(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processCreate(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<ObraLancamentoFinanceiroDto>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<ObraLancamentoFinanceiroDto>;
+        }));
+    }
+
+    protected processCreate(response: HttpResponseBase): Observable<ObraLancamentoFinanceiroDto> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = ObraLancamentoFinanceiroDto.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param body (optional) 
+     * @return OK
+     */
+    estornar(body: EstornarLancamentoDto | undefined): Observable<ObraLancamentoFinanceiroDto> {
+        let url_ = this.baseUrl + "/api/services/app/ObraLancamentoFinanceiro/Estornar";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processEstornar(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processEstornar(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<ObraLancamentoFinanceiroDto>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<ObraLancamentoFinanceiroDto>;
+        }));
+    }
+
+    protected processEstornar(response: HttpResponseBase): Observable<ObraLancamentoFinanceiroDto> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = ObraLancamentoFinanceiroDto.fromJS(resultData200);
+            return _observableOf(result200);
             }));
         } else if (status !== 200 && status !== 204) {
             return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
@@ -6837,12 +7281,16 @@ export class CompraDto implements ICompraDto {
     cotacaoId: string | undefined;
     obraId: string | undefined;
     obra: SimpleLookupDto;
+    fornecedorId: string | undefined;
+    fornecedor: SimpleLookupDto;
     userId: number;
     user: UserDto;
     enderecoEntregaId: string | undefined;
     enderecoEntrega: EnderecoDto;
     retiradaNoFornecedor: boolean;
     prazoEntrega: moment.Moment | undefined;
+    formaDePagamento: FormaPagamento;
+    readonly formaDePagamentoString: string | undefined;
     observacaoInterna: string | undefined;
     observacaoFornecedor: string | undefined;
     valorFrete: number | undefined;
@@ -6871,12 +7319,16 @@ export class CompraDto implements ICompraDto {
             this.cotacaoId = _data["cotacaoId"];
             this.obraId = _data["obraId"];
             this.obra = _data["obra"] ? SimpleLookupDto.fromJS(_data["obra"]) : <any>undefined;
+            this.fornecedorId = _data["fornecedorId"];
+            this.fornecedor = _data["fornecedor"] ? SimpleLookupDto.fromJS(_data["fornecedor"]) : <any>undefined;
             this.userId = _data["userId"];
             this.user = _data["user"] ? UserDto.fromJS(_data["user"]) : <any>undefined;
             this.enderecoEntregaId = _data["enderecoEntregaId"];
             this.enderecoEntrega = _data["enderecoEntrega"] ? EnderecoDto.fromJS(_data["enderecoEntrega"]) : <any>undefined;
             this.retiradaNoFornecedor = _data["retiradaNoFornecedor"];
             this.prazoEntrega = _data["prazoEntrega"] ? moment(_data["prazoEntrega"].toString()) : <any>undefined;
+            this.formaDePagamento = _data["formaDePagamento"];
+            (<any>this).formaDePagamentoString = _data["formaDePagamentoString"];
             this.observacaoInterna = _data["observacaoInterna"];
             this.observacaoFornecedor = _data["observacaoFornecedor"];
             this.valorFrete = _data["valorFrete"];
@@ -6909,12 +7361,16 @@ export class CompraDto implements ICompraDto {
         data["cotacaoId"] = this.cotacaoId;
         data["obraId"] = this.obraId;
         data["obra"] = this.obra ? this.obra.toJSON() : <any>undefined;
+        data["fornecedorId"] = this.fornecedorId;
+        data["fornecedor"] = this.fornecedor ? this.fornecedor.toJSON() : <any>undefined;
         data["userId"] = this.userId;
         data["user"] = this.user ? this.user.toJSON() : <any>undefined;
         data["enderecoEntregaId"] = this.enderecoEntregaId;
         data["enderecoEntrega"] = this.enderecoEntrega ? this.enderecoEntrega.toJSON() : <any>undefined;
         data["retiradaNoFornecedor"] = this.retiradaNoFornecedor;
         data["prazoEntrega"] = this.prazoEntrega ? this.prazoEntrega.toISOString() : <any>undefined;
+        data["formaDePagamento"] = this.formaDePagamento;
+        data["formaDePagamentoString"] = this.formaDePagamentoString;
         data["observacaoInterna"] = this.observacaoInterna;
         data["observacaoFornecedor"] = this.observacaoFornecedor;
         data["valorFrete"] = this.valorFrete;
@@ -6947,12 +7403,16 @@ export interface ICompraDto {
     cotacaoId: string | undefined;
     obraId: string | undefined;
     obra: SimpleLookupDto;
+    fornecedorId: string | undefined;
+    fornecedor: SimpleLookupDto;
     userId: number;
     user: UserDto;
     enderecoEntregaId: string | undefined;
     enderecoEntrega: EnderecoDto;
     retiradaNoFornecedor: boolean;
     prazoEntrega: moment.Moment | undefined;
+    formaDePagamento: FormaPagamento;
+    formaDePagamentoString: string | undefined;
     observacaoInterna: string | undefined;
     observacaoFornecedor: string | undefined;
     valorFrete: number | undefined;
@@ -6983,6 +7443,8 @@ export class CompraEntity implements ICompraEntity {
     cotacao: CotacaoEntity;
     orcamentoId: string | undefined;
     orcamento: OrcamentoEntity;
+    fornecedorId: string | undefined;
+    fornecedor: FornecedorEntity;
     obraId: string | undefined;
     obra: ObraEntity;
     userId: number;
@@ -6991,6 +7453,8 @@ export class CompraEntity implements ICompraEntity {
     enderecoEntrega: EnderecoEntity;
     retiradaNoFornecedor: boolean;
     prazoEntrega: moment.Moment | undefined;
+    formaDePagamento: FormaPagamento;
+    readonly formaDePagamentoString: string | undefined;
     observacaoInterna: string | undefined;
     observacaoFornecedor: string | undefined;
     observacaoRecebidoFornecedor: string | undefined;
@@ -6998,6 +7462,7 @@ export class CompraEntity implements ICompraEntity {
     condicaoFrete: string | undefined;
     valorDesconto: number | undefined;
     condicaoDesconto: string | undefined;
+    isMelhorCompra: boolean;
     status: CompraStatus;
     materiaisComprados: MaterialCompradoEntity[] | undefined;
     total: number | undefined;
@@ -7029,6 +7494,8 @@ export class CompraEntity implements ICompraEntity {
             this.cotacao = _data["cotacao"] ? CotacaoEntity.fromJS(_data["cotacao"]) : <any>undefined;
             this.orcamentoId = _data["orcamentoId"];
             this.orcamento = _data["orcamento"] ? OrcamentoEntity.fromJS(_data["orcamento"]) : <any>undefined;
+            this.fornecedorId = _data["fornecedorId"];
+            this.fornecedor = _data["fornecedor"] ? FornecedorEntity.fromJS(_data["fornecedor"]) : <any>undefined;
             this.obraId = _data["obraId"];
             this.obra = _data["obra"] ? ObraEntity.fromJS(_data["obra"]) : <any>undefined;
             this.userId = _data["userId"];
@@ -7037,6 +7504,8 @@ export class CompraEntity implements ICompraEntity {
             this.enderecoEntrega = _data["enderecoEntrega"] ? EnderecoEntity.fromJS(_data["enderecoEntrega"]) : <any>undefined;
             this.retiradaNoFornecedor = _data["retiradaNoFornecedor"];
             this.prazoEntrega = _data["prazoEntrega"] ? moment(_data["prazoEntrega"].toString()) : <any>undefined;
+            this.formaDePagamento = _data["formaDePagamento"];
+            (<any>this).formaDePagamentoString = _data["formaDePagamentoString"];
             this.observacaoInterna = _data["observacaoInterna"];
             this.observacaoFornecedor = _data["observacaoFornecedor"];
             this.observacaoRecebidoFornecedor = _data["observacaoRecebidoFornecedor"];
@@ -7044,6 +7513,7 @@ export class CompraEntity implements ICompraEntity {
             this.condicaoFrete = _data["condicaoFrete"];
             this.valorDesconto = _data["valorDesconto"];
             this.condicaoDesconto = _data["condicaoDesconto"];
+            this.isMelhorCompra = _data["isMelhorCompra"];
             this.status = _data["status"];
             if (Array.isArray(_data["materiaisComprados"])) {
                 this.materiaisComprados = [] as any;
@@ -7079,6 +7549,8 @@ export class CompraEntity implements ICompraEntity {
         data["cotacao"] = this.cotacao ? this.cotacao.toJSON() : <any>undefined;
         data["orcamentoId"] = this.orcamentoId;
         data["orcamento"] = this.orcamento ? this.orcamento.toJSON() : <any>undefined;
+        data["fornecedorId"] = this.fornecedorId;
+        data["fornecedor"] = this.fornecedor ? this.fornecedor.toJSON() : <any>undefined;
         data["obraId"] = this.obraId;
         data["obra"] = this.obra ? this.obra.toJSON() : <any>undefined;
         data["userId"] = this.userId;
@@ -7087,6 +7559,8 @@ export class CompraEntity implements ICompraEntity {
         data["enderecoEntrega"] = this.enderecoEntrega ? this.enderecoEntrega.toJSON() : <any>undefined;
         data["retiradaNoFornecedor"] = this.retiradaNoFornecedor;
         data["prazoEntrega"] = this.prazoEntrega ? this.prazoEntrega.toISOString() : <any>undefined;
+        data["formaDePagamento"] = this.formaDePagamento;
+        data["formaDePagamentoString"] = this.formaDePagamentoString;
         data["observacaoInterna"] = this.observacaoInterna;
         data["observacaoFornecedor"] = this.observacaoFornecedor;
         data["observacaoRecebidoFornecedor"] = this.observacaoRecebidoFornecedor;
@@ -7094,6 +7568,7 @@ export class CompraEntity implements ICompraEntity {
         data["condicaoFrete"] = this.condicaoFrete;
         data["valorDesconto"] = this.valorDesconto;
         data["condicaoDesconto"] = this.condicaoDesconto;
+        data["isMelhorCompra"] = this.isMelhorCompra;
         data["status"] = this.status;
         if (Array.isArray(this.materiaisComprados)) {
             data["materiaisComprados"] = [];
@@ -7129,6 +7604,8 @@ export interface ICompraEntity {
     cotacao: CotacaoEntity;
     orcamentoId: string | undefined;
     orcamento: OrcamentoEntity;
+    fornecedorId: string | undefined;
+    fornecedor: FornecedorEntity;
     obraId: string | undefined;
     obra: ObraEntity;
     userId: number;
@@ -7137,6 +7614,8 @@ export interface ICompraEntity {
     enderecoEntrega: EnderecoEntity;
     retiradaNoFornecedor: boolean;
     prazoEntrega: moment.Moment | undefined;
+    formaDePagamento: FormaPagamento;
+    formaDePagamentoString: string | undefined;
     observacaoInterna: string | undefined;
     observacaoFornecedor: string | undefined;
     observacaoRecebidoFornecedor: string | undefined;
@@ -7144,6 +7623,7 @@ export interface ICompraEntity {
     condicaoFrete: string | undefined;
     valorDesconto: number | undefined;
     condicaoDesconto: string | undefined;
+    isMelhorCompra: boolean;
     status: CompraStatus;
     materiaisComprados: MaterialCompradoEntity[] | undefined;
     total: number | undefined;
@@ -8204,10 +8684,94 @@ export interface ICreateObraDto {
     encarregados: CreateEncarregadoDto[] | undefined;
 }
 
+export class CreateObraLancamentoFinanceiroDto implements ICreateObraLancamentoFinanceiroDto {
+    obraId: string;
+    compraId: string | undefined;
+    compra: UpdateCompraDto;
+    descricao: string | undefined;
+    valorPago: number;
+    frete: number;
+    desconto: number;
+    natureza: NaturezaLancamento;
+    tipo: ObraLancamentoTipo;
+    formaDePagamento: FormaPagamento;
+    dataLancamento: moment.Moment;
+
+    constructor(data?: ICreateObraLancamentoFinanceiroDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.obraId = _data["obraId"];
+            this.compraId = _data["compraId"];
+            this.compra = _data["compra"] ? UpdateCompraDto.fromJS(_data["compra"]) : <any>undefined;
+            this.descricao = _data["descricao"];
+            this.valorPago = _data["valorPago"];
+            this.frete = _data["frete"];
+            this.desconto = _data["desconto"];
+            this.natureza = _data["natureza"];
+            this.tipo = _data["tipo"];
+            this.formaDePagamento = _data["formaDePagamento"];
+            this.dataLancamento = _data["dataLancamento"] ? moment(_data["dataLancamento"].toString()) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): CreateObraLancamentoFinanceiroDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new CreateObraLancamentoFinanceiroDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["obraId"] = this.obraId;
+        data["compraId"] = this.compraId;
+        data["compra"] = this.compra ? this.compra.toJSON() : <any>undefined;
+        data["descricao"] = this.descricao;
+        data["valorPago"] = this.valorPago;
+        data["frete"] = this.frete;
+        data["desconto"] = this.desconto;
+        data["natureza"] = this.natureza;
+        data["tipo"] = this.tipo;
+        data["formaDePagamento"] = this.formaDePagamento;
+        data["dataLancamento"] = this.dataLancamento ? this.dataLancamento.toISOString() : <any>undefined;
+        return data;
+    }
+
+    clone(): CreateObraLancamentoFinanceiroDto {
+        const json = this.toJSON();
+        let result = new CreateObraLancamentoFinanceiroDto();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface ICreateObraLancamentoFinanceiroDto {
+    obraId: string;
+    compraId: string | undefined;
+    compra: UpdateCompraDto;
+    descricao: string | undefined;
+    valorPago: number;
+    frete: number;
+    desconto: number;
+    natureza: NaturezaLancamento;
+    tipo: ObraLancamentoTipo;
+    formaDePagamento: FormaPagamento;
+    dataLancamento: moment.Moment;
+}
+
 export class CreatePedidoCompraDto implements ICreatePedidoCompraDto {
     solicitacaoMaterialId: string | undefined;
     cotacaoId: string | undefined;
     orcamentoId: string | undefined;
+    fornecedorId: string | undefined;
     obraId: string | undefined;
     enderecoEntregaId: string | undefined;
     enderecoEntrega: CreateEnderecoDto;
@@ -8219,6 +8783,7 @@ export class CreatePedidoCompraDto implements ICreatePedidoCompraDto {
     condicaoFrete: string | undefined;
     valorDesconto: number | undefined;
     condicaoDesconto: string | undefined;
+    formaDePagamento: FormaPagamento;
     materiaisPedidosCompra: CreateMaterialPedidoCompraDto[] | undefined;
     isMelhorCompra: boolean;
 
@@ -8236,6 +8801,7 @@ export class CreatePedidoCompraDto implements ICreatePedidoCompraDto {
             this.solicitacaoMaterialId = _data["solicitacaoMaterialId"];
             this.cotacaoId = _data["cotacaoId"];
             this.orcamentoId = _data["orcamentoId"];
+            this.fornecedorId = _data["fornecedorId"];
             this.obraId = _data["obraId"];
             this.enderecoEntregaId = _data["enderecoEntregaId"];
             this.enderecoEntrega = _data["enderecoEntrega"] ? CreateEnderecoDto.fromJS(_data["enderecoEntrega"]) : <any>undefined;
@@ -8247,6 +8813,7 @@ export class CreatePedidoCompraDto implements ICreatePedidoCompraDto {
             this.condicaoFrete = _data["condicaoFrete"];
             this.valorDesconto = _data["valorDesconto"];
             this.condicaoDesconto = _data["condicaoDesconto"];
+            this.formaDePagamento = _data["formaDePagamento"];
             if (Array.isArray(_data["materiaisPedidosCompra"])) {
                 this.materiaisPedidosCompra = [] as any;
                 for (let item of _data["materiaisPedidosCompra"])
@@ -8268,6 +8835,7 @@ export class CreatePedidoCompraDto implements ICreatePedidoCompraDto {
         data["solicitacaoMaterialId"] = this.solicitacaoMaterialId;
         data["cotacaoId"] = this.cotacaoId;
         data["orcamentoId"] = this.orcamentoId;
+        data["fornecedorId"] = this.fornecedorId;
         data["obraId"] = this.obraId;
         data["enderecoEntregaId"] = this.enderecoEntregaId;
         data["enderecoEntrega"] = this.enderecoEntrega ? this.enderecoEntrega.toJSON() : <any>undefined;
@@ -8279,6 +8847,7 @@ export class CreatePedidoCompraDto implements ICreatePedidoCompraDto {
         data["condicaoFrete"] = this.condicaoFrete;
         data["valorDesconto"] = this.valorDesconto;
         data["condicaoDesconto"] = this.condicaoDesconto;
+        data["formaDePagamento"] = this.formaDePagamento;
         if (Array.isArray(this.materiaisPedidosCompra)) {
             data["materiaisPedidosCompra"] = [];
             for (let item of this.materiaisPedidosCompra)
@@ -8300,6 +8869,7 @@ export interface ICreatePedidoCompraDto {
     solicitacaoMaterialId: string | undefined;
     cotacaoId: string | undefined;
     orcamentoId: string | undefined;
+    fornecedorId: string | undefined;
     obraId: string | undefined;
     enderecoEntregaId: string | undefined;
     enderecoEntrega: CreateEnderecoDto;
@@ -8311,6 +8881,7 @@ export interface ICreatePedidoCompraDto {
     condicaoFrete: string | undefined;
     valorDesconto: number | undefined;
     condicaoDesconto: string | undefined;
+    formaDePagamento: FormaPagamento;
     materiaisPedidosCompra: CreateMaterialPedidoCompraDto[] | undefined;
     isMelhorCompra: boolean;
 }
@@ -9377,7 +9948,6 @@ export class EnviarMensagemPedidoCompraJobArgs implements IEnviarMensagemPedidoC
     pedidoCompraId: string;
     fornecedorId: string;
     mensagem: string | undefined;
-    enderecoEntrega: string | undefined;
     templateName: string | undefined;
     infos: string | undefined;
 
@@ -9395,7 +9965,6 @@ export class EnviarMensagemPedidoCompraJobArgs implements IEnviarMensagemPedidoC
             this.pedidoCompraId = _data["pedidoCompraId"];
             this.fornecedorId = _data["fornecedorId"];
             this.mensagem = _data["mensagem"];
-            this.enderecoEntrega = _data["enderecoEntrega"];
             this.templateName = _data["templateName"];
             this.infos = _data["infos"];
         }
@@ -9413,7 +9982,6 @@ export class EnviarMensagemPedidoCompraJobArgs implements IEnviarMensagemPedidoC
         data["pedidoCompraId"] = this.pedidoCompraId;
         data["fornecedorId"] = this.fornecedorId;
         data["mensagem"] = this.mensagem;
-        data["enderecoEntrega"] = this.enderecoEntrega;
         data["templateName"] = this.templateName;
         data["infos"] = this.infos;
         return data;
@@ -9431,9 +9999,55 @@ export interface IEnviarMensagemPedidoCompraJobArgs {
     pedidoCompraId: string;
     fornecedorId: string;
     mensagem: string | undefined;
-    enderecoEntrega: string | undefined;
     templateName: string | undefined;
     infos: string | undefined;
+}
+
+export class EstornarLancamentoDto implements IEstornarLancamentoDto {
+    id: string;
+    motivo: string;
+
+    constructor(data?: IEstornarLancamentoDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.motivo = _data["motivo"];
+        }
+    }
+
+    static fromJS(data: any): EstornarLancamentoDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new EstornarLancamentoDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["motivo"] = this.motivo;
+        return data;
+    }
+
+    clone(): EstornarLancamentoDto {
+        const json = this.toJSON();
+        let result = new EstornarLancamentoDto();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IEstornarLancamentoDto {
+    id: string;
+    motivo: string;
 }
 
 export class FlatPermissionDto implements IFlatPermissionDto {
@@ -9485,6 +10099,15 @@ export interface IFlatPermissionDto {
     name: string | undefined;
     displayName: string | undefined;
     description: string | undefined;
+}
+
+export enum FormaPagamento {
+    _0 = 0,
+    _1 = 1,
+    _2 = 2,
+    _3 = 3,
+    _4 = 4,
+    _5 = 5,
 }
 
 export class FornecedorDto implements IFornecedorDto {
@@ -10190,6 +10813,11 @@ export class IsTenantAvailableOutput implements IIsTenantAvailableOutput {
 export interface IIsTenantAvailableOutput {
     state: TenantAvailabilityState;
     tenantId: number | undefined;
+}
+
+export enum LancamentoStatus {
+    _0 = 0,
+    _1 = 1,
 }
 
 export class MaterialCompradoDto implements IMaterialCompradoDto {
@@ -11584,6 +12212,16 @@ export interface IMensagemEntity {
     fornecedor: FornecedorEntity;
 }
 
+export enum NaturezaLancamento {
+    _0 = 0,
+    _1 = 1,
+}
+
+export enum NaturezaLancamentoNullable {
+    _0 = 0,
+    _1 = 1,
+}
+
 export enum NivelUrgencia {
     Baixa = "Baixa",
     Media = "Media",
@@ -12110,6 +12748,299 @@ export interface IObraEntity {
     compras: CompraEntity[] | undefined;
 }
 
+export class ObraLancamentoFinanceiroDto implements IObraLancamentoFinanceiroDto {
+    id: string;
+    obraId: string;
+    obra: SimpleLookupDto;
+    compraId: string | undefined;
+    compra: CompraDto;
+    descricao: string | undefined;
+    valorPago: number;
+    frete: number;
+    desconto: number;
+    natureza: NaturezaLancamento;
+    readonly naturezaString: string | undefined;
+    tipo: ObraLancamentoTipo;
+    readonly tipoString: string | undefined;
+    formaDePagamento: FormaPagamento;
+    readonly formaDePagamentoString: string | undefined;
+    status: LancamentoStatus;
+    readonly statusString: string | undefined;
+    dataLancamento: moment.Moment;
+    estornadoPorUserId: number | undefined;
+    estornadoPorUser: SimpleLookupDto;
+    dataEstorno: moment.Moment | undefined;
+    motivoEstorno: string | undefined;
+
+    constructor(data?: IObraLancamentoFinanceiroDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.obraId = _data["obraId"];
+            this.obra = _data["obra"] ? SimpleLookupDto.fromJS(_data["obra"]) : <any>undefined;
+            this.compraId = _data["compraId"];
+            this.compra = _data["compra"] ? CompraDto.fromJS(_data["compra"]) : <any>undefined;
+            this.descricao = _data["descricao"];
+            this.valorPago = _data["valorPago"];
+            this.frete = _data["frete"];
+            this.desconto = _data["desconto"];
+            this.natureza = _data["natureza"];
+            (<any>this).naturezaString = _data["naturezaString"];
+            this.tipo = _data["tipo"];
+            (<any>this).tipoString = _data["tipoString"];
+            this.formaDePagamento = _data["formaDePagamento"];
+            (<any>this).formaDePagamentoString = _data["formaDePagamentoString"];
+            this.status = _data["status"];
+            (<any>this).statusString = _data["statusString"];
+            this.dataLancamento = _data["dataLancamento"] ? moment(_data["dataLancamento"].toString()) : <any>undefined;
+            this.estornadoPorUserId = _data["estornadoPorUserId"];
+            this.estornadoPorUser = _data["estornadoPorUser"] ? SimpleLookupDto.fromJS(_data["estornadoPorUser"]) : <any>undefined;
+            this.dataEstorno = _data["dataEstorno"] ? moment(_data["dataEstorno"].toString()) : <any>undefined;
+            this.motivoEstorno = _data["motivoEstorno"];
+        }
+    }
+
+    static fromJS(data: any): ObraLancamentoFinanceiroDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new ObraLancamentoFinanceiroDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["obraId"] = this.obraId;
+        data["obra"] = this.obra ? this.obra.toJSON() : <any>undefined;
+        data["compraId"] = this.compraId;
+        data["compra"] = this.compra ? this.compra.toJSON() : <any>undefined;
+        data["descricao"] = this.descricao;
+        data["valorPago"] = this.valorPago;
+        data["frete"] = this.frete;
+        data["desconto"] = this.desconto;
+        data["natureza"] = this.natureza;
+        data["naturezaString"] = this.naturezaString;
+        data["tipo"] = this.tipo;
+        data["tipoString"] = this.tipoString;
+        data["formaDePagamento"] = this.formaDePagamento;
+        data["formaDePagamentoString"] = this.formaDePagamentoString;
+        data["status"] = this.status;
+        data["statusString"] = this.statusString;
+        data["dataLancamento"] = this.dataLancamento ? this.dataLancamento.toISOString() : <any>undefined;
+        data["estornadoPorUserId"] = this.estornadoPorUserId;
+        data["estornadoPorUser"] = this.estornadoPorUser ? this.estornadoPorUser.toJSON() : <any>undefined;
+        data["dataEstorno"] = this.dataEstorno ? this.dataEstorno.toISOString() : <any>undefined;
+        data["motivoEstorno"] = this.motivoEstorno;
+        return data;
+    }
+
+    clone(): ObraLancamentoFinanceiroDto {
+        const json = this.toJSON();
+        let result = new ObraLancamentoFinanceiroDto();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IObraLancamentoFinanceiroDto {
+    id: string;
+    obraId: string;
+    obra: SimpleLookupDto;
+    compraId: string | undefined;
+    compra: CompraDto;
+    descricao: string | undefined;
+    valorPago: number;
+    frete: number;
+    desconto: number;
+    natureza: NaturezaLancamento;
+    naturezaString: string | undefined;
+    tipo: ObraLancamentoTipo;
+    tipoString: string | undefined;
+    formaDePagamento: FormaPagamento;
+    formaDePagamentoString: string | undefined;
+    status: LancamentoStatus;
+    statusString: string | undefined;
+    dataLancamento: moment.Moment;
+    estornadoPorUserId: number | undefined;
+    estornadoPorUser: SimpleLookupDto;
+    dataEstorno: moment.Moment | undefined;
+    motivoEstorno: string | undefined;
+}
+
+export class ObraLancamentoFinanceiroListDto implements IObraLancamentoFinanceiroListDto {
+    id: string;
+    dataLancamento: moment.Moment;
+    descricao: string | undefined;
+    valorPago: number;
+    natureza: NaturezaLancamento;
+    tipo: ObraLancamentoTipo;
+    formaDePagamento: FormaPagamento;
+    status: LancamentoStatus;
+    readonly statusString: string | undefined;
+    compraId: string | undefined;
+    compraFornecedor: string | undefined;
+
+    constructor(data?: IObraLancamentoFinanceiroListDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.dataLancamento = _data["dataLancamento"] ? moment(_data["dataLancamento"].toString()) : <any>undefined;
+            this.descricao = _data["descricao"];
+            this.valorPago = _data["valorPago"];
+            this.natureza = _data["natureza"];
+            this.tipo = _data["tipo"];
+            this.formaDePagamento = _data["formaDePagamento"];
+            this.status = _data["status"];
+            (<any>this).statusString = _data["statusString"];
+            this.compraId = _data["compraId"];
+            this.compraFornecedor = _data["compraFornecedor"];
+        }
+    }
+
+    static fromJS(data: any): ObraLancamentoFinanceiroListDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new ObraLancamentoFinanceiroListDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["dataLancamento"] = this.dataLancamento ? this.dataLancamento.toISOString() : <any>undefined;
+        data["descricao"] = this.descricao;
+        data["valorPago"] = this.valorPago;
+        data["natureza"] = this.natureza;
+        data["tipo"] = this.tipo;
+        data["formaDePagamento"] = this.formaDePagamento;
+        data["status"] = this.status;
+        data["statusString"] = this.statusString;
+        data["compraId"] = this.compraId;
+        data["compraFornecedor"] = this.compraFornecedor;
+        return data;
+    }
+
+    clone(): ObraLancamentoFinanceiroListDto {
+        const json = this.toJSON();
+        let result = new ObraLancamentoFinanceiroListDto();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IObraLancamentoFinanceiroListDto {
+    id: string;
+    dataLancamento: moment.Moment;
+    descricao: string | undefined;
+    valorPago: number;
+    natureza: NaturezaLancamento;
+    tipo: ObraLancamentoTipo;
+    formaDePagamento: FormaPagamento;
+    status: LancamentoStatus;
+    statusString: string | undefined;
+    compraId: string | undefined;
+    compraFornecedor: string | undefined;
+}
+
+export class ObraLancamentoFinanceiroListDtoPagedResultDto implements IObraLancamentoFinanceiroListDtoPagedResultDto {
+    items: ObraLancamentoFinanceiroListDto[] | undefined;
+    totalCount: number;
+
+    constructor(data?: IObraLancamentoFinanceiroListDtoPagedResultDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            if (Array.isArray(_data["items"])) {
+                this.items = [] as any;
+                for (let item of _data["items"])
+                    this.items.push(ObraLancamentoFinanceiroListDto.fromJS(item));
+            }
+            this.totalCount = _data["totalCount"];
+        }
+    }
+
+    static fromJS(data: any): ObraLancamentoFinanceiroListDtoPagedResultDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new ObraLancamentoFinanceiroListDtoPagedResultDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        if (Array.isArray(this.items)) {
+            data["items"] = [];
+            for (let item of this.items)
+                data["items"].push(item.toJSON());
+        }
+        data["totalCount"] = this.totalCount;
+        return data;
+    }
+
+    clone(): ObraLancamentoFinanceiroListDtoPagedResultDto {
+        const json = this.toJSON();
+        let result = new ObraLancamentoFinanceiroListDtoPagedResultDto();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IObraLancamentoFinanceiroListDtoPagedResultDto {
+    items: ObraLancamentoFinanceiroListDto[] | undefined;
+    totalCount: number;
+}
+
+export enum ObraLancamentoTipo {
+    _0 = 0,
+    _1 = 1,
+    _2 = 2,
+    _3 = 3,
+    _4 = 4,
+    _5 = 5,
+    _6 = 6,
+    _7 = 7,
+    _8 = 8,
+    _9 = 9,
+    _10 = 10,
+}
+
+export enum ObraLancamentoTipoNullable {
+    _0 = 0,
+    _1 = 1,
+    _2 = 2,
+    _3 = 3,
+    _4 = 4,
+    _5 = 5,
+    _6 = 6,
+    _7 = 7,
+    _8 = 8,
+    _9 = 9,
+    _10 = 10,
+}
+
 export enum ObraStatus {
     COMECAR = "COMECAR",
     EMPROGRESSO = "EMPROGRESSO",
@@ -12591,6 +13522,8 @@ export class PedidoCompraDto implements IPedidoCompraDto {
     cotacaoId: string | undefined;
     obraId: string | undefined;
     obra: SimpleLookupDto;
+    fornecedorId: string | undefined;
+    fornecedor: SimpleLookupDto;
     enderecoEntregaId: string | undefined;
     enderecoEntrega: EnderecoDto;
     retiradaNoFornecedor: boolean;
@@ -12603,6 +13536,8 @@ export class PedidoCompraDto implements IPedidoCompraDto {
     valorDesconto: number | undefined;
     condicaoDesconto: string | undefined;
     status: PedidoCompraStatus;
+    formaDePagamento: FormaPagamento;
+    readonly formaDePagamentoString: string | undefined;
     materiaisPedidosCompra: MaterialPedidoCompraDto[] | undefined;
     isMelhorCompra: boolean;
 
@@ -12623,6 +13558,8 @@ export class PedidoCompraDto implements IPedidoCompraDto {
             this.cotacaoId = _data["cotacaoId"];
             this.obraId = _data["obraId"];
             this.obra = _data["obra"] ? SimpleLookupDto.fromJS(_data["obra"]) : <any>undefined;
+            this.fornecedorId = _data["fornecedorId"];
+            this.fornecedor = _data["fornecedor"] ? SimpleLookupDto.fromJS(_data["fornecedor"]) : <any>undefined;
             this.enderecoEntregaId = _data["enderecoEntregaId"];
             this.enderecoEntrega = _data["enderecoEntrega"] ? EnderecoDto.fromJS(_data["enderecoEntrega"]) : <any>undefined;
             this.retiradaNoFornecedor = _data["retiradaNoFornecedor"];
@@ -12635,6 +13572,8 @@ export class PedidoCompraDto implements IPedidoCompraDto {
             this.valorDesconto = _data["valorDesconto"];
             this.condicaoDesconto = _data["condicaoDesconto"];
             this.status = _data["status"];
+            this.formaDePagamento = _data["formaDePagamento"];
+            (<any>this).formaDePagamentoString = _data["formaDePagamentoString"];
             if (Array.isArray(_data["materiaisPedidosCompra"])) {
                 this.materiaisPedidosCompra = [] as any;
                 for (let item of _data["materiaisPedidosCompra"])
@@ -12659,6 +13598,8 @@ export class PedidoCompraDto implements IPedidoCompraDto {
         data["cotacaoId"] = this.cotacaoId;
         data["obraId"] = this.obraId;
         data["obra"] = this.obra ? this.obra.toJSON() : <any>undefined;
+        data["fornecedorId"] = this.fornecedorId;
+        data["fornecedor"] = this.fornecedor ? this.fornecedor.toJSON() : <any>undefined;
         data["enderecoEntregaId"] = this.enderecoEntregaId;
         data["enderecoEntrega"] = this.enderecoEntrega ? this.enderecoEntrega.toJSON() : <any>undefined;
         data["retiradaNoFornecedor"] = this.retiradaNoFornecedor;
@@ -12671,6 +13612,8 @@ export class PedidoCompraDto implements IPedidoCompraDto {
         data["valorDesconto"] = this.valorDesconto;
         data["condicaoDesconto"] = this.condicaoDesconto;
         data["status"] = this.status;
+        data["formaDePagamento"] = this.formaDePagamento;
+        data["formaDePagamentoString"] = this.formaDePagamentoString;
         if (Array.isArray(this.materiaisPedidosCompra)) {
             data["materiaisPedidosCompra"] = [];
             for (let item of this.materiaisPedidosCompra)
@@ -12695,6 +13638,8 @@ export interface IPedidoCompraDto {
     cotacaoId: string | undefined;
     obraId: string | undefined;
     obra: SimpleLookupDto;
+    fornecedorId: string | undefined;
+    fornecedor: SimpleLookupDto;
     enderecoEntregaId: string | undefined;
     enderecoEntrega: EnderecoDto;
     retiradaNoFornecedor: boolean;
@@ -12707,6 +13652,8 @@ export interface IPedidoCompraDto {
     valorDesconto: number | undefined;
     condicaoDesconto: string | undefined;
     status: PedidoCompraStatus;
+    formaDePagamento: FormaPagamento;
+    formaDePagamentoString: string | undefined;
     materiaisPedidosCompra: MaterialPedidoCompraDto[] | undefined;
     isMelhorCompra: boolean;
 }
@@ -12723,6 +13670,8 @@ export class PedidoCompraEntity implements IPedidoCompraEntity {
     compra: CompraEntity;
     solicitacaoMaterialId: string | undefined;
     solicitacaoMaterial: SolicitacaoMaterialEntity;
+    fornecedorId: string | undefined;
+    fornecedor: FornecedorEntity;
     cotacaoId: string | undefined;
     cotacao: CotacaoEntity;
     orcamentoId: string | undefined;
@@ -12741,6 +13690,8 @@ export class PedidoCompraEntity implements IPedidoCompraEntity {
     valorDesconto: number | undefined;
     condicaoDesconto: string | undefined;
     status: PedidoCompraStatus;
+    formaDePagamento: FormaPagamento;
+    readonly formaDePagamentoString: string | undefined;
     materiaisPedidosCompra: MaterialPedidoCompraEntity[] | undefined;
     melhorCompraId: string | undefined;
     melhorCompra: MelhorCompraEntity;
@@ -12768,6 +13719,8 @@ export class PedidoCompraEntity implements IPedidoCompraEntity {
             this.compra = _data["compra"] ? CompraEntity.fromJS(_data["compra"]) : <any>undefined;
             this.solicitacaoMaterialId = _data["solicitacaoMaterialId"];
             this.solicitacaoMaterial = _data["solicitacaoMaterial"] ? SolicitacaoMaterialEntity.fromJS(_data["solicitacaoMaterial"]) : <any>undefined;
+            this.fornecedorId = _data["fornecedorId"];
+            this.fornecedor = _data["fornecedor"] ? FornecedorEntity.fromJS(_data["fornecedor"]) : <any>undefined;
             this.cotacaoId = _data["cotacaoId"];
             this.cotacao = _data["cotacao"] ? CotacaoEntity.fromJS(_data["cotacao"]) : <any>undefined;
             this.orcamentoId = _data["orcamentoId"];
@@ -12786,6 +13739,8 @@ export class PedidoCompraEntity implements IPedidoCompraEntity {
             this.valorDesconto = _data["valorDesconto"];
             this.condicaoDesconto = _data["condicaoDesconto"];
             this.status = _data["status"];
+            this.formaDePagamento = _data["formaDePagamento"];
+            (<any>this).formaDePagamentoString = _data["formaDePagamentoString"];
             if (Array.isArray(_data["materiaisPedidosCompra"])) {
                 this.materiaisPedidosCompra = [] as any;
                 for (let item of _data["materiaisPedidosCompra"])
@@ -12817,6 +13772,8 @@ export class PedidoCompraEntity implements IPedidoCompraEntity {
         data["compra"] = this.compra ? this.compra.toJSON() : <any>undefined;
         data["solicitacaoMaterialId"] = this.solicitacaoMaterialId;
         data["solicitacaoMaterial"] = this.solicitacaoMaterial ? this.solicitacaoMaterial.toJSON() : <any>undefined;
+        data["fornecedorId"] = this.fornecedorId;
+        data["fornecedor"] = this.fornecedor ? this.fornecedor.toJSON() : <any>undefined;
         data["cotacaoId"] = this.cotacaoId;
         data["cotacao"] = this.cotacao ? this.cotacao.toJSON() : <any>undefined;
         data["orcamentoId"] = this.orcamentoId;
@@ -12835,6 +13792,8 @@ export class PedidoCompraEntity implements IPedidoCompraEntity {
         data["valorDesconto"] = this.valorDesconto;
         data["condicaoDesconto"] = this.condicaoDesconto;
         data["status"] = this.status;
+        data["formaDePagamento"] = this.formaDePagamento;
+        data["formaDePagamentoString"] = this.formaDePagamentoString;
         if (Array.isArray(this.materiaisPedidosCompra)) {
             data["materiaisPedidosCompra"] = [];
             for (let item of this.materiaisPedidosCompra)
@@ -12866,6 +13825,8 @@ export interface IPedidoCompraEntity {
     compra: CompraEntity;
     solicitacaoMaterialId: string | undefined;
     solicitacaoMaterial: SolicitacaoMaterialEntity;
+    fornecedorId: string | undefined;
+    fornecedor: FornecedorEntity;
     cotacaoId: string | undefined;
     cotacao: CotacaoEntity;
     orcamentoId: string | undefined;
@@ -12884,6 +13845,8 @@ export interface IPedidoCompraEntity {
     valorDesconto: number | undefined;
     condicaoDesconto: string | undefined;
     status: PedidoCompraStatus;
+    formaDePagamento: FormaPagamento;
+    formaDePagamentoString: string | undefined;
     materiaisPedidosCompra: MaterialPedidoCompraEntity[] | undefined;
     melhorCompraId: string | undefined;
     melhorCompra: MelhorCompraEntity;
@@ -12891,9 +13854,9 @@ export interface IPedidoCompraEntity {
 }
 
 export enum PedidoCompraStatus {
-    EmAndamento = "EmAndamento",
-    Concluido = "Concluido",
-    Cancelado = "Cancelado",
+    _0 = 0,
+    _1 = 1,
+    _2 = 2,
 }
 
 export class PermissionDto implements IPermissionDto {
@@ -14643,6 +15606,7 @@ export enum SolicitacaoMaterialStatus {
     _6 = 6,
     _7 = 7,
     _8 = 8,
+    _9 = 9,
 }
 
 export enum SolicitacaoMaterialStatusNullable {
@@ -14655,6 +15619,7 @@ export enum SolicitacaoMaterialStatusNullable {
     _6 = 6,
     _7 = 7,
     _8 = 8,
+    _9 = 9,
 }
 
 export class SolicitacaoPorObraDashboard implements ISolicitacaoPorObraDashboard {
@@ -15505,6 +16470,101 @@ export enum ThreadStatus {
     FECHADA = "FECHADA",
 }
 
+export class UpdateCompraDto implements IUpdateCompraDto {
+    id: string;
+    solicitacaoMaterialId: string | undefined;
+    cotacaoId: string | undefined;
+    orcamentoId: string | undefined;
+    obraId: string | undefined;
+    userId: number;
+    enderecoEntregaId: string | undefined;
+    observacaoInterna: string | undefined;
+    observacaoFornecedor: string | undefined;
+    status: CompraStatus;
+    materiaisComprados: UpdateMaterialCompradoDto[] | undefined;
+    total: number | undefined;
+
+    constructor(data?: IUpdateCompraDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.solicitacaoMaterialId = _data["solicitacaoMaterialId"];
+            this.cotacaoId = _data["cotacaoId"];
+            this.orcamentoId = _data["orcamentoId"];
+            this.obraId = _data["obraId"];
+            this.userId = _data["userId"];
+            this.enderecoEntregaId = _data["enderecoEntregaId"];
+            this.observacaoInterna = _data["observacaoInterna"];
+            this.observacaoFornecedor = _data["observacaoFornecedor"];
+            this.status = _data["status"];
+            if (Array.isArray(_data["materiaisComprados"])) {
+                this.materiaisComprados = [] as any;
+                for (let item of _data["materiaisComprados"])
+                    this.materiaisComprados.push(UpdateMaterialCompradoDto.fromJS(item));
+            }
+            this.total = _data["total"];
+        }
+    }
+
+    static fromJS(data: any): UpdateCompraDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new UpdateCompraDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["solicitacaoMaterialId"] = this.solicitacaoMaterialId;
+        data["cotacaoId"] = this.cotacaoId;
+        data["orcamentoId"] = this.orcamentoId;
+        data["obraId"] = this.obraId;
+        data["userId"] = this.userId;
+        data["enderecoEntregaId"] = this.enderecoEntregaId;
+        data["observacaoInterna"] = this.observacaoInterna;
+        data["observacaoFornecedor"] = this.observacaoFornecedor;
+        data["status"] = this.status;
+        if (Array.isArray(this.materiaisComprados)) {
+            data["materiaisComprados"] = [];
+            for (let item of this.materiaisComprados)
+                data["materiaisComprados"].push(item.toJSON());
+        }
+        data["total"] = this.total;
+        return data;
+    }
+
+    clone(): UpdateCompraDto {
+        const json = this.toJSON();
+        let result = new UpdateCompraDto();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IUpdateCompraDto {
+    id: string;
+    solicitacaoMaterialId: string | undefined;
+    cotacaoId: string | undefined;
+    orcamentoId: string | undefined;
+    obraId: string | undefined;
+    userId: number;
+    enderecoEntregaId: string | undefined;
+    observacaoInterna: string | undefined;
+    observacaoFornecedor: string | undefined;
+    status: CompraStatus;
+    materiaisComprados: UpdateMaterialCompradoDto[] | undefined;
+    total: number | undefined;
+}
+
 export class UpdateCotacaoDto implements IUpdateCotacaoDto {
     id: string;
     solicitacaoMaterialId: string | undefined;
@@ -15653,6 +16713,101 @@ export interface IUpdateFornecedorDto {
     cpfOrCnpj: string | undefined;
     telefone: TelefoneDto;
     endereco: EnderecoDto;
+}
+
+export class UpdateMaterialCompradoDto implements IUpdateMaterialCompradoDto {
+    id: string;
+    compraId: string;
+    nome: string | undefined;
+    quantidade: string | undefined;
+    unidade: string | undefined;
+    especificacao: string | undefined;
+    fornecedorId: string | undefined;
+    solicitacaoMaterialId: string | undefined;
+    cotacaoId: string | undefined;
+    orcamentoId: string | undefined;
+    materialOrcadoId: string | undefined;
+    precoItem: number | undefined;
+    precoTotal: number | undefined;
+    emFalta: boolean;
+
+    constructor(data?: IUpdateMaterialCompradoDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.compraId = _data["compraId"];
+            this.nome = _data["nome"];
+            this.quantidade = _data["quantidade"];
+            this.unidade = _data["unidade"];
+            this.especificacao = _data["especificacao"];
+            this.fornecedorId = _data["fornecedorId"];
+            this.solicitacaoMaterialId = _data["solicitacaoMaterialId"];
+            this.cotacaoId = _data["cotacaoId"];
+            this.orcamentoId = _data["orcamentoId"];
+            this.materialOrcadoId = _data["materialOrcadoId"];
+            this.precoItem = _data["precoItem"];
+            this.precoTotal = _data["precoTotal"];
+            this.emFalta = _data["emFalta"];
+        }
+    }
+
+    static fromJS(data: any): UpdateMaterialCompradoDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new UpdateMaterialCompradoDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["compraId"] = this.compraId;
+        data["nome"] = this.nome;
+        data["quantidade"] = this.quantidade;
+        data["unidade"] = this.unidade;
+        data["especificacao"] = this.especificacao;
+        data["fornecedorId"] = this.fornecedorId;
+        data["solicitacaoMaterialId"] = this.solicitacaoMaterialId;
+        data["cotacaoId"] = this.cotacaoId;
+        data["orcamentoId"] = this.orcamentoId;
+        data["materialOrcadoId"] = this.materialOrcadoId;
+        data["precoItem"] = this.precoItem;
+        data["precoTotal"] = this.precoTotal;
+        data["emFalta"] = this.emFalta;
+        return data;
+    }
+
+    clone(): UpdateMaterialCompradoDto {
+        const json = this.toJSON();
+        let result = new UpdateMaterialCompradoDto();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IUpdateMaterialCompradoDto {
+    id: string;
+    compraId: string;
+    nome: string | undefined;
+    quantidade: string | undefined;
+    unidade: string | undefined;
+    especificacao: string | undefined;
+    fornecedorId: string | undefined;
+    solicitacaoMaterialId: string | undefined;
+    cotacaoId: string | undefined;
+    orcamentoId: string | undefined;
+    materialOrcadoId: string | undefined;
+    precoItem: number | undefined;
+    precoTotal: number | undefined;
+    emFalta: boolean;
 }
 
 export class UpdateMaterialCotadoDto implements IUpdateMaterialCotadoDto {

@@ -38,6 +38,7 @@
         "moment-timezone": "0.5.47",
         "ng2-charts": "^8.0.0",
         "ngx-bootstrap": "^19.0.2",
+        "ngx-mask": "^21.0.1",
         "ngx-pagination": "^6.0.3",
         "primeng": "^19.0.9",
         "push.js": "1.0.12",

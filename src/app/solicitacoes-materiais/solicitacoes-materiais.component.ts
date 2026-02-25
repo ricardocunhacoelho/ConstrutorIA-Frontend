@@ -30,6 +30,7 @@ import { SolicitacaoMaterialStatusNullable } from '@shared/service-proxies/servi
     templateUrl: './solicitacoes-materiais.component.html',
     animations: [appModuleAnimation()],
     standalone: true,
+    styleUrls: ['./solicitacoes-materiais.component.scss'],
     imports: [LocalizePipe, BsDropdownDirective, BsDropdownToggleDirective, BsDropdownMenuDirective, CommonModule, FormsModule, TableModule, PrimeTemplate, NgIf, PaginatorModule, LocalizePipe],
 })
 export class SolicitacoesMateriaisComponent extends PagedListingComponentBase<SolicitacaoMaterialDto> implements OnInit {
@@ -52,16 +53,16 @@ export class SolicitacoesMateriaisComponent extends PagedListingComponentBase<So
         { label: this.l('All'), value: undefined },
 
         { label: 'Aberta', value: SolicitacaoMaterialStatusNullable._0 },
-        { label: 'Cotação em andamento', value: SolicitacaoMaterialStatusNullable._1 },
-        { label: 'Cotação em andamento e orçamento disponível', value: SolicitacaoMaterialStatusNullable._2 },
-        { label: 'Aguardando compra', value: SolicitacaoMaterialStatusNullable._3 },
-        { label: 'Pedido feito, aguardando fornecedor', value: SolicitacaoMaterialStatusNullable._4 },
-        { label: 'Compra parcial', value: SolicitacaoMaterialStatusNullable._5 },
-        { label: 'Compra concluída', value: SolicitacaoMaterialStatusNullable._6 },
-        { label: 'Compra cancelada', value: SolicitacaoMaterialStatusNullable._7 },
+        { label: 'Cotações em andamento', value: SolicitacaoMaterialStatusNullable._1 },
+        { label: 'Cotações em andamento e orçamentos disponíveis', value: SolicitacaoMaterialStatusNullable._2 },
+        { label: 'Orçamentos disponíveis', value: SolicitacaoMaterialStatusNullable._3 },
+        { label: 'Pedido realizado, aguardando confirmação do fornecedor', value: SolicitacaoMaterialStatusNullable._4 },
+        { label: 'Pedido parcialmente concluído', value: SolicitacaoMaterialStatusNullable._5 },
+        { label: 'Pedido concluído, disponível para pagamento', value: SolicitacaoMaterialStatusNullable._6 },
+        { label: 'Pedido cancelado', value: SolicitacaoMaterialStatusNullable._7 },
         { label: 'Intervenção necessária', value: SolicitacaoMaterialStatusNullable._8 },
+        { label: 'Compras concluídas, pagamentos realizados', value: SolicitacaoMaterialStatusNullable._9 },
     ];
-
 
     constructor(
         injector: Injector,
@@ -153,36 +154,40 @@ export class SolicitacoesMateriaisComponent extends PagedListingComponentBase<So
     }
 
     getStatusViewClass(record: SolicitacaoMaterialDto): string {
-        switch (record.status) {
-            case 0: // Aberta
-                return 'bg-secondary';
+    switch (record.status) {
+        case 0: // Aberta
+            return 'bg-secondary';
 
-            case 1: // CotacaoEmAndamento
-            case 2: // CotacaoEmAndamentoEOrcamentoDisponivel
-                return 'bg-warning text-dark';
+        case 1: // Cotações em andamento
+        case 2: // Cotações + orçamentos
+            return 'bg-orange';
 
-            case 3: // AguardandoCompra
-                return 'bg-info';
+        case 3: // Orçamentos disponíveis
+            return 'bg-purple text-white';
 
-            case 4: // PedidoFeitoAguardandoFornecedor
-                return 'bg-primary';
+        case 4: // Pedido realizado
+            return 'bg-info';
 
-            case 5: // CompraParcial
-                return 'bg-orange';
+        case 5: // Pedido parcialmente concluído
+            return 'bg-info';
 
-            case 6: // CompraConcluida
-                return 'bg-success';
+        case 6: // Pedido concluído, disponível para pagamento
+            return 'bg-primary';
 
-            case 7: // CompraCancelada
-                return 'bg-danger';
+        case 7: // Cancelado
+            return 'bg-danger';
 
-            case 8: // IntervencaoNecessaria (corrigirei abaixo)
-                return 'bg-danger text-white';
+        case 8: // Intervenção necessária
+            return 'bg-danger text-white';
 
-            default:
-                return 'bg-light text-dark';
-        }
+        case 9: // Intervenção necessária
+            return 'bg-success text-white';
+
+        default:
+            return 'bg-light text-dark';
     }
+}
+
 
     private showCreateOrEditDialog(id?: string): void {
         let ref: BsModalRef;
