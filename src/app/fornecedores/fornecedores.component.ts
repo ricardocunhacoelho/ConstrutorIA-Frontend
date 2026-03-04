@@ -96,17 +96,28 @@ export class FornecedoresComponent extends PagedListingComponentBase<FornecedorD
 
     private showCreateOrEditFornecedorDialog(id?: string): void {
         let createOrEditFornecedorDialog: BsModalRef;
+
+        const modalConfig = {
+            class: 'modal-lg',
+            backdrop: 'static' as const,
+            keyboard: false
+        };
+
         if (!id) {
-            createOrEditFornecedorDialog = this._modalService.show(CreateFornecedorDialogComponent, {
-                class: 'modal-lg',
-            });
+            createOrEditFornecedorDialog = this._modalService.show(
+                CreateFornecedorDialogComponent,
+                modalConfig
+            );
         } else {
-            createOrEditFornecedorDialog = this._modalService.show(EditFornecedorDialogComponent, {
-                class: 'modal-lg',
-                initialState: {
-                    id: id,
-                },
-            });
+            createOrEditFornecedorDialog = this._modalService.show(
+                EditFornecedorDialogComponent,
+                {
+                    ...modalConfig,
+                    initialState: {
+                        id: id,
+                    },
+                }
+            );
         }
 
         createOrEditFornecedorDialog.content.onSave.subscribe(() => {

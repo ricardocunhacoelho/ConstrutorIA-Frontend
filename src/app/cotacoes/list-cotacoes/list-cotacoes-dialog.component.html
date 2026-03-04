@@ -101,7 +101,6 @@
               </p>
             </div>
 
-            <!-- 🔥 RESUMO INTELIGENTE (continua igual) -->
             <p class="mb-0 small fw-semibold" *ngIf="fluxo.hasOrcamento && !isFornecedorPedidoNormal(fluxo)"
               [ngClass]="getResumoStatus(fluxo).classe">
               {{ getResumoStatus(fluxo).texto }}
@@ -176,6 +175,15 @@
         <!-- SEM ORÇAMENTO: VISUAL ANTIGO -->
         <div *ngIf="fluxo.tipo === 'COTACAO' && !fluxo.hasOrcamento">
 
+          <button *ngIf="fluxo.status != 'EmFila'" type="button" class="btn-whatsapp-chat"
+            (click)="abrirConversaFluxo(fluxo)">
+            <i class="fab fa-whatsapp"></i>
+            <span>Ver mensagens</span>
+            <span *ngIf="fluxo.quantidadeNotificacoes > 0" class="badge-notification">
+              {{ fluxo.quantidadeNotificacoes }}
+            </span>
+          </button>
+
           <h6 class="mb-2 mt-3">Materiais:</h6>
 
           <ul class="list-group small">
@@ -219,7 +227,18 @@
               </p>
             </div>
 
-            <div class="divider mt-3 mb-4"></div>
+            <div
+              *ngIf="fluxo.enderecoEntrega || fluxo.usuarioPedido || (fluxo.compraEfetivada && (fluxo.compraEfetivada.observacao || fluxo.compraEfetivada.prazoEntrega))"
+              class="divider mt-3 mb-4"></div>
+
+            <div class="mb-3 d-flex justify-content-start">
+              <button type="button" class="btn btn-outline-primary btn-sm" (click)="copiarMateriaisSelecionados(fluxo)"
+                [disabled]="!temMateriaisSelecionados(fluxo)">
+                <i class="fa fa-copy mr-2"></i>
+                Copiar Materiais Selecionados
+
+              </button>
+            </div>
 
             <h6 class="mb-0">
               <strong>Fornecedores:</strong>
@@ -227,12 +246,22 @@
 
             <div *ngFor="let bloco of this.menorValorPorItemAgrupada; trackBy: trackByFornecedor" class="mt-3">
               <div>
-                <h6 class="mb-3">
-                  <strong class="mr-2">{{ bloco.fornecedor }}</strong>
-                  <span class="badge bg-secondary ms-2">
-                    {{ bloco.grupos.length }} itens
-                  </span>
-                </h6>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <h6 class="mb-0">
+                    <strong class="mr-2">{{ bloco.fornecedor }}</strong>
+                    <span class="badge bg-secondary ms-2">
+                      {{ bloco.grupos.length }} itens
+                    </span>
+                  </h6>
+
+                  <!-- Botão para copiar apenas os materiais deste fornecedor -->
+                  <button type="button" class="btn btn-outline-primary btn-sm"
+                    (click)="copiarMateriaisPorFornecedor(bloco, fluxo)"
+                    [disabled]="!temMateriaisSelecionadosFornecedor(bloco)">
+                    <i class="fa fa-copy me-1"></i>
+                    Copiar Itens
+                  </button>
+                </div>
 
                 <div *ngIf="bloco.prazoEntrega || bloco.observacao" class="mb-2">
                   <p *ngIf="bloco.prazoEntrega" class="mb-2 small text-muted">
@@ -253,20 +282,33 @@
                   {{ info.texto }}
                 </p>
 
-                <div *ngIf="todosCompradosBloco(bloco)" class="bloco-pagamento-acoes">
-                  <button type="button" class="btn-confirmar-pagamento" [ngClass]="{
-                    'btn-pagamento-confirmado': bloco.pagamentoConfirmado
-                  }" [disabled]="bloco.pagamentoConfirmado" (click)="confirmarPagamentoMenorValorItem(bloco)">
-                    <i class="fa" [ngClass]="bloco.pagamentoConfirmado ? 'fa-check-circle' : 'fa-credit-card'">
-                    </i>
+                <div class="d-flex justify-content-between align-items-center mb-4">
 
-                    <span>
-                      {{ bloco.pagamentoConfirmado
-                      ? 'Pagamento Confirmado'
-                      : 'Confirmar Pagamento' }}
+                  <button type="button" class="btn-whatsapp-chat" (click)="abrirConversaBloco(bloco)">
+                    <i class="fab fa-whatsapp"></i>
+                    <span>Ver mensagens</span>
+                    <span *ngIf="bloco.quantidadeNotificacoes > 0" class="badge-notification">
+                      {{ bloco.quantidadeNotificacoes }}
                     </span>
                   </button>
+
+                  <div *ngIf="todosCompradosBloco(bloco)" class="bloco-pagamento-acoes">
+                    <button type="button" class="btn-confirmar-pagamento" [ngClass]="{
+                    'btn-pagamento-confirmado': bloco.pagamentoConfirmado
+                  }" [disabled]="bloco.pagamentoConfirmado" (click)="confirmarPagamentoMenorValorItem(bloco)">
+                      <i class="fa" [ngClass]="bloco.pagamentoConfirmado ? 'fa-check-circle' : 'fa-credit-card'">
+                      </i>
+
+                      <span>
+                        {{ bloco.pagamentoConfirmado
+                        ? 'Pagamento Confirmado'
+                        : 'Confirmar Pagamento' }}
+                      </span>
+                    </button>
+                  </div>
+
                 </div>
+
 
                 <div *ngFor="let grupo of bloco.grupos; trackBy: trackByGrupo">
 
@@ -312,74 +354,150 @@
                       </button>
                     </div>
 
-                    <div *ngIf="hasIntervencaoPendente(grupo)" class="alert alert-warning mt-2">
-
-                      <strong>{{ grupo.intervencao?.tipoView }}</strong>
-                      <p class="mb-2">{{ grupo.intervencao?.descricao }}</p>
-
-                      <!-- FALTA DE MATERIAL -->
-                      <ng-container *ngIf="grupo.intervencao?.tipo === 'FaltaMaterial'">
-
-                        <!-- NÃO tem sugestão -->
-                        <div *ngIf="!grupo.intervencao.materialSugeridoEspecificacao">
-                          <label class="form-check">
-                            <input type="radio" [(ngModel)]="grupo.opcaoSelecionada" value="OUTRO_FORNECEDOR">
-                            Fazer pedido com outro fornecedor
-                          </label>
+                    <div *ngIf="hasIntervencaoPendente(grupo)" class="intervencao-card mt-2 mb-3">
+                      <!-- Header da Intervenção -->
+                      <div class="intervencao-header">
+                        <div class="intervencao-titulo">
+                          <i class="fa fa-exclamation-triangle"></i>
+                          <span>{{ grupo.intervencao?.tipoView }}</span>
                         </div>
+                        <span class="intervencao-badge">Ação Necessária</span>
+                      </div>
 
-                        <!-- TEM sugestão -->
-                        <div *ngIf="grupo.intervencao.materialSugeridoEspecificacao">
-                          <label class="form-check">
-                            <input type="radio" [(ngModel)]="grupo.opcaoSelecionada" value="ACEITAR_SUGESTAO">
-                            Seguir com material sugerido —
-                            {{ grupo.intervencao.materialSugeridoEspecificacao }}
-                            ({{ grupo.intervencao.materialSugeridoPrecoItem | currency:'BRL' }})
-                          </label>
+                      <!-- Descrição -->
+                      <div class="intervencao-descricao">
+                        <i class="fa fa-info-circle"></i>
+                        <p>{{ grupo.intervencao?.descricao }}</p>
+                      </div>
 
-                          <label class="form-check mt-1">
-                            <input type="radio" [(ngModel)]="grupo.opcaoSelecionada" value="OUTRO_FORNECEDOR">
-                            Tentar outro fornecedor
-                          </label>
+                      <!-- Opções baseadas no tipo -->
+                      <div class="intervencao-opcoes">
+                        <!-- FALTA DE MATERIAL -->
+                        <ng-container *ngIf="grupo.intervencao?.tipo === 'FaltaMaterial'">
+                          <div class="opcoes-titulo">
+                            <i class="fa fa-box-open"></i>
+                            <span>Opções disponíveis:</span>
+                          </div>
+
+                          <div class="opcoes-lista">
+                            <!-- NÃO tem sugestão -->
+                            <div *ngIf="!grupo.intervencao.materialSugeridoEspecificacao" class="opcao-item">
+                              <label class="opcao-label">
+                                <input type="radio" [(ngModel)]="grupo.opcaoSelecionada" value="OUTRO_FORNECEDOR"
+                                  class="opcao-radio">
+                                <span class="opcao-texto">
+                                  <strong>Fazer pedido com outro fornecedor</strong>
+                                  <small>Buscar o mesmo material em outro fornecedor</small>
+                                </span>
+                              </label>
+                            </div>
+
+                            <!-- TEM sugestão -->
+                            <div *ngIf="grupo.intervencao.materialSugeridoEspecificacao" class="opcao-item destaque">
+                              <label class="opcao-label">
+                                <input type="radio" [(ngModel)]="grupo.opcaoSelecionada" value="ACEITAR_SUGESTAO"
+                                  class="opcao-radio">
+                                <span class="opcao-texto">
+                                  <strong>Seguir com material sugerido</strong>
+                                  <span class="sugestao-detalhe">
+                                    {{ grupo.intervencao.materialSugeridoEspecificacao }}
+                                    <span class="sugestao-preco">
+                                      {{ grupo.intervencao.materialSugeridoPrecoItem | currency:'BRL' }}
+                                    </span>
+                                  </span>
+                                </span>
+                              </label>
+                            </div>
+
+                            <div *ngIf="grupo.intervencao.materialSugeridoEspecificacao" class="opcao-item">
+                              <label class="opcao-label">
+                                <input type="radio" [(ngModel)]="grupo.opcaoSelecionada" value="OUTRO_FORNECEDOR"
+                                  class="opcao-radio">
+                                <span class="opcao-texto">
+                                  <strong>Tentar outro fornecedor</strong>
+                                  <small>Buscar o material original em outro fornecedor</small>
+                                </span>
+                              </label>
+                            </div>
+                          </div>
+                        </ng-container>
+
+                        <!-- SUGESTÃO DO FORNECEDOR -->
+                        <ng-container *ngIf="grupo.intervencao?.tipo === 'SugestaoFornecedor'">
+                          <div class="opcoes-titulo">
+                            <i class="fa fa-exchange-alt"></i>
+                            <span>O fornecedor sugeriu:</span>
+                          </div>
+
+                          <div class="opcoes-lista">
+                            <div class="opcao-item destaque">
+                              <label class="opcao-label">
+                                <input type="radio" [(ngModel)]="grupo.opcaoSelecionada" value="ACEITAR_SUGESTAO"
+                                  class="opcao-radio">
+                                <span class="opcao-texto">
+                                  <strong>Aceitar sugestão</strong>
+                                  <span class="sugestao-detalhe">
+                                    {{ grupo.intervencao.materialSugeridoEspecificacao }}
+                                    <span class="sugestao-preco">
+                                      {{ grupo.intervencao.materialSugeridoPrecoItem | currency:'BRL' }}
+                                    </span>
+                                  </span>
+                                </span>
+                              </label>
+                            </div>
+
+                            <div class="opcao-item">
+                              <label class="opcao-label">
+                                <input type="radio" [(ngModel)]="grupo.opcaoSelecionada" value="MANTER_ORIGINAL"
+                                  class="opcao-radio">
+                                <span class="opcao-texto">
+                                  <strong>Manter material original</strong>
+                                  <small>Continuar com o material originalmente solicitado</small>
+                                </span>
+                              </label>
+                            </div>
+                          </div>
+                        </ng-container>
+
+                        <!-- PRAZO INDISPONÍVEL -->
+                        <ng-container *ngIf="grupo.intervencao?.tipo === 'PrazoIndisponivel'">
+                          <div class="opcoes-titulo">
+                            <i class="fa fa-clock"></i>
+                            <span>Prazo não atendido:</span>
+                          </div>
+
+                          <div class="opcoes-lista">
+                            <div class="opcao-item">
+                              <label class="opcao-label">
+                                <input type="radio" [(ngModel)]="grupo.opcaoSelecionada" value="OUTRO_FORNECEDOR"
+                                  class="opcao-radio">
+                                <span class="opcao-texto">
+                                  <strong>Fazer pedido com outro fornecedor</strong>
+                                  <small>Buscar fornecedor que atenda ao prazo solicitado</small>
+                                </span>
+                              </label>
+                            </div>
+                          </div>
+                        </ng-container>
+
+                        <!-- Botão Resolver -->
+                        <div class="intervencao-actions">
+                          <button class="btn-resolver" [disabled]="!grupo.opcaoSelecionada"
+                            (click)="resolverIntervencao(grupo)">
+                            <i class="fa"
+                              [ngClass]="!grupo.opcaoSelecionada ? 'fa-hourglass-half' : 'fa-check-circle'"></i>
+                            <span>{{ !grupo.opcaoSelecionada ? 'Selecione uma opção' : 'Resolver Intervenção' }}</span>
+                          </button>
                         </div>
-                      </ng-container>
-
-                      <!-- SUGESTÃO DO FORNECEDOR -->
-                      <ng-container *ngIf="grupo.intervencao?.tipo === 'SugestaoFornecedor'">
-                        <label class="form-check">
-                          <input type="radio" [(ngModel)]="grupo.opcaoSelecionada" value="ACEITAR_SUGESTAO">
-                          Aceitar sugestão —
-                          {{ grupo.intervencao.materialSugeridoEspecificacao }}
-                          ({{ grupo.intervencao.materialSugeridoPrecoItem | currency:'BRL' }})
-                        </label>
-
-                        <label class="form-check mt-1">
-                          <input type="radio" [(ngModel)]="grupo.opcaoSelecionada" value="MANTER_ORIGINAL">
-                          Manter material original
-                        </label>
-                      </ng-container>
-
-                      <!-- PRAZO INDISPONÍVEL -->
-                      <ng-container *ngIf="grupo.intervencao?.tipo === 'PrazoIndisponivel'">
-                        <label class="form-check">
-                          <input type="radio" [(ngModel)]="grupo.opcaoSelecionada" value="OUTRO_FORNECEDOR">
-                          Fazer pedido com outro fornecedor
-                        </label>
-                      </ng-container>
-
-                      <button class="btn btn-sm btn-success mt-2" [disabled]="!grupo.opcaoSelecionada"
-                        (click)="resolverIntervencao(grupo)">
-                        Resolver
-                      </button>
-
+                      </div>
                     </div>
 
                     <div class="variacoes-wrapper" [class.variacoes-disabled]="grupo.removido">
 
                       <div *ngFor="let v of grupo.variacoes" class="form-check mb-4">
                         <input class="form-check-input" type="radio" [name]="fluxo.id + '-' + grupo.nome" [value]="v"
-                          [(ngModel)]="grupo.selected"
-                          [disabled]="grupo.removido || grupo.feitoPedido|| grupo.jaComprado" />
+                          [(ngModel)]="grupo.selected" [disabled]="true"
+                          [attr.title]="v.id === grupo.selected?.id ? 'Selecionado automaticamente (menor valor)' : 'Não disponível - menor valor já selecionado'" />
 
 
                         <label class="form-check-label w-100">
@@ -438,7 +556,7 @@
                     </span>
                   </span>
 
-                  
+
 
                   <span class="small text-muted fw-normal ms-2">
 
@@ -512,19 +630,42 @@
               {{ info.texto }}
             </p>
 
-            <div *ngIf="todosCompradosFluxo(fluxo)" class="bloco-pagamento-acoes">
-              <button type="button" class="btn-confirmar-pagamento" [disabled]="fluxo.pagamentoConfirmado"
-                (click)="confirmarPagamentoPedido(fluxo)">
-                <i class="fa" [ngClass]="fluxo.pagamentoConfirmado ? 'fa-check-circle' : 'fa-credit-card'">
-                </i>
 
-                <span>
-                  {{ fluxo.pagamentoConfirmado
-                  ? 'Pagamento Confirmado'
-                  : 'Confirmar Pagamento' }}
-                </span>
+
+            <div class="mb-3 d-flex justify-content-end">
+              <button type="button" class="btn btn-outline-primary btn-sm" (click)="copiarMateriaisSelecionados(fluxo)"
+                [disabled]="!temMateriaisSelecionados(fluxo)">
+                <i class="fa fa-copy me-1"></i>
+                Copiar Materiais Selecionados
               </button>
             </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+
+              <button type="button" class="btn-whatsapp-chat" (click)="abrirConversaFluxo(fluxo)">
+                <i class="fab fa-whatsapp"></i>
+                <span>Ver mensagens</span>
+                <span *ngIf="fluxo.quantidadeNotificacoes > 0" class="badge-notification">
+                  {{ fluxo.quantidadeNotificacoes }}
+                </span>
+              </button>
+
+              <div *ngIf="todosCompradosFluxo(fluxo)" class="bloco-pagamento-acoes">
+                <button type="button" class="btn-confirmar-pagamento" [disabled]="fluxo.pagamentoConfirmado"
+                  (click)="confirmarPagamentoPedido(fluxo)">
+                  <i class="fa" [ngClass]="fluxo.pagamentoConfirmado ? 'fa-check-circle' : 'fa-credit-card'">
+                  </i>
+
+                  <span>
+                    {{ fluxo.pagamentoConfirmado
+                    ? 'Pagamento Confirmado'
+                    : 'Confirmar Pagamento' }}
+                  </span>
+                </button>
+              </div>
+
+            </div>
+
 
             <div *ngFor="let grupo of fluxo.materiaisAgrupados">
               <div class="card mt-3 p-3 border material-card" [class.material-disabled]="grupo.removido">
@@ -740,7 +881,7 @@
               </h5>
 
               <button class="btn btn-success" (click)="realizarCompra(fluxo)"
-                [disabled]="savingCompra || loading || existePedido">
+                [disabled]="savingCompra || loading || existePedido || isUnicoItemEmFalta(fluxo)">
                 Realizar compra
               </button>
 

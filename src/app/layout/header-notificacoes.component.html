@@ -1,32 +1,54 @@
-<li class="nav-item dropdown notificacoes">
-  <a class="nav-link" (click)="toggleDropdown()">
+<li class="nav-item dropdown notificacoes" dropdown>
+  <a class="nav-link" dropdownToggle (click)="toggleDropdown()">
     <i class="far fa-bell"></i>
-
-    <span class="badge" *ngIf="naoLidas > 0">
-      {{ naoLidas }}
-    </span>
+    <span class="badge" *ngIf="naoLidas > 0">{{ naoLidas }}</span>
   </a>
 
-  <div class="dropdown-menu" [class.show]="aberto">
+  <div class="dropdown-menu" *dropdownMenu [class.show]="aberto">
     <div class="dropdown-header">
-      Notificações
+      <span>Notificações</span>
+      <small *ngIf="notificacoes.length > 0" (click)="marcarTodasComoLidas()">
+        <i class="far fa-check-circle me-1"></i>Marcar todas como lidas
+      </small>
     </div>
 
-    <div class="lista">
+    <div class="lista-notificacoes">
       <div
-        class="item"
+        class="notificacao-item"
         *ngFor="let n of notificacoes"
         [class.nao-lida]="!n.lida"
         (click)="abrirNotificacao(n)"
       >
-        <strong>{{ n.titulo }}</strong>
-        <p>{{ n.descricao }}</p>
-        <small>{{ n.creationTime | date:'dd/MM/yyyy HH:mm' }}</small>
+        <div class="icone mr-2" [ngClass]="getIconeClasse(n.origemTipo)">
+          <i class="fa" [ngClass]="getIcone(n.origemTipo)"></i>
+        </div>
+
+        <div class="conteudo">
+          <div class="titulo">{{ n.titulo }}</div>
+          <div class="descricao">{{ n.descricao }}</div>
+          
+          <div class="metadata">
+            <span class="tempo">
+              <i class="far fa-clock"></i>
+              {{ n.creationTime | timeAgo }}
+            </span>
+            <span class="badge-tipo" [ngClass]="getBadgeClasse(n.origemTipo)">
+              {{ getTipoDescricao(n.origemTipo) }}
+            </span>
+          </div>
+        </div>
       </div>
 
       <div class="vazio" *ngIf="notificacoes.length === 0">
-        Nenhuma notificação
+        <i class="far fa-bell-slash"></i>
+        <p>Nenhuma notificação</p>
       </div>
+    </div>
+
+    <div class="dropdown-footer" *ngIf="notificacoes.length > 0">
+      <button (click)="verTodas()">
+        Ver todas as notificações
+      </button>
     </div>
   </div>
 </li>

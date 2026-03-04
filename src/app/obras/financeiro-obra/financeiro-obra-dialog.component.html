@@ -1,5 +1,15 @@
 <div class="financeiro-dialog">
 
+    <div class="dialog-header">
+        <div class="dialog-titulo">
+            <i class="fa fa-credit-card"></i>
+            Financeiro {{ obraNome || 'Obra' }}
+        </div>
+        <button class="btn-close-dialog" (click)="close()">
+            <i class="fa fa-times"></i>
+        </button>
+    </div>
+
     <!-- ===== RESUMO FINANCEIRO ===== -->
     <div class="resumo-cards">
 
@@ -81,9 +91,7 @@
 
             </div>
 
-            <!-- BOTÕES -->
             <div class="grupo-botoes">
-
                 <button class="btn btn-sm bg-blue" (click)="list()">
                     <i class="fa fa-search"></i>
                     Buscar
@@ -93,6 +101,28 @@
                     Limpar
                 </button>
 
+                <div class="btn-group" dropdown>
+                    <button id="button-exportar" type="button" class="btn btn-sm btn-success" dropdownToggle>
+                        <i class="fa fa-download"></i>
+                        Exportar
+                        <span class="caret"></span>
+                    </button>
+
+                    <ul id="dropdown-exportar" *dropdownMenu class="dropdown-menu" role="menu">
+                        <li role="menuitem">
+                            <a class="dropdown-item" href="javascript:;" (click)="exportarParaExcel('excel')">
+                                <i class="fa fa-file-excel-o text-success"></i>
+                                Excel
+                            </a>
+                        </li>
+                        <li role="menuitem">
+                            <a class="dropdown-item" href="javascript:;" (click)="exportarParaPdf('pdf')">
+                                <i class="fa fa-file-pdf-o text-danger"></i>
+                                PDF
+                            </a>
+                        </li>
+                    </ul>
+                </div>
             </div>
 
         </div>
@@ -171,7 +201,7 @@
     <div class="rodape">
 
         <p-paginator #paginator (onPageChange)="list($event)" [totalRecords]="totalCount" [rows]="10"
-            [rowsPerPageOptions]="[10,50,100,500,1000]">
+            [rowsPerPageOptions]="[10,50,100,500,10000]">
         </p-paginator>
 
 

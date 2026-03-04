@@ -1079,6 +1079,69 @@ export class CotacaoServiceProxy {
     }
 
     /**
+     * @param body (optional) 
+     * @return OK
+     */
+    getMensagensNaoLidasCount(body: GetMensagensNaoLidasCountInput | undefined): Observable<MensagemNaoLidaCountDto[]> {
+        let url_ = this.baseUrl + "/api/services/app/Cotacao/GetMensagensNaoLidasCount";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetMensagensNaoLidasCount(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetMensagensNaoLidasCount(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<MensagemNaoLidaCountDto[]>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<MensagemNaoLidaCountDto[]>;
+        }));
+    }
+
+    protected processGetMensagensNaoLidasCount(response: HttpResponseBase): Observable<MensagemNaoLidaCountDto[]> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200.push(MensagemNaoLidaCountDto.fromJS(item));
+            }
+            else {
+                result200 = <any>null;
+            }
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
      * @param id (optional) 
      * @return OK
      */
@@ -1121,6 +1184,308 @@ export class CotacaoServiceProxy {
         if (status === 200) {
             return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
             return _observableOf(null as any);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+}
+
+@Injectable()
+export class EnumServiceProxy {
+    private http: HttpClient;
+    private baseUrl: string;
+    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+
+    constructor(@Inject(HttpClient) http: HttpClient, @Optional() @Inject(API_BASE_URL) baseUrl?: string) {
+        this.http = http;
+        this.baseUrl = baseUrl ?? "";
+    }
+
+    /**
+     * @return OK
+     */
+    getFormasPagamento(): Observable<EnumValueDto[]> {
+        let url_ = this.baseUrl + "/api/services/app/Enum/GetFormasPagamento";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetFormasPagamento(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetFormasPagamento(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<EnumValueDto[]>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<EnumValueDto[]>;
+        }));
+    }
+
+    protected processGetFormasPagamento(response: HttpResponseBase): Observable<EnumValueDto[]> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200.push(EnumValueDto.fromJS(item));
+            }
+            else {
+                result200 = <any>null;
+            }
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @return OK
+     */
+    getNaturezasLancamento(): Observable<EnumValueDto[]> {
+        let url_ = this.baseUrl + "/api/services/app/Enum/GetNaturezasLancamento";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetNaturezasLancamento(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetNaturezasLancamento(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<EnumValueDto[]>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<EnumValueDto[]>;
+        }));
+    }
+
+    protected processGetNaturezasLancamento(response: HttpResponseBase): Observable<EnumValueDto[]> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200.push(EnumValueDto.fromJS(item));
+            }
+            else {
+                result200 = <any>null;
+            }
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @return OK
+     */
+    getTiposLancamento(): Observable<EnumValueDto[]> {
+        let url_ = this.baseUrl + "/api/services/app/Enum/GetTiposLancamento";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetTiposLancamento(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetTiposLancamento(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<EnumValueDto[]>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<EnumValueDto[]>;
+        }));
+    }
+
+    protected processGetTiposLancamento(response: HttpResponseBase): Observable<EnumValueDto[]> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200.push(EnumValueDto.fromJS(item));
+            }
+            else {
+                result200 = <any>null;
+            }
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @return OK
+     */
+    getLancamentoStatus(): Observable<EnumValueDto[]> {
+        let url_ = this.baseUrl + "/api/services/app/Enum/GetLancamentoStatus";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetLancamentoStatus(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetLancamentoStatus(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<EnumValueDto[]>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<EnumValueDto[]>;
+        }));
+    }
+
+    protected processGetLancamentoStatus(response: HttpResponseBase): Observable<EnumValueDto[]> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200.push(EnumValueDto.fromJS(item));
+            }
+            else {
+                result200 = <any>null;
+            }
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @return OK
+     */
+    getNotificacaoOrigemTipo(): Observable<EnumValueDto[]> {
+        let url_ = this.baseUrl + "/api/services/app/Enum/GetNotificacaoOrigemTipo";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetNotificacaoOrigemTipo(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetNotificacaoOrigemTipo(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<EnumValueDto[]>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<EnumValueDto[]>;
+        }));
+    }
+
+    protected processGetNotificacaoOrigemTipo(response: HttpResponseBase): Observable<EnumValueDto[]> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200.push(EnumValueDto.fromJS(item));
+            }
+            else {
+                result200 = <any>null;
+            }
+            return _observableOf(result200);
             }));
         } else if (status !== 200 && status !== 204) {
             return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
@@ -1547,6 +1912,324 @@ export class IntervencaoCompraServiceProxy {
                 result200 = [] as any;
                 for (let item of resultData200)
                     result200.push(IntervencaoCompraDto.fromJS(item));
+            }
+            else {
+                result200 = <any>null;
+            }
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+}
+
+@Injectable()
+export class MensagemServiceProxy {
+    private http: HttpClient;
+    private baseUrl: string;
+    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+
+    constructor(@Inject(HttpClient) http: HttpClient, @Optional() @Inject(API_BASE_URL) baseUrl?: string) {
+        this.http = http;
+        this.baseUrl = baseUrl ?? "";
+    }
+
+    /**
+     * @param cotacaoId (optional) 
+     * @return OK
+     */
+    getMensagensByCotacaoId(cotacaoId: string | undefined): Observable<MensagemDto[]> {
+        let url_ = this.baseUrl + "/api/services/app/Mensagem/GetMensagensByCotacaoId?";
+        if (cotacaoId === null)
+            throw new Error("The parameter 'cotacaoId' cannot be null.");
+        else if (cotacaoId !== undefined)
+            url_ += "cotacaoId=" + encodeURIComponent("" + cotacaoId) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetMensagensByCotacaoId(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetMensagensByCotacaoId(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<MensagemDto[]>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<MensagemDto[]>;
+        }));
+    }
+
+    protected processGetMensagensByCotacaoId(response: HttpResponseBase): Observable<MensagemDto[]> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200.push(MensagemDto.fromJS(item));
+            }
+            else {
+                result200 = <any>null;
+            }
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param pedidoId (optional) 
+     * @return OK
+     */
+    getMensagensByPedidoId(pedidoId: string | undefined): Observable<MensagemDto[]> {
+        let url_ = this.baseUrl + "/api/services/app/Mensagem/GetMensagensByPedidoId?";
+        if (pedidoId === null)
+            throw new Error("The parameter 'pedidoId' cannot be null.");
+        else if (pedidoId !== undefined)
+            url_ += "pedidoId=" + encodeURIComponent("" + pedidoId) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetMensagensByPedidoId(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetMensagensByPedidoId(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<MensagemDto[]>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<MensagemDto[]>;
+        }));
+    }
+
+    protected processGetMensagensByPedidoId(response: HttpResponseBase): Observable<MensagemDto[]> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200.push(MensagemDto.fromJS(item));
+            }
+            else {
+                result200 = <any>null;
+            }
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param fornecedorId (optional) 
+     * @return OK
+     */
+    getMensagensByFornecedorId(fornecedorId: string | undefined): Observable<MensagemDto[]> {
+        let url_ = this.baseUrl + "/api/services/app/Mensagem/GetMensagensByFornecedorId?";
+        if (fornecedorId === null)
+            throw new Error("The parameter 'fornecedorId' cannot be null.");
+        else if (fornecedorId !== undefined)
+            url_ += "fornecedorId=" + encodeURIComponent("" + fornecedorId) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetMensagensByFornecedorId(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetMensagensByFornecedorId(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<MensagemDto[]>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<MensagemDto[]>;
+        }));
+    }
+
+    protected processGetMensagensByFornecedorId(response: HttpResponseBase): Observable<MensagemDto[]> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200.push(MensagemDto.fromJS(item));
+            }
+            else {
+                result200 = <any>null;
+            }
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param body (optional) 
+     * @return OK
+     */
+    marcarComoVisualizadas(body: string[] | undefined): Observable<void> {
+        let url_ = this.baseUrl + "/api/services/app/Mensagem/MarcarComoVisualizadas";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processMarcarComoVisualizadas(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processMarcarComoVisualizadas(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<void>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<void>;
+        }));
+    }
+
+    protected processMarcarComoVisualizadas(response: HttpResponseBase): Observable<void> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return _observableOf(null as any);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param body (optional) 
+     * @return OK
+     */
+    getContagemNaoLidas(body: GetContagemNaoLidasInput | undefined): Observable<{ [key: string]: number; }> {
+        let url_ = this.baseUrl + "/api/services/app/Mensagem/GetContagemNaoLidas";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetContagemNaoLidas(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetContagemNaoLidas(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<{ [key: string]: number; }>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<{ [key: string]: number; }>;
+        }));
+    }
+
+    protected processGetContagemNaoLidas(response: HttpResponseBase): Observable<{ [key: string]: number; }> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (resultData200) {
+                result200 = {} as any;
+                for (let key in resultData200) {
+                    if (resultData200.hasOwnProperty(key))
+                        (<any>result200)[key] = resultData200[key] !== undefined ? resultData200[key] : <any>null;
+                }
             }
             else {
                 result200 = <any>null;
@@ -2513,6 +3196,120 @@ export class ObraLancamentoFinanceiroServiceProxy {
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
             result200 = ObraLancamentoFinanceiroDto.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param body (optional) 
+     * @return OK
+     */
+    exportarParaExcel(body: PagedObraLancamentoFinanceiroResultRequestDto | undefined): Observable<string> {
+        let url_ = this.baseUrl + "/api/services/app/ObraLancamentoFinanceiro/ExportarParaExcel";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processExportarParaExcel(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processExportarParaExcel(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<string>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<string>;
+        }));
+    }
+
+    protected processExportarParaExcel(response: HttpResponseBase): Observable<string> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+                result200 = resultData200 !== undefined ? resultData200 : <any>null;
+    
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param body (optional) 
+     * @return OK
+     */
+    exportarParaPdf(body: PagedObraLancamentoFinanceiroResultRequestDto | undefined): Observable<string> {
+        let url_ = this.baseUrl + "/api/services/app/ObraLancamentoFinanceiro/ExportarParaPdf";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processExportarParaPdf(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processExportarParaPdf(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<string>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<string>;
+        }));
+    }
+
+    protected processExportarParaPdf(response: HttpResponseBase): Observable<string> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+                result200 = resultData200 !== undefined ? resultData200 : <any>null;
+    
             return _observableOf(result200);
             }));
         } else if (status !== 200 && status !== 204) {
@@ -8686,6 +9483,7 @@ export interface ICreateObraDto {
 
 export class CreateObraLancamentoFinanceiroDto implements ICreateObraLancamentoFinanceiroDto {
     obraId: string;
+    fornecedorId: string | undefined;
     compraId: string | undefined;
     compra: UpdateCompraDto;
     descricao: string | undefined;
@@ -8696,6 +9494,7 @@ export class CreateObraLancamentoFinanceiroDto implements ICreateObraLancamentoF
     tipo: ObraLancamentoTipo;
     formaDePagamento: FormaPagamento;
     dataLancamento: moment.Moment;
+    notaFria: boolean;
 
     constructor(data?: ICreateObraLancamentoFinanceiroDto) {
         if (data) {
@@ -8709,6 +9508,7 @@ export class CreateObraLancamentoFinanceiroDto implements ICreateObraLancamentoF
     init(_data?: any) {
         if (_data) {
             this.obraId = _data["obraId"];
+            this.fornecedorId = _data["fornecedorId"];
             this.compraId = _data["compraId"];
             this.compra = _data["compra"] ? UpdateCompraDto.fromJS(_data["compra"]) : <any>undefined;
             this.descricao = _data["descricao"];
@@ -8719,6 +9519,7 @@ export class CreateObraLancamentoFinanceiroDto implements ICreateObraLancamentoF
             this.tipo = _data["tipo"];
             this.formaDePagamento = _data["formaDePagamento"];
             this.dataLancamento = _data["dataLancamento"] ? moment(_data["dataLancamento"].toString()) : <any>undefined;
+            this.notaFria = _data["notaFria"];
         }
     }
 
@@ -8732,6 +9533,7 @@ export class CreateObraLancamentoFinanceiroDto implements ICreateObraLancamentoF
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
         data["obraId"] = this.obraId;
+        data["fornecedorId"] = this.fornecedorId;
         data["compraId"] = this.compraId;
         data["compra"] = this.compra ? this.compra.toJSON() : <any>undefined;
         data["descricao"] = this.descricao;
@@ -8742,6 +9544,7 @@ export class CreateObraLancamentoFinanceiroDto implements ICreateObraLancamentoF
         data["tipo"] = this.tipo;
         data["formaDePagamento"] = this.formaDePagamento;
         data["dataLancamento"] = this.dataLancamento ? this.dataLancamento.toISOString() : <any>undefined;
+        data["notaFria"] = this.notaFria;
         return data;
     }
 
@@ -8755,6 +9558,7 @@ export class CreateObraLancamentoFinanceiroDto implements ICreateObraLancamentoF
 
 export interface ICreateObraLancamentoFinanceiroDto {
     obraId: string;
+    fornecedorId: string | undefined;
     compraId: string | undefined;
     compra: UpdateCompraDto;
     descricao: string | undefined;
@@ -8765,6 +9569,7 @@ export interface ICreateObraLancamentoFinanceiroDto {
     tipo: ObraLancamentoTipo;
     formaDePagamento: FormaPagamento;
     dataLancamento: moment.Moment;
+    notaFria: boolean;
 }
 
 export class CreatePedidoCompraDto implements ICreatePedidoCompraDto {
@@ -9944,6 +10749,57 @@ export interface IEnderecoEntity {
     cep: string | undefined;
 }
 
+export class EnumValueDto implements IEnumValueDto {
+    value: number;
+    name: string | undefined;
+    description: string | undefined;
+
+    constructor(data?: IEnumValueDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.value = _data["value"];
+            this.name = _data["name"];
+            this.description = _data["description"];
+        }
+    }
+
+    static fromJS(data: any): EnumValueDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new EnumValueDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["value"] = this.value;
+        data["name"] = this.name;
+        data["description"] = this.description;
+        return data;
+    }
+
+    clone(): EnumValueDto {
+        const json = this.toJSON();
+        let result = new EnumValueDto();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IEnumValueDto {
+    value: number;
+    name: string | undefined;
+    description: string | undefined;
+}
+
 export class EnviarMensagemPedidoCompraJobArgs implements IEnviarMensagemPedidoCompraJobArgs {
     pedidoCompraId: string;
     fornecedorId: string;
@@ -10407,6 +11263,69 @@ export interface IFornecedorEntity {
     orcamentos: OrcamentoEntity[] | undefined;
 }
 
+export class GetContagemNaoLidasInput implements IGetContagemNaoLidasInput {
+    cotacaoIds: string[] | undefined;
+    pedidoIds: string[] | undefined;
+
+    constructor(data?: IGetContagemNaoLidasInput) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            if (Array.isArray(_data["cotacaoIds"])) {
+                this.cotacaoIds = [] as any;
+                for (let item of _data["cotacaoIds"])
+                    this.cotacaoIds.push(item);
+            }
+            if (Array.isArray(_data["pedidoIds"])) {
+                this.pedidoIds = [] as any;
+                for (let item of _data["pedidoIds"])
+                    this.pedidoIds.push(item);
+            }
+        }
+    }
+
+    static fromJS(data: any): GetContagemNaoLidasInput {
+        data = typeof data === 'object' ? data : {};
+        let result = new GetContagemNaoLidasInput();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        if (Array.isArray(this.cotacaoIds)) {
+            data["cotacaoIds"] = [];
+            for (let item of this.cotacaoIds)
+                data["cotacaoIds"].push(item);
+        }
+        if (Array.isArray(this.pedidoIds)) {
+            data["pedidoIds"] = [];
+            for (let item of this.pedidoIds)
+                data["pedidoIds"].push(item);
+        }
+        return data;
+    }
+
+    clone(): GetContagemNaoLidasInput {
+        const json = this.toJSON();
+        let result = new GetContagemNaoLidasInput();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IGetContagemNaoLidasInput {
+    cotacaoIds: string[] | undefined;
+    pedidoIds: string[] | undefined;
+}
+
 export class GetCurrentLoginInformationsOutput implements IGetCurrentLoginInformationsOutput {
     application: ApplicationInfoDto;
     user: UserLoginInfoDto;
@@ -10456,6 +11375,69 @@ export interface IGetCurrentLoginInformationsOutput {
     application: ApplicationInfoDto;
     user: UserLoginInfoDto;
     tenant: TenantLoginInfoDto;
+}
+
+export class GetMensagensNaoLidasCountInput implements IGetMensagensNaoLidasCountInput {
+    cotacaoIds: string[] | undefined;
+    pedidoIds: string[] | undefined;
+
+    constructor(data?: IGetMensagensNaoLidasCountInput) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            if (Array.isArray(_data["cotacaoIds"])) {
+                this.cotacaoIds = [] as any;
+                for (let item of _data["cotacaoIds"])
+                    this.cotacaoIds.push(item);
+            }
+            if (Array.isArray(_data["pedidoIds"])) {
+                this.pedidoIds = [] as any;
+                for (let item of _data["pedidoIds"])
+                    this.pedidoIds.push(item);
+            }
+        }
+    }
+
+    static fromJS(data: any): GetMensagensNaoLidasCountInput {
+        data = typeof data === 'object' ? data : {};
+        let result = new GetMensagensNaoLidasCountInput();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        if (Array.isArray(this.cotacaoIds)) {
+            data["cotacaoIds"] = [];
+            for (let item of this.cotacaoIds)
+                data["cotacaoIds"].push(item);
+        }
+        if (Array.isArray(this.pedidoIds)) {
+            data["pedidoIds"] = [];
+            for (let item of this.pedidoIds)
+                data["pedidoIds"].push(item);
+        }
+        return data;
+    }
+
+    clone(): GetMensagensNaoLidasCountInput {
+        const json = this.toJSON();
+        let result = new GetMensagensNaoLidasCountInput();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IGetMensagensNaoLidasCountInput {
+    cotacaoIds: string[] | undefined;
+    pedidoIds: string[] | undefined;
 }
 
 export class GetRoleForEditOutput implements IGetRoleForEditOutput {
@@ -12046,6 +13028,13 @@ export class MensagemDto implements IMensagemDto {
     sessaoIAId: string | undefined;
     encarregadoId: string | undefined;
     fornecedorId: string | undefined;
+    visualizada: boolean;
+    transcrita: boolean;
+    nomeRemetente: string | undefined;
+    tipoRemetente: string | undefined;
+    tipoConversa: string | undefined;
+    conversaId: string | undefined;
+    contexto: string | undefined;
 
     constructor(data?: IMensagemDto) {
         if (data) {
@@ -12065,6 +13054,13 @@ export class MensagemDto implements IMensagemDto {
             this.sessaoIAId = _data["sessaoIAId"];
             this.encarregadoId = _data["encarregadoId"];
             this.fornecedorId = _data["fornecedorId"];
+            this.visualizada = _data["visualizada"];
+            this.transcrita = _data["transcrita"];
+            this.nomeRemetente = _data["nomeRemetente"];
+            this.tipoRemetente = _data["tipoRemetente"];
+            this.tipoConversa = _data["tipoConversa"];
+            this.conversaId = _data["conversaId"];
+            this.contexto = _data["contexto"];
         }
     }
 
@@ -12084,6 +13080,13 @@ export class MensagemDto implements IMensagemDto {
         data["sessaoIAId"] = this.sessaoIAId;
         data["encarregadoId"] = this.encarregadoId;
         data["fornecedorId"] = this.fornecedorId;
+        data["visualizada"] = this.visualizada;
+        data["transcrita"] = this.transcrita;
+        data["nomeRemetente"] = this.nomeRemetente;
+        data["tipoRemetente"] = this.tipoRemetente;
+        data["tipoConversa"] = this.tipoConversa;
+        data["conversaId"] = this.conversaId;
+        data["contexto"] = this.contexto;
         return data;
     }
 
@@ -12103,6 +13106,13 @@ export interface IMensagemDto {
     sessaoIAId: string | undefined;
     encarregadoId: string | undefined;
     fornecedorId: string | undefined;
+    visualizada: boolean;
+    transcrita: boolean;
+    nomeRemetente: string | undefined;
+    tipoRemetente: string | undefined;
+    tipoConversa: string | undefined;
+    conversaId: string | undefined;
+    contexto: string | undefined;
 }
 
 export class MensagemEntity implements IMensagemEntity {
@@ -12123,6 +13133,8 @@ export class MensagemEntity implements IMensagemEntity {
     encarregado: EncarregadoEntity;
     fornecedorId: string | undefined;
     fornecedor: FornecedorEntity;
+    visualizada: boolean;
+    transcrita: boolean;
 
     constructor(data?: IMensagemEntity) {
         if (data) {
@@ -12152,6 +13164,8 @@ export class MensagemEntity implements IMensagemEntity {
             this.encarregado = _data["encarregado"] ? EncarregadoEntity.fromJS(_data["encarregado"]) : <any>undefined;
             this.fornecedorId = _data["fornecedorId"];
             this.fornecedor = _data["fornecedor"] ? FornecedorEntity.fromJS(_data["fornecedor"]) : <any>undefined;
+            this.visualizada = _data["visualizada"];
+            this.transcrita = _data["transcrita"];
         }
     }
 
@@ -12181,6 +13195,8 @@ export class MensagemEntity implements IMensagemEntity {
         data["encarregado"] = this.encarregado ? this.encarregado.toJSON() : <any>undefined;
         data["fornecedorId"] = this.fornecedorId;
         data["fornecedor"] = this.fornecedor ? this.fornecedor.toJSON() : <any>undefined;
+        data["visualizada"] = this.visualizada;
+        data["transcrita"] = this.transcrita;
         return data;
     }
 
@@ -12210,6 +13226,59 @@ export interface IMensagemEntity {
     encarregado: EncarregadoEntity;
     fornecedorId: string | undefined;
     fornecedor: FornecedorEntity;
+    visualizada: boolean;
+    transcrita: boolean;
+}
+
+export class MensagemNaoLidaCountDto implements IMensagemNaoLidaCountDto {
+    tipo: string | undefined;
+    id: string;
+    quantidade: number;
+
+    constructor(data?: IMensagemNaoLidaCountDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.tipo = _data["tipo"];
+            this.id = _data["id"];
+            this.quantidade = _data["quantidade"];
+        }
+    }
+
+    static fromJS(data: any): MensagemNaoLidaCountDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new MensagemNaoLidaCountDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["tipo"] = this.tipo;
+        data["id"] = this.id;
+        data["quantidade"] = this.quantidade;
+        return data;
+    }
+
+    clone(): MensagemNaoLidaCountDto {
+        const json = this.toJSON();
+        let result = new MensagemNaoLidaCountDto();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IMensagemNaoLidaCountDto {
+    tipo: string | undefined;
+    id: string;
+    quantidade: number;
 }
 
 export enum NaturezaLancamento {
@@ -12752,6 +13821,8 @@ export class ObraLancamentoFinanceiroDto implements IObraLancamentoFinanceiroDto
     id: string;
     obraId: string;
     obra: SimpleLookupDto;
+    fornecedorId: string | undefined;
+    fornecedor: SimpleLookupDto;
     compraId: string | undefined;
     compra: CompraDto;
     descricao: string | undefined;
@@ -12786,6 +13857,8 @@ export class ObraLancamentoFinanceiroDto implements IObraLancamentoFinanceiroDto
             this.id = _data["id"];
             this.obraId = _data["obraId"];
             this.obra = _data["obra"] ? SimpleLookupDto.fromJS(_data["obra"]) : <any>undefined;
+            this.fornecedorId = _data["fornecedorId"];
+            this.fornecedor = _data["fornecedor"] ? SimpleLookupDto.fromJS(_data["fornecedor"]) : <any>undefined;
             this.compraId = _data["compraId"];
             this.compra = _data["compra"] ? CompraDto.fromJS(_data["compra"]) : <any>undefined;
             this.descricao = _data["descricao"];
@@ -12820,6 +13893,8 @@ export class ObraLancamentoFinanceiroDto implements IObraLancamentoFinanceiroDto
         data["id"] = this.id;
         data["obraId"] = this.obraId;
         data["obra"] = this.obra ? this.obra.toJSON() : <any>undefined;
+        data["fornecedorId"] = this.fornecedorId;
+        data["fornecedor"] = this.fornecedor ? this.fornecedor.toJSON() : <any>undefined;
         data["compraId"] = this.compraId;
         data["compra"] = this.compra ? this.compra.toJSON() : <any>undefined;
         data["descricao"] = this.descricao;
@@ -12854,6 +13929,8 @@ export interface IObraLancamentoFinanceiroDto {
     id: string;
     obraId: string;
     obra: SimpleLookupDto;
+    fornecedorId: string | undefined;
+    fornecedor: SimpleLookupDto;
     compraId: string | undefined;
     compra: CompraDto;
     descricao: string | undefined;
@@ -13324,6 +14401,77 @@ export enum OrcamentoStatus {
     ParcialmenteUtilizado = "ParcialmenteUtilizado",
     TotalmenteUtilizado = "TotalmenteUtilizado",
     Descartado = "Descartado",
+}
+
+export class PagedObraLancamentoFinanceiroResultRequestDto implements IPagedObraLancamentoFinanceiroResultRequestDto {
+    maxResultCount: number;
+    skipCount: number;
+    obraId: string;
+    fornecedorId: string | undefined;
+    dataInicio: moment.Moment | undefined;
+    dataFim: moment.Moment | undefined;
+    natureza: NaturezaLancamentoNullable | undefined;
+    tipo: ObraLancamentoTipoNullable | undefined;
+
+    constructor(data?: IPagedObraLancamentoFinanceiroResultRequestDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.maxResultCount = _data["maxResultCount"];
+            this.skipCount = _data["skipCount"];
+            this.obraId = _data["obraId"];
+            this.fornecedorId = _data["fornecedorId"];
+            this.dataInicio = _data["dataInicio"] ? moment(_data["dataInicio"].toString()) : <any>undefined;
+            this.dataFim = _data["dataFim"] ? moment(_data["dataFim"].toString()) : <any>undefined;
+            this.natureza = _data["natureza"];
+            this.tipo = _data["tipo"];
+        }
+    }
+
+    static fromJS(data: any): PagedObraLancamentoFinanceiroResultRequestDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new PagedObraLancamentoFinanceiroResultRequestDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["maxResultCount"] = this.maxResultCount;
+        data["skipCount"] = this.skipCount;
+        data["obraId"] = this.obraId;
+        data["fornecedorId"] = this.fornecedorId;
+        data["dataInicio"] = this.dataInicio ? this.dataInicio.toISOString() : <any>undefined;
+        data["dataFim"] = this.dataFim ? this.dataFim.toISOString() : <any>undefined;
+        data["natureza"] = this.natureza;
+        data["tipo"] = this.tipo;
+        return data;
+    }
+
+    clone(): PagedObraLancamentoFinanceiroResultRequestDto {
+        const json = this.toJSON();
+        let result = new PagedObraLancamentoFinanceiroResultRequestDto();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IPagedObraLancamentoFinanceiroResultRequestDto {
+    maxResultCount: number;
+    skipCount: number;
+    obraId: string;
+    fornecedorId: string | undefined;
+    dataInicio: moment.Moment | undefined;
+    dataFim: moment.Moment | undefined;
+    natureza: NaturezaLancamentoNullable | undefined;
+    tipo: ObraLancamentoTipoNullable | undefined;
 }
 
 export class PagedSolicitacaoMaterialResultRequestDto implements IPagedSolicitacaoMaterialResultRequestDto {

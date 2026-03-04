@@ -8,6 +8,7 @@ import { AppUrlService } from './nav/app-url.service';
 import { AppAuthService } from './auth/app-auth.service';
 import { AppRouteGuard } from './auth/auth-route-guard';
 import { LocalizePipe } from '@shared/pipes/localize.pipe';
+import { TimeAgoPipe } from '@shared/pipes/time-ago.pipe';
 
 import { AbpPaginationControlsComponent } from './components/pagination/abp-pagination-controls.component';
 import { AbpValidationSummaryComponent } from './components/validation/abp-validation.summary.component';
@@ -29,6 +30,7 @@ import { ProgressBarModule } from 'primeng/progressbar';
 import { FornecedorMultiselectComponent } from './components/select-fornecedor/fornecedor-multiselect.component';
 import { ConfirmarPagamentoDialogComponent } from './components/confirmar-pagamento-dialog/confirmar-pagamento-dialog.component.';
 import { EstornarLancamentoModalComponent } from './components/confirmar-pagamento-dialog/estornar-lancamento-modal/estornar-lancamento-modal.component';
+import { ConversaModalComponent } from './components/conversa-modal/conversa-modal.component';
 
 import { NgxMaskDirective, NgxMaskPipe, provideNgxMask } from 'ngx-mask';
 
@@ -51,11 +53,13 @@ import { NgxMaskDirective, NgxMaskPipe, provideNgxMask } from 'ngx-mask';
         AbpModalHeaderComponent,
         AbpModalFooterComponent,
         LocalizePipe,
+        TimeAgoPipe,
         BusyDirective,
         EqualValidator,
         FornecedorMultiselectComponent,
         ConfirmarPagamentoDialogComponent,
         EstornarLancamentoModalComponent,
+        ConversaModalComponent,
         NgxMaskDirective,
         NgxMaskPipe,
     ],
@@ -65,6 +69,7 @@ import { NgxMaskDirective, NgxMaskPipe, provideNgxMask } from 'ngx-mask';
         AbpModalHeaderComponent,
         AbpModalFooterComponent,
         LocalizePipe,
+        TimeAgoPipe,
         BusyDirective,
         EqualValidator,
         FormsModule,
@@ -77,7 +82,8 @@ import { NgxMaskDirective, NgxMaskPipe, provideNgxMask } from 'ngx-mask';
         PaginatorModule,
         FornecedorMultiselectComponent,
         ConfirmarPagamentoDialogComponent,
-        EstornarLancamentoModalComponent
+        EstornarLancamentoModalComponent,
+        ConversaModalComponent
     ],
     providers: [provideNgxMask()],
 })

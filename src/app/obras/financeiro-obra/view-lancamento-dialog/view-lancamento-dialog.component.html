@@ -1,0 +1,197 @@
+<div class="view-lancamento-dialog">
+
+    <!-- HEADER -->
+    <div class="dialog-header" [ngClass]="getCorTitulo()">
+        <div class="dialog-titulo">
+            <i class="fa" [ngClass]="getIcone()"></i>
+            {{ getTitulo() }}
+
+            <span *ngIf="lancamento?.status === 1" class="badge bg-danger ms-3">
+                <i class="fa fa-undo me-1"></i>
+                ESTORNADO
+            </span>
+        </div>
+        <button class="btn-close-dialog" (click)="fechar()">
+            <i class="fa fa-times"></i>
+        </button>
+    </div>
+
+    <!-- CORPO -->
+    <div class="dialog-body">
+
+        <!-- BLOCO DE ESTORNO -->
+        <div *ngIf="lancamento?.status === 1" class="alert alert-danger mb-4">
+            <div class="d-flex align-items-center mb-2">
+                <i class="fa fa-undo mr-2"></i>
+                <strong>Lançamento Estornado</strong>
+            </div>
+
+            <p class="mb-2">
+                <strong>Motivo:</strong><br>
+                {{ lancamento?.motivoEstorno }}
+            </p>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <small>
+                        <strong>Data do Estorno:</strong><br>
+                        {{ lancamento?.dataEstorno | date:'dd/MM/yyyy HH:mm' }}
+                    </small>
+                </div>
+                <div class="col-md-6" *ngIf="lancamento?.estornadoPorUser?.nome">
+                    <small>
+                        <strong>Estornado por:</strong><br>
+                        {{ lancamento?.estornadoPorUser?.nome }}
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <!-- INFORMAÇÕES DA OBRA -->
+        <div class="info-obra" *ngIf="lancamento?.obra">
+            <i class="fa fa-building-o"></i>
+            <div>
+                <span class="label">Obra</span>
+                <span class="value">{{ lancamento?.obra?.nome }}</span>
+            </div>
+        </div>
+
+        <!-- CARD DE RESUMO -->
+        <div class="resumo-card">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="info-item">
+                        <span class="label">Natureza</span>
+                        <span class="value" [ngClass]="{
+                            'text-success': lancamento?.natureza === 0,
+                            'text-danger': lancamento?.natureza === 1
+                        }">
+                            <i class="fa" [ngClass]="{
+                                'fa-arrow-up': lancamento?.natureza === 0,
+                                'fa-arrow-down': lancamento?.natureza === 1
+                            }"></i>
+                            {{ getDescricaoNatureza(lancamento?.natureza || 0) }}
+                        </span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="info-item">
+                        <span class="label">Tipo de Lançamento</span>
+                        <span class="value">{{ getDescricaoTipo(lancamento?.tipo || 0) }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- DETALHES PRINCIPAIS -->
+        <div class="details-grid">
+            <div class="detail-item">
+                <span class="label">Data do Lançamento</span>
+                <span class="value">{{ dataLancamentoStr }}</span>
+            </div>
+
+            <div class="detail-item">
+                <span class="label">Forma de Pagamento</span>
+                <span class="value">{{ getDescricaoFormaPagamento(lancamento?.formaDePagamento || 0) }}</span>
+            </div>
+
+            <div class="detail-item full-width">
+                <span class="label">Descrição</span>
+                <span class="value">{{ lancamento?.descricao || '-' }}</span>
+            </div>
+
+            <!-- SÓ MOSTRA FORNECEDOR SE TIVER -->
+            <div class="detail-item" *ngIf="temFornecedor">
+                <span class="label">Fornecedor</span>
+                <span class="value">{{ fornecedorNome }}</span>
+            </div>
+        </div>
+
+        <!-- SE FOR COMPRA, MOSTRA OS MATERIAIS -->
+        <div *ngIf="temMateriais" class="materiais-section">
+            <h6>
+                <i class="fa fa-shopping-cart mr-2"></i>
+                Materiais da Compra
+            </h6>
+
+            <div class="materiais-list">
+                <div *ngFor="let material of lancamento?.compra?.materiaisComprados" class="material-item">
+                    <div class="material-nome">
+                        {{ material.nome }}
+                        <small>({{ material.quantidade }} {{ material.unidade }})</small>
+                    </div>
+                    <div class="material-preco">
+                        {{ material.precoItem | currency:'BRL' }}
+                    </div>
+                    <div class="material-total">
+                        {{ material.precoTotal | currency:'BRL' }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- VALORES -->
+        <div class="valores-section">
+            <h6>
+                <i class="fa fa-calculator mr-2"></i>
+                Valores
+            </h6>
+
+            <div class="valores-grid">
+                <div class="valor-item" *ngIf="temMateriais">
+                    <span>Total de Materiais</span>
+                    <span>{{ valorTotalMateriais | currency:'BRL' }}</span>
+                </div>
+
+                <div class="valor-item" *ngIf="!temMateriais">
+                    <span>Valor Total</span>
+                    <span>{{ getValorTotalCalculado() | currency:'BRL' }}</span>
+                </div>
+
+                <div class="valor-item" *ngIf="lancamento?.frete">
+                    <span>Frete</span>
+                    <span class="text-info">{{ lancamento?.frete | currency:'BRL' }}</span>
+                </div>
+
+                <div class="valor-item" *ngIf="lancamento?.desconto">
+                    <span>Desconto</span>
+                    <span class="text-success">- {{ lancamento?.desconto | currency:'BRL' }}</span>
+                </div>
+
+                <div class="valor-item total">
+                    <span>Valor Final</span>
+                    <span [ngClass]="{
+                        'text-success': lancamento?.natureza === 0,
+                        'text-danger': lancamento?.natureza === 1
+                    }">
+                        {{ lancamento?.valorPago | currency:'BRL' }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- INFORMAÇÕES ADICIONAIS -->
+        <div class="info-adicional" *ngIf="lancamento?.compra?.observacaoInterna">
+            <span class="label">Observação Interna</span>
+            <span class="value">{{ lancamento?.compra?.observacaoInterna }}</span>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="dialog-footer">
+        <div>
+            <button *ngIf="lancamento?.status === 0" type="button" class="btn btn-outline-danger" (click)="estornar()">
+                <i class="fa fa-undo me-1"></i>
+                Estornar Lançamento
+            </button>
+        </div>
+
+        <div>
+            <button type="button" class="btn btn-secondary" (click)="fechar()">
+                <i class="fa fa-times me-1"></i>
+                Fechar
+            </button>
+        </div>
+    </div>
+
+</div>

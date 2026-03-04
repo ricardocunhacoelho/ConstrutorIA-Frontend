@@ -24,6 +24,7 @@ import {
     CreateMelhorCompraDto,
     CreatePedidoCompraDto,
     FormaPagamento,
+    GetMensagensNaoLidasCountInput,
     IntervencaoCompraDto,
     IntervencaoCompraServiceProxy,
     MaterialCotadoDto,
@@ -46,8 +47,9 @@ import {
     animate
 } from '@angular/animations';
 import { SelecionarEnderecoDialogComponent } from './selecionar-endereco-dialog/selecionar-endereco-dialog.component';
-import { forkJoin } from 'rxjs';
+import { forkJoin, map, of, switchMap } from 'rxjs';
 import { ConfirmarPagamentoDialogComponent } from '@shared/components/confirmar-pagamento-dialog/confirmar-pagamento-dialog.component.';
+import { ConversaModalComponent } from '@shared/components/conversa-modal/conversa-modal.component';
 
 
 const MENOR_VALOR_TIPO = 'MENOR_VALOR_POR_ITEM';
@@ -75,7 +77,9 @@ interface CotacaoComOrcamentoViewModel {
     observacaoFornecedor?: string;
     materiaisCotados: MaterialCotadoDto[];
     statusView?: string;
+    status?: string;
     retiradaNoFornecedor?: boolean;
+    quantidadeNotificacoes?: number;
 
     materiaisAgrupados?: MaterialVMGrupo[];
 }
@@ -97,6 +101,7 @@ interface FluxoCompraBaseViewModel {
     compraEfetivada?: InfoCompraFornecedor;
     pagamentoConfirmado?: InfoPagamentoCompra;
     displayStatus: string;
+    quantidadeNotificacoes?: number;
 }
 
 interface CotacaoFluxoViewModel extends FluxoCompraBaseViewModel {
@@ -114,6 +119,7 @@ interface CotacaoFluxoViewModel extends FluxoCompraBaseViewModel {
     observacaoFornecedor?: string;
     materiaisCotados: MaterialCotadoDto[]
     statusView?: string;
+    status?: string;
 }
 
 
@@ -239,6 +245,7 @@ export class CotacoesListDialogComponent implements OnInit {
         prazoEntrega?: string;
         observacao?: string;
         pagamentoConfirmado?: InfoPagamentoCompra;
+        quantidadeNotificacoes?: number;
     }[] = [];
 
     constructor(
@@ -265,7 +272,39 @@ export class CotacoesListDialogComponent implements OnInit {
             compras: this._compraService.getAllBySolicitacao(this.solicitacaoId),
             intervencoesCompras: this._intervencaoCompraService.getAllBySolicitacao(this.solicitacaoId),
             lancamentos: this._obraLancamentoFinanceiroService.getAllBySolicitacao(this.solicitacaoId)
-        }).subscribe(({ cotacoesComOrcamento, pedidos, compras, intervencoesCompras, lancamentos }) => {
+        }).pipe(
+            switchMap(results => {
+                const cotacaoIds = results.cotacoesComOrcamento.map(c => c.id);
+                const pedidoIds = results.pedidos.map(p => p.id);
+
+                if (cotacaoIds.length === 0 && pedidoIds.length === 0) {
+                    return of({ ...results, mensagens: [] });
+                }
+
+                const input = new GetMensagensNaoLidasCountInput();
+                input.cotacaoIds = cotacaoIds;
+                input.pedidoIds = pedidoIds;
+
+                return this._cotacaoService.getMensagensNaoLidasCount(input).pipe(
+                    map(mensagens => ({ ...results, mensagens }))
+                );
+            })
+        ).subscribe(({
+            cotacoesComOrcamento,
+            pedidos,
+            compras,
+            intervencoesCompras,
+            lancamentos,
+            mensagens
+        }) => {
+
+            const notificacoesMap = new Map<string, number>();
+
+            if (mensagens && mensagens.length) {
+                mensagens.forEach(m => {
+                    notificacoesMap.set(`${m.tipo}_${m.id}`, m.quantidade);
+                });
+            }
 
             this.pedidosCache = pedidos;
             this.cotacoesCache = cotacoesComOrcamento;
@@ -279,7 +318,15 @@ export class CotacoesListDialogComponent implements OnInit {
                 if (c.hasOrcamento && c.orcamento) {
                     c.materiaisAgrupados = this.groupMateriaisFromOrcamento(c.orcamento, c);
                 }
+
+                c.quantidadeNotificacoes = notificacoesMap.get(`cotacao_${c.id}`) || 0;
             });
+
+            if (pedidos && pedidos.length) {
+                (pedidos as any[]).forEach(p => {
+                    p.quantidadeNotificacoes = notificacoesMap.get(`pedido_${p.id}`) || 0;
+                });
+            }
 
             const temMaisDeUm = list.filter(c =>
                 c.hasOrcamento && c.orcamento?.materiaisOrcados?.length
@@ -320,12 +367,39 @@ export class CotacoesListDialogComponent implements OnInit {
             if (menorValorPorItem) {
                 this.menorValorPorItemAgrupada =
                     this.buildGruposPorFornecedor(menorValorPorItem);
+
+                if (this.menorValorPorItemAgrupada && pedidos) {
+                    this.menorValorPorItemAgrupada.forEach(grupoFornecedor => {
+                        const pedidosDoFornecedor = (pedidos as any[]).filter(p =>
+                            p.fornecedorId === grupoFornecedor.fornecedorId &&
+                            p.isMelhorCompra === true
+                        );
+
+                        const cotacoesDoFornecedor = (cotacoesComOrcamento as any[]).filter(c =>
+                            c.fornecedorId === grupoFornecedor.fornecedorId
+                        );
+
+                        let notificacoesCotacao = cotacoesDoFornecedor.reduce(
+                            (total, p) => total + (p.quantidadeNotificacoes || 0), 0
+                        );
+
+                        let notificacoesPedidos = pedidosDoFornecedor.reduce(
+                            (total, p) => total + (p.quantidadeNotificacoes || 0), 0
+                        );
+
+                        grupoFornecedor.quantidadeNotificacoes = notificacoesCotacao + notificacoesPedidos;
+                    });
+                }
             }
 
             this.conciliarPagamentos(this.fluxoCompraVM, compras, lancamentos);
 
             this.loading = false;
             this.cdr.detectChanges();
+        }, error => {
+            console.error('Erro ao carregar cotações:', error);
+            this.loading = false;
+            abp.notify.error('Erro ao carregar cotações');
         });
     }
 
@@ -348,6 +422,8 @@ export class CotacoesListDialogComponent implements OnInit {
             observacaoFornecedor: c.observacaoFornecedor,
             materiaisCotados: c.materiaisCotados,
             statusView: c.statusView,
+            status: c.status,
+            quantidadeNotificacoes: c.quantidadeNotificacoes,
 
             displayStatus: c.displayStatus ?? 'Cotação',
             materiaisAgrupados: c.materiaisAgrupados ?? [],
@@ -884,6 +960,8 @@ export class CotacoesListDialogComponent implements OnInit {
 
     getInfoPagamentoBloco(bloco: any): { texto: string; classe: string } | null {
 
+        // se tiver intervenção ja pega de cara aqui
+
         if (bloco.pagamentoConfirmado) {
 
             const data = new Date(bloco.pagamentoConfirmado.data);
@@ -903,13 +981,20 @@ export class CotacoesListDialogComponent implements OnInit {
 
         if (!grupos.length) return null;
 
+        if(grupos.some(g => !!g.intervencao && !g.intervencao.resolvida)) {
+            return {
+                texto: 'Há intervenções não resolvidas.',
+                classe: 'text-danger'
+            };
+        }
+
         const todosComprados = this.todosCompradosBloco(bloco);
         const algumPedido = grupos.some(g => g.feitoPedido);
         const algumNaoComprado = grupos.some(g => !g.jaComprado);
 
         if (todosComprados) {
             return {
-                texto: `Pedido concluído. O setor financeiro deve entrar em contato com o fornecedor ${bloco.fornecedor} para realizar o pagamento. Após o pagamento, confirme e lance o custo do pedido na obra.`,
+                texto: `Pedido concluído. 🔴 AÇÃO OBRIGATÓRIA: O setor financeiro deve entrar em contato com o fornecedor ${bloco.fornecedor} para realizar o pagamento. Após o pagamento, confirme e lance o custo do pedido na obra.`,
                 classe: 'text-primary'
             };
         }
@@ -962,6 +1047,9 @@ export class CotacoesListDialogComponent implements OnInit {
 
     getInfoPagamentoFluxo(fluxo: any): { texto: string; classe: string } | null {
 
+        // se tiver intervenção ja pega de cara aqui
+
+
         if (fluxo.pagamentoConfirmado) {
 
             const data = new Date(fluxo.pagamentoConfirmado.data);
@@ -987,7 +1075,7 @@ export class CotacoesListDialogComponent implements OnInit {
 
         if (todosComprados) {
             return {
-                texto: `Lembre-se: O setor financeiro deve entrar em contato com o fornecedor ${fluxo.fornecedor?.nome} para realizar o pagamento. Após o pagamento, confirme e lance o custo do pedido na obra.`,
+                texto: `Lembre-se: 🔴 AÇÃO OBRIGATÓRIA: O setor financeiro deve entrar em contato com o fornecedor ${fluxo.fornecedor?.nome} para realizar o pagamento. Após o pagamento, confirme e lance o custo do pedido na obra.`,
                 classe: 'text-primary'
             };
         }
@@ -1246,6 +1334,22 @@ export class CotacoesListDialogComponent implements OnInit {
         });
     }
 
+    isUnicoItemEmFalta(fluxo: FluxoCompraViewModel): boolean {
+        if (!fluxo?.materiaisAgrupados) return false;
+
+        const itensNaoRemovidos = fluxo.materiaisAgrupados.filter(g => !g.removido);
+
+        if (itensNaoRemovidos.length !== 1) return false;
+
+        const unicoItem = itensNaoRemovidos[0];
+
+        if (unicoItem.selected?.emFalta) return true;
+
+        const todasVariacoesEmFalta = unicoItem.variacoes.every(v => v.emFalta);
+
+        return todasVariacoesEmFalta;
+    }
+
     hasIntervencaoPendente(grupo: MaterialVMGrupo): boolean {
         return !!grupo.intervencao && !grupo.intervencao.resolvida;
     }
@@ -1431,5 +1535,291 @@ export class CotacoesListDialogComponent implements OnInit {
 
     isGrupoBloqueado(grupo: MaterialVMGrupo, contexto: any): boolean {
         return this.getStatusGrupo(grupo, contexto) !== null;
+    }
+
+
+    //copiar materiais selecionados:
+
+    temMateriaisSelecionados(fluxo: FluxoCompraViewModel): boolean {
+        if (!fluxo?.materiaisAgrupados) return false;
+
+        return fluxo.materiaisAgrupados.some(grupo =>
+            !grupo.removido && grupo.selected !== null
+        );
+    }
+
+    copiarMateriaisSelecionados(fluxo: FluxoCompraViewModel): void {
+        if (!this.temMateriaisSelecionados(fluxo)) {
+            abp.notify.warn('Nenhum material selecionado para copiar.');
+            return;
+        }
+
+        const materiaisSelecionados = fluxo.materiaisAgrupados
+            .filter(grupo => !grupo.removido && grupo.selected !== null)
+            .map(grupo => {
+                const material = grupo.selected!;
+
+                return [
+                    `📦 ${grupo.nome}`,
+                    material.especificacao ? `   Especificação: ${material.especificacao}` : null,
+                    `   Quantidade: ${material.quantidade} ${material.unidade}`,
+                    material.fornecedorNome ? `   Fornecedor: ${material.fornecedorNome}` : null,
+                    `   Preço unitário: ${this.formatarMoeda(material.precoItem)}`,
+                    `   Preço total: ${this.formatarMoeda(material.precoTotal)}`,
+                    material.emFalta ? '   ⚠️ EM FALTA' : null
+                ].filter(linha => linha !== null).join('\n');
+            })
+            .join('\n\n------------------------\n\n');
+
+        const cabecalho = this.montarCabecalhoFluxo(fluxo);
+
+        const textoCompleto = `${cabecalho}\n\n${materiaisSelecionados}`;
+
+        this.copiarParaAreaTransferencia(textoCompleto);
+    }
+
+
+    private montarCabecalhoFluxo(fluxo: FluxoCompraViewModel): string {
+        const linhas: string[] = ['📋 MATERIAIS SELECIONADOS', '='.repeat(40)];
+
+        if (fluxo.tipo === 'COTACAO') {
+            linhas.push(`Tipo: Cotação`);
+            if ((fluxo as CotacaoFluxoViewModel).fornecedor?.nome) {
+                linhas.push(`Fornecedor: ${(fluxo as CotacaoFluxoViewModel).fornecedor!.nome}`);
+            }
+        } else {
+            linhas.push(`Tipo: Menor Valor por Item`);
+        }
+
+        if (fluxo.obra?.nome) {
+            linhas.push(`Obra: ${fluxo.obra.nome}`);
+        }
+
+        if (fluxo.enderecoEntrega?.formatado) {
+            linhas.push(`Entrega: ${fluxo.enderecoEntrega.formatado}`);
+        }
+
+        const total = this.calcularTotalSelecionados(fluxo);
+        linhas.push(`Total: ${this.formatarMoeda(total)}`);
+
+        if (fluxo.compraEfetivada?.observacao) {
+            linhas.push(`Obs: ${fluxo.compraEfetivada.observacao}`);
+        }
+
+        if (fluxo.compraEfetivada?.prazoEntrega) {
+            const prazo = new Date(fluxo.compraEfetivada.prazoEntrega);
+            linhas.push(`Prazo: ${prazo.toLocaleDateString('pt-BR')}`);
+        }
+
+        linhas.push('='.repeat(40));
+
+        return linhas.join('\n');
+    }
+
+
+    private calcularTotalSelecionados(fluxo: FluxoCompraViewModel): number {
+        return fluxo.materiaisAgrupados
+            .filter(g => !g.removido && g.selected)
+            .reduce((total, g) => total + (g.selected?.precoTotal || 0), 0);
+    }
+
+    private formatarMoeda(valor?: number): string {
+        if (valor === undefined || valor === null) return 'R$ 0,00';
+        return valor.toLocaleString('pt-BR', {
+            style: 'currency',
+            currency: 'BRL'
+        });
+    }
+
+
+    private copiarParaAreaTransferencia(texto: string): void {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(texto).then(
+                () => {
+                    abp.notify.success('Materiais copiados para área de transferência!');
+                },
+                (err) => {
+                    console.error('Erro ao copiar:', err);
+                    this.fallbackCopiarTexto(texto);
+                }
+            );
+        } else {
+            this.fallbackCopiarTexto(texto);
+        }
+    }
+
+    private fallbackCopiarTexto(texto: string): void {
+        const textarea = document.createElement('textarea');
+        textarea.value = texto;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+
+        try {
+            const successful = document.execCommand('copy');
+            if (successful) {
+                abp.notify.success('Materiais copiados para área de transferência!');
+            } else {
+                abp.notify.error('Não foi possível copiar os materiais.');
+            }
+        } catch (err) {
+            console.error('Erro no fallback de cópia:', err);
+            abp.notify.error('Erro ao copiar materiais.');
+        }
+
+        document.body.removeChild(textarea);
+    }
+
+    temMateriaisSelecionadosFornecedor(bloco: any): boolean {
+        return bloco.grupos?.some((g: any) => !g.removido && g.selected !== null) || false;
+    }
+
+    copiarMateriaisPorFornecedor(bloco: any, fluxo: FluxoCompraViewModel): void {
+        if (!this.temMateriaisSelecionadosFornecedor(bloco)) {
+            abp.notify.warn('Nenhum material selecionado para este fornecedor.');
+            return;
+        }
+
+        const materiaisSelecionados = bloco.grupos
+            .filter((g: any) => !g.removido && g.selected !== null)
+            .map((grupo: any) => {
+                const material = grupo.selected!;
+
+                return [
+                    `📦 ${grupo.nome}`,
+                    material.especificacao ? `   Especificação: ${material.especificacao}` : null,
+                    `   Quantidade: ${material.quantidade} ${material.unidade}`,
+                    `   Preço unitário: ${this.formatarMoeda(material.precoItem)}`,
+                    `   Preço total: ${this.formatarMoeda(material.precoTotal)}`,
+                    material.emFalta ? '   ⚠️ EM FALTA' : null
+                ].filter(linha => linha !== null).join('\n');
+            })
+            .join('\n\n------------------------\n\n');
+
+        const cabecalho = [
+            `📋 MATERIAIS - ${bloco.fornecedor}`,
+            '='.repeat(40),
+            `Fornecedor: ${bloco.fornecedor}`,
+            fluxo.obra?.nome ? `Obra: ${fluxo.obra.nome}` : null,
+            bloco.prazoEntrega ? `Prazo: ${new Date(bloco.prazoEntrega).toLocaleDateString('pt-BR')}` : null,
+            bloco.observacao ? `Obs: ${bloco.observacao}` : null,
+            `Total: ${this.formatarMoeda(this.getTotalBloco(bloco))}`,
+            '='.repeat(40)
+        ].filter(linha => linha !== null).join('\n');
+
+        const textoCompleto = `${cabecalho}\n\n${materiaisSelecionados}`;
+
+        this.copiarParaAreaTransferencia(textoCompleto);
+    }
+
+
+
+    abrirConversaFluxo(fluxo: FluxoCompraViewModel): void {
+        const cotacaoId = fluxo.id;
+        const fornecedorNome = (fluxo as CotacaoFluxoViewModel).fornecedor?.nome || 'Fornecedor';
+
+        this.abrirModalConversa(cotacaoId, fornecedorNome);
+    }
+
+    abrirConversaBloco(bloco: any): void {
+        const cotacaoId = bloco.grupos[0]?.selected?.cotacaoId;
+        const fornecedorNome = bloco.fornecedor || 'Fornecedor';
+
+        if (cotacaoId) {
+            this.abrirModalConversa(cotacaoId, fornecedorNome);
+        }
+    }
+
+    // cotacoes-list-dialog.component.ts
+    private abrirModalConversa(cotacaoId: string, fornecedorNome: string): void {
+        const modalRef = this._modalService.show(ConversaModalComponent, {
+            class: 'modal-lg modal-dialog-centered',
+            initialState: {
+                cotacaoId: cotacaoId,
+                titulo: 'Conversa com Fornecedor',
+                fornecedorNome: fornecedorNome
+            }
+        });
+
+        // 🔥 INSCREVER NO EVENTO DO MODAL FILHO
+        modalRef.content.onMensagensVisualizadas.subscribe(() => {
+            this.recarregarNotificacoes(); // Recarrega apenas as notificações, não tudo
+        });
+    }
+
+    // 🔥 NOVO MÉTODO PARA RECARREGAR APENAS NOTIFICAÇÕES
+    private recarregarNotificacoes(): void {
+        // Buscar apenas as contagens de mensagens não lidas
+        const cotacaoIds = this.cotacoesCache?.map(c => c.id) || [];
+        const pedidoIds = this.pedidosCache?.map(p => p.id) || [];
+
+        if (cotacaoIds.length === 0 && pedidoIds.length === 0) return;
+
+        const input = new GetMensagensNaoLidasCountInput();
+        input.cotacaoIds = cotacaoIds;
+        input.pedidoIds = pedidoIds;
+
+        this._cotacaoService.getMensagensNaoLidasCount(input).subscribe({
+            next: (mensagens) => {
+                // Atualizar o map de notificações
+                const notificacoesMap = new Map<string, number>();
+                mensagens.forEach(m => {
+                    notificacoesMap.set(`${m.tipo}_${m.id}`, m.quantidade);
+                });
+
+                // Atualizar cotações
+                if (this.cotacoesCache) {
+                    (this.cotacoesCache as any[]).forEach(c => {
+                        c.quantidadeNotificacoes = notificacoesMap.get(`cotacao_${c.id}`) || 0;
+                    });
+                }
+
+                // Reconstruir o fluxoCompraVM com as novas notificações
+                this.atualizarNotificacoesNoFluxo();
+            }
+        });
+    }
+
+    private atualizarNotificacoesNoFluxo(): void {
+        // Mapear cotações por ID para acesso rápido
+        const cotacoesMap = new Map(
+            (this.cotacoesCache as any[] || []).map(c => [c.id, c])
+        );
+
+        // Atualizar cada item do fluxo
+        this.fluxoCompraVM.forEach(fluxo => {
+            if (fluxo.tipo === 'COTACAO') {
+                const cotacao = cotacoesMap.get(fluxo.id);
+                if (cotacao) {
+                    fluxo.quantidadeNotificacoes = cotacao.quantidadeNotificacoes;
+                }
+            }
+        });
+
+        if (this.menorValorPorItemAgrupada && this.pedidosCache) {
+            this.menorValorPorItemAgrupada.forEach(grupoFornecedor => {
+                const pedidosDoFornecedor = (this.pedidosCache as any[]).filter(p =>
+                    p.fornecedorId === grupoFornecedor.fornecedorId &&
+                    p.isMelhorCompra === true
+                );
+
+                const cotacoesDoFornecedor = (this.cotacoesCache as any[] || []).filter(c =>
+                    c.fornecedorId === grupoFornecedor.fornecedorId
+                );
+
+                let notificacoesCotacao = cotacoesDoFornecedor.reduce(
+                    (total, c) => total + (c.quantidadeNotificacoes || 0), 0
+                );
+
+                let notificacoesPedidos = pedidosDoFornecedor.reduce(
+                    (total, p) => total + (p.quantidadeNotificacoes || 0), 0
+                );
+
+                grupoFornecedor.quantidadeNotificacoes = notificacoesCotacao + notificacoesPedidos;
+            });
+        }
+
+        this.cdr.detectChanges();
     }
 }

@@ -8,14 +8,13 @@ import { TabsetComponent, TabDirective } from 'ngx-bootstrap/tabs';
 import { AbpValidationSummaryComponent } from '../../../shared/components/validation/abp-validation.summary.component';
 import { AbpModalFooterComponent } from '../../../shared/components/modal/abp-modal-footer.component';
 import { LocalizePipe } from '@shared/pipes/localize.pipe';
-import { CommonModule, NgIf } from '@angular/common';
+import { CommonModule } from '@angular/common';
 
 @Component({
     templateUrl: './create-fornecedor-dialog.component.html',
     standalone: true,
     imports: [
         CommonModule,
-        NgIf,
         FormsModule,
         AbpModalHeaderComponent,
         TabsetComponent,

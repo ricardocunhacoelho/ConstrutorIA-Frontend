@@ -50,7 +50,7 @@ export class ObrasComponent extends PagedListingComponentBase<ObraDto> {
     }
 
     financeiroObra(obra: ObraDto): void {
-        this.showFinanceiroObraDialog(obra.id);
+        this.showFinanceiroObraDialog(obra);
     }
 
     clearFilters(): void {
@@ -119,13 +119,14 @@ export class ObrasComponent extends PagedListingComponentBase<ObraDto> {
         });
     }
 
-    private showFinanceiroObraDialog(id?: string): void {
+    private showFinanceiroObraDialog(obra: ObraDto): void {
         let financeiroObraDialog: BsModalRef;
-        if (id) {
+        if (obra.id) {
             financeiroObraDialog = this._modalService.show(FinanceiroObraDialogComponent, {
                 class: 'modal-xlg',
                 initialState: {
-                    obraId: id,
+                    obraId: obra.id,
+                    obraNome: obra.nome
                 },
             });
         } else {

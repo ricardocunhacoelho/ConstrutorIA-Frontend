@@ -125,7 +125,7 @@ export class ConfirmarPagamentoDialogComponent implements OnInit {
 
     this.motivoEstorno = lancamento.motivoEstorno;
     this.dataEstorno = lancamento.dataEstorno ? moment(lancamento.dataEstorno) : undefined;
-    this.estornadoPor = lancamento.estornadoPorUser.nome ?? undefined;
+    this.estornadoPor = lancamento.estornadoPorUser?.nome ?? undefined;
 
     this.obra = lancamento.obra;
     this.compra = UpdateCompraDto.fromJS(lancamento.compra);
@@ -173,6 +173,7 @@ export class ConfirmarPagamentoDialogComponent implements OnInit {
     lancamento.tipo = ObraLancamentoTipo._0; // CompraMaterial
     lancamento.formaDePagamento = this.formaPagamentoSelecionada;
     lancamento.dataLancamento = moment();
+    lancamento.fornecedorId = this.fornecedor.id;
 
     lancamento.compra = UpdateCompraDto.fromJS(this.compra);
 

@@ -1,0 +1,83 @@
+<div class="modal-chat">
+    <!-- Header -->
+    <div class="modal-chat-header">
+        <div class="d-flex align-items-center">
+            <button type="button" class="btn-close-chat mr-2" (click)="fechar()">
+                <i class="fa fa-arrow-left"></i>
+            </button>
+            <div class="chat-info ms-3">
+                <h5 class="mb-0">{{ titulo || 'Conversa' }}</h5>
+                <small class="text-muted">
+                    <i class="fa fa-building mr-1"></i>
+                    {{ fornecedorNome || 'Fornecedor' }}
+                </small>
+            </div>
+        </div>
+        <div class="chat-actions">
+            <!-- No header, alterar o clique do botão de refresh -->
+            <button type="button" class="btn-action" (click)="recarregar()" [disabled]="loading">
+                <i class="fa fa-refresh" [class.fa-spin]="loading"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Corpo do Chat -->
+    <div class="modal-chat-body" #messagesContainer>
+        <div *ngIf="loading" class="text-center my-4">
+            <i class="fa fa-spinner fa-spin"></i> Carregando mensagens...
+        </div>
+
+        <div *ngIf="!loading && mensagensAgrupadas.length === 0" class="text-center my-4 text-muted">
+            <i class="fa fa-comments-o fa-3x mb-3"></i>
+            <p>Nenhuma mensagem encontrada</p>
+        </div>
+
+        <!-- Mensagens Agrupadas -->
+        <div *ngFor="let grupo of mensagensAgrupadas" class="chat-group">
+            <!-- Separador de tipo de conversa -->
+            <div class="conversa-separador">
+                <span class="badge" [ngClass]="getTipoConversaClass(grupo.tipoConversa)">
+                    {{ getTipoConversaLabel(grupo.tipoConversa) }}
+                </span>
+            </div>
+
+            <!-- Separador de data -->
+            <div class="date-separator">
+                <span>{{ formatarData(grupo.mensagens[0]?.dataHora) }}</span>
+            </div>
+
+            <!-- Mensagens do grupo -->
+            <div *ngFor="let msg of grupo.mensagens" class="mensagem-wrapper"
+                [class.mensagem-direita]="msg.tipoRemetente !== 'Fornecedor'">
+
+                <div class="mensagem" [ngClass]="getRemetenteClass(msg)">
+                    <!-- Nome do remetente -->
+                    <div class="mensagem-remetente">
+                        <i class="fa" [ngClass]="getIconeRemetente(msg.tipoRemetente)"></i>
+                        <strong>{{ getNomeRemetente(msg) }}</strong>
+                        <!-- 🔥 USANDO FUNÇÃO FORMATARHORA CORRIGIDA -->
+                        <small class="mensagem-hora">{{ formatarHora(msg.dataHora) }}</small>
+                    </div>
+
+                    <!-- Texto da mensagem -->
+                    <div class="mensagem-texto">
+                        {{ msg.texto }}
+                    </div>
+
+                    <!-- Status -->
+                    <div class="mensagem-status" *ngIf="msg.tipoRemetente !== 'Fornecedor'">
+                        <i class="fa" [ngClass]="msg.visualizada ? 'fa-check-circle text-success' : 'fa-check'"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="modal-chat-footer">
+        <div class="chat-input-placeholder text-muted">
+            <i class="fa fa-lock mr-2"></i>
+            Chat visualizador - Apenas leitura
+        </div>
+    </div>
+</div>

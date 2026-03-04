@@ -7,7 +7,67 @@
     flex-direction: column;
     gap: 16px;
 
-    max-height: 80vh;
+    max-height: 90vh;
+
+    // Header do dialog
+    .dialog-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 24px;
+        background: white;
+        border-bottom: 1px solid #e9ecef;
+        border-radius: 12px 12px 0 0;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+
+        .dialog-titulo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2c3e50;
+
+            i {
+                color: #0d6efd;
+                font-size: 1.2rem;
+                background: #eef6ff;
+                padding: 8px;
+                border-radius: 10px;
+            }
+        }
+
+        .btn-close-dialog {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            border: none;
+            background: #f8f9fa;
+            color: #6c757d;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+
+            i {
+                font-size: 1.1rem;
+            }
+
+            &:hover {
+                background: #fee2e2;
+                color: #dc3545;
+                transform: rotate(90deg);
+            }
+
+            &:active {
+                transform: scale(0.95);
+            }
+        }
+    }
 
     .resumo-cards {
         display: flex;
@@ -141,11 +201,222 @@
             }
         }
 
+
+
         .grupo-botoes {
             display: flex;
             gap: 8px;
             align-items: center;
+
+            // Estilo para o dropdown de exportação
+            .btn-group {
+                position: relative;
+
+                // Botão principal do dropdown
+                .btn-success {
+                    background: #28a745;
+                    border-color: #28a745;
+                    color: white;
+                    padding: 0.25rem 1rem;
+                    display: flex;
+                    align-items: center;
+                    gap: 6px;
+                    font-weight: 500;
+                    transition: all 0.15s ease;
+
+                    i {
+                        font-size: 0.9rem;
+                    }
+
+                    .caret {
+                        display: inline-block;
+                        width: 0;
+                        height: 0;
+                        margin-left: 4px;
+                        vertical-align: middle;
+                        border-top: 4px dashed;
+                        border-right: 4px solid transparent;
+                        border-left: 4px solid transparent;
+                        opacity: 0.8;
+                    }
+
+                    &:hover {
+                        background: #218838;
+                        border-color: #1e7e34;
+                        transform: translateY(-1px);
+                        box-shadow: 0 4px 8px rgba(40, 167, 69, 0.2);
+                    }
+
+                    &:active {
+                        transform: translateY(0);
+                        box-shadow: none;
+                    }
+                }
+
+                // Menu dropdown
+                .dropdown-menu {
+                    min-width: 160px;
+                    padding: 8px 0;
+                    margin-top: 6px;
+                    border: none;
+                    border-radius: 12px;
+                    background: white;
+                    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+                    animation: slideDown 0.2s ease;
+
+                    // Seta do dropdown
+                    &::before {
+                        content: '';
+                        position: absolute;
+                        top: -6px;
+                        right: 20px;
+                        width: 12px;
+                        height: 12px;
+                        background: white;
+                        transform: rotate(45deg);
+                        border-radius: 3px;
+                        box-shadow: -3px -3px 5px rgba(0, 0, 0, 0.04);
+                    }
+
+                    li {
+                        margin: 2px 0;
+
+                        .dropdown-item {
+                            padding: 10px 16px;
+                            font-size: 0.9rem;
+                            color: #2c3e50;
+                            display: flex;
+                            align-items: center;
+                            gap: 12px;
+                            transition: all 0.15s ease;
+
+                            i {
+                                width: 18px;
+                                text-align: center;
+                                font-size: 1rem;
+
+                                &.fa-file-excel-o {
+                                    color: #28a745;
+                                }
+
+                                &.fa-file-pdf-o {
+                                    color: #dc3545;
+                                }
+
+                                &.fa-file-text-o {
+                                    color: #17a2b8;
+                                }
+                            }
+
+                            span {
+                                flex: 1;
+                            }
+
+                            .shortcut {
+                                font-size: 0.7rem;
+                                opacity: 0.4;
+                                letter-spacing: 0.5px;
+                            }
+
+                            &:hover {
+                                background: #f8f9fa;
+                                padding-left: 20px;
+
+                                i {
+                                    transform: scale(1.1);
+                                }
+                            }
+
+                            &:active {
+                                background: #e9ecef;
+                            }
+                        }
+                    }
+
+                    // Divisor entre opções (se necessário)
+                    .dropdown-divider {
+                        margin: 4px 0;
+                        border-top: 1px solid #eee;
+                    }
+                }
+            }
+
+            // Animação do dropdown
+            @keyframes slideDown {
+                from {
+                    opacity: 0;
+                    transform: translateY(-10px);
+                }
+
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            // Ajuste responsivo
+            @media (max-width: 768px) {
+                flex-wrap: wrap;
+
+                .btn-group {
+                    width: 100%;
+
+                    .btn-success {
+                        width: 100%;
+                        justify-content: center;
+                    }
+
+                    .dropdown-menu {
+                        width: 100%;
+
+                        &::before {
+                            right: 50%;
+                            transform: rotate(45deg) translateX(50%);
+                        }
+                    }
+                }
+            }
         }
+
+        // Estilo para os botões padrão (buscar e limpar)
+        .bg-blue {
+            background: #0d6efd;
+            border-color: #0d6efd;
+            color: white;
+            padding: 0.25rem 1.2rem;
+            font-weight: 500;
+            transition: all 0.15s ease;
+
+            i {
+                margin-right: 4px;
+            }
+
+            &:hover {
+                background: #0b5ed7;
+                border-color: #0a58ca;
+                transform: translateY(-1px);
+                box-shadow: 0 4px 8px rgba(13, 110, 253, 0.2);
+            }
+        }
+
+        .btn-outline-secondary {
+            padding: 0.25rem 1.2rem;
+            font-weight: 500;
+            transition: all 0.15s ease;
+
+            i {
+                margin-right: 4px;
+            }
+
+            &:hover {
+                background: #6c757d;
+                border-color: #6c757d;
+                color: white;
+                transform: translateY(-1px);
+                box-shadow: 0 4px 8px rgba(108, 117, 125, 0.2);
+            }
+        }
+
     }
 
     .valor.estornado {

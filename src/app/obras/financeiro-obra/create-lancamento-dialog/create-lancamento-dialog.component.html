@@ -1,0 +1,168 @@
+<div class="criar-lancamento-dialog">
+
+    <!-- HEADER -->
+    <div class="dialog-header" [ngClass]="getCorTitulo()">
+        <div class="dialog-titulo">
+            <i class="fa" [ngClass]="{
+                'fa-arrow-up': lancamento.natureza === 0,
+                'fa-arrow-down': lancamento.natureza === 1
+            }"></i>
+            {{ getTitulo() }}
+        </div>
+        <button class="btn-close-dialog" (click)="bsModalRef.hide()">
+            <i class="fa fa-times"></i>
+        </button>
+    </div>
+
+    <!-- CORPO -->
+    <div class="dialog-body">
+
+        <!-- OBRA (informação) -->
+        <div class="info-obra">
+            <i class="fa fa-building-o"></i>
+            <span>{{ obraNome || 'Carregando...' }}</span>
+        </div>
+
+        <form #lancamentoForm="ngForm" (ngSubmit)="salvar()" autocomplete="off">
+
+            <!-- LINHA 1: Natureza e Tipo -->
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="required">Natureza</label>
+                        <select class="form-control" [(ngModel)]="lancamento.natureza" name="natureza" required>
+                            <option *ngFor="let n of naturezas" [ngValue]="n.value">
+                                {{ n.description }}
+                            </option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="required">Tipo de Lançamento</label>
+                        <select class="form-control" [(ngModel)]="lancamento.tipo" name="tipo" required>
+                            <option *ngFor="let t of tipos" [ngValue]="t.value">
+                                {{ t.description }}
+                            </option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- LINHA 2: Data e Forma Pagamento -->
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="required">Data do Lançamento</label>
+                        <input type="date" class="form-control" [(ngModel)]="dataLancamentoStr"
+                            (ngModelChange)="onDataChange($event)" name="dataLancamento" required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="required">Forma de Pagamento</label>
+                        <select class="form-control" [(ngModel)]="lancamento.formaDePagamento" name="formaPagamento"
+                            required>
+                            <option *ngFor="let f of formasPagamento" [ngValue]="f.value">
+                                {{ f.description }}
+                            </option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NOVA LINHA: Fornecedor (opcional) -->
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <label>Fornecedor (opcional)</label>
+                        <select class="form-control" [(ngModel)]="lancamento.fornecedorId" name="fornecedor">
+                            <option [ngValue]="undefined">Selecione um fornecedor (opcional)</option>
+                            <option *ngFor="let f of fornecedores" [ngValue]="f.id">
+                                {{ f.nome }}
+                            </option>
+                        </select>
+                        <small class="text-muted">Selecione um fornecedor apenas se este lançamento estiver relacionado
+                            a um fornecedor específico.</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- LINHA 3: Descrição -->
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <label class="required">Descrição</label>
+                        <input type="text" class="form-control" [(ngModel)]="lancamento.descricao" name="descricao"
+                            placeholder="Ex: Pagamento de fornecedor, Recebimento de cliente..." required
+                            maxlength="500">
+                    </div>
+                </div>
+            </div>
+
+            <!-- LINHA 4: Valores -->
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label class="required">Valor</label>
+                        <div class="input-group">
+                            <span class="input-group-text">R$</span>
+                            <input type="number" class="form-control text-right" [(ngModel)]="lancamento.valorPago"
+                                name="valor" step="0.01" min="0" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label>Frete</label>
+                        <div class="input-group">
+                            <span class="input-group-text">R$</span>
+                            <input type="number" class="form-control text-right" [(ngModel)]="lancamento.frete"
+                                name="frete" step="0.01" min="0">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label>Desconto</label>
+                        <div class="input-group">
+                            <span class="input-group-text">R$</span>
+                            <input type="number" class="form-control text-right" [(ngModel)]="lancamento.desconto"
+                                name="desconto" step="0.01" min="0">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TOTAL (automático) -->
+            <div class="row total-row">
+                <div class="col-md-12">
+                    <div class="total-box" [ngClass]="{
+                        'receita': lancamento.natureza === 0,
+                        'despesa': lancamento.natureza === 1
+                    }">
+                        <span class="total-label">Valor Final:</span>
+                        <span class="total-value">
+                            {{ (lancamento.valorPago + lancamento.frete - lancamento.desconto) | currency:'BRL' }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+        </form>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="dialog-footer">
+        <button type="button" class="btn btn-outline-secondary" (click)="bsModalRef.hide()">
+            <i class="fa fa-times"></i> Cancelar
+        </button>
+        <button type="submit" class="btn" [ngClass]="{
+            'btn-success': lancamento.natureza === 0,
+            'btn-danger': lancamento.natureza === 1
+        }" [disabled]="!lancamentoForm.form.valid" (click)="salvar()">
+            <i class="fa fa-save"></i> Salvar
+        </button>
+    </div>
+
+</div>
