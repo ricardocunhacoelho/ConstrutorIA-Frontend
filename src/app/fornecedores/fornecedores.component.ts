@@ -13,12 +13,15 @@ import { Paginator, PaginatorModule } from 'primeng/paginator';
 import { FormsModule } from '@angular/forms';
 import { CommonModule, NgIf } from '@angular/common';
 import { LocalizePipe } from '@shared/pipes/localize.pipe';
+import { CpfCnpjPipe } from '@shared/pipes/cpf-cnpj.pipe';
+import { ViewFornecedorDialogComponent } from './view-fornecedor/view-fornecedor-dialog.component';
 
 @Component({
     templateUrl: './fornecedores.component.html',
     animations: [appModuleAnimation()],
+    styleUrls: ['./fornecedores.component.scss'],
     standalone: true,
-    imports: [CommonModule, FormsModule, TableModule, PrimeTemplate, NgIf, PaginatorModule, LocalizePipe],
+    imports: [CommonModule, FormsModule, TableModule, PrimeTemplate, NgIf, PaginatorModule, LocalizePipe, CpfCnpjPipe],
 })
 export class FornecedoresComponent extends PagedListingComponentBase<FornecedorDto> {
     @ViewChild('dataTable', { static: true }) dataTable: Table;
@@ -26,7 +29,6 @@ export class FornecedoresComponent extends PagedListingComponentBase<FornecedorD
 
     fornecedores: FornecedorDto[] = [];
     keyword = '';
-    isActive: boolean | null;
     advancedFiltersVisible = false;
 
     constructor(
@@ -121,6 +123,25 @@ export class FornecedoresComponent extends PagedListingComponentBase<FornecedorD
         }
 
         createOrEditFornecedorDialog.content.onSave.subscribe(() => {
+            this.refresh();
+        });
+    }
+
+    viewFornecedor(fornecedor: FornecedorDto): void {
+        const modalRef = this._modalService.show(
+            ViewFornecedorDialogComponent,
+            {
+                class: 'modal-lg',
+                backdrop: 'static',
+                keyboard: false,
+                initialState: {
+                    id: fornecedor.id
+                }
+            }
+        );
+
+        // Opcional: se quiser atualizar a lista quando algo for alterado no modal
+        modalRef.content.onSave.subscribe(() => {
             this.refresh();
         });
     }

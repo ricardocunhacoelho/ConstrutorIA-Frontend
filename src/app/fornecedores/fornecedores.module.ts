@@ -2,6 +2,8 @@ import { NgModule } from '@angular/core';
 import { SharedModule } from '@shared/shared.module';
 import { CreateFornecedorDialogComponent } from './create-fornecedor/create-fornecedor-dialog.component';
 import { EditFornecedorDialogComponent } from './edit-fornecedor/edit-fornecedor-dialog.component';
+import { ViewFornecedorDialogComponent } from './view-fornecedor/view-fornecedor-dialog.component';
+
 import { FornecedoresRoutingModule } from './fornecedores-routing.module';
 import { FornecedoresComponent } from './fornecedores.component';
 import { CommonModule } from '@angular/common';
@@ -14,6 +16,7 @@ import { CommonModule } from '@angular/common';
         FornecedoresComponent,
         EditFornecedorDialogComponent,
         CreateFornecedorDialogComponent,
+        ViewFornecedorDialogComponent
     ],
 })
 export class FornecedoresModule {}

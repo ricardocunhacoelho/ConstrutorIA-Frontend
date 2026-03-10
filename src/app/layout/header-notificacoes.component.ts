@@ -7,13 +7,14 @@ import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
 import { Router } from '@angular/router';
 
 import { NotificacaoUsuarioSignalRService } from '../services/notificacao-usuario-signalr.service';
-import { 
-    NotificacaoUsuarioServiceProxy, 
-    EnumServiceProxy,
-    EnumValueDto 
+import {
+  NotificacaoUsuarioServiceProxy,
+  EnumServiceProxy,
+  EnumValueDto
 } from '../../shared/service-proxies/service-proxies';
 import { CotacoesListDialogComponent } from '@app/cotacoes/list-cotacoes/list-cotacoes-dialog.component';
 import { TimeAgoPipe } from '@shared/pipes/time-ago.pipe';
+import { ViewTarefaInternaDialogComponent } from '@app/tarefas-internas/view-tarefa-interna/view-tarefa-interna-dialog.component';
 
 @Component({
   selector: 'header-notificacoes',
@@ -37,16 +38,16 @@ export class HeaderNotificacoesComponent implements OnInit, OnDestroy {
 
   // Enums carregados dinamicamente
   tiposNotificacao: EnumValueDto[] = [];
-  
+
   // 🔥 MAPEAMENTO POR NOME (string) em vez de número
   private iconeMap: Record<string, string> = {};
   private classeMap: Record<string, string> = {};
   private descricaoMap: Record<string, string> = {};
 
   // Cache de configurações por tipo (usando nome)
-  private configuracaoTipo: Record<string, { 
+  private configuracaoTipo: Record<string, {
     acao: 'modal' | 'rota' | 'nenhuma',
-    rota?: string 
+    rota?: string
   }> = {};
 
   constructor(
@@ -79,17 +80,17 @@ export class HeaderNotificacoesComponent implements OnInit, OnDestroy {
     this.enumService.getNotificacaoOrigemTipo().subscribe({
       next: (tipos) => {
         this.tiposNotificacao = tipos;
-        
+
         tipos.forEach(tipo => {
-          const nome = tipo.name; // Nome do enum (ex: "IntervencaoCompra")
+          const nome = tipo.name;
           const nomeLower = nome.toLowerCase();
-          
+
           this.iconeMap[nome] = this.getIconePorNome(nomeLower);
           this.classeMap[nome] = this.getClassePorNome(nomeLower);
           this.descricaoMap[nome] = tipo.description || this.formatarNome(nome);
           this.configuracaoTipo[nome] = this.getConfiguracaoPorNome(nomeLower, tipo.value);
         });
-        
+
         this.cdr.detectChanges();
       },
       error: (error) => {
@@ -106,7 +107,8 @@ export class HeaderNotificacoesComponent implements OnInit, OnDestroy {
     if (nomeLower.includes('sistema')) return 'fa-cog';
     if (nomeLower.includes('aprovacao')) return 'fa-check-circle';
     if (nomeLower.includes('cancelamento')) return 'fa-times-circle';
-    
+    if (nomeLower.includes('tarefainterna')) return 'fa-tasks';
+
     return 'fa-bell';
   }
 
@@ -117,27 +119,31 @@ export class HeaderNotificacoesComponent implements OnInit, OnDestroy {
     if (nomeLower.includes('sistema')) return 'sistema';
     if (nomeLower.includes('aprovacao')) return 'aprovacao';
     if (nomeLower.includes('cancelamento')) return 'cancelamento';
-    
+    if (nomeLower.includes('tarefainterna')) return 'tarefainterna';
+
     return 'sistema';
   }
 
   private getConfiguracaoPorNome(nomeLower: string, valor: number): { acao: 'modal' | 'rota' | 'nenhuma', rota?: string } {
     // Tipos que abrem modal de cotações
-    if (nomeLower.includes('intervencao') || 
-        nomeLower.includes('compra') || 
-        nomeLower.includes('pedido')) {
+    if (nomeLower.includes('intervencao') ||
+      nomeLower.includes('compra') ||
+      nomeLower.includes('pedido')) {
       return { acao: 'modal' };
     }
-    
-    // Tipos que redirecionam para rotas específicas
+
+    if (nomeLower.includes('tarefainterna')) {
+      return { acao: 'modal' };
+    }
+
     if (nomeLower.includes('aprovacao')) {
       return { acao: 'rota', rota: '/app/aprovacoes' };
     }
-    
+
     if (nomeLower.includes('financeiro')) {
       return { acao: 'rota', rota: '/app/financeiro' };
     }
-    
+
     // Padrão: não faz nada
     return { acao: 'nenhuma' };
   }
@@ -153,16 +159,18 @@ export class HeaderNotificacoesComponent implements OnInit, OnDestroy {
       { name: 'IntervencaoCompra', desc: 'Intervenção', icone: 'fa-exclamation-triangle', classe: 'intervencao' },
       { name: 'Compra', desc: 'Compra', icone: 'fa-shopping-cart', classe: 'compra' },
       { name: 'Pedido', desc: 'Pedido', icone: 'fa-file-invoice', classe: 'pedido' },
-      { name: 'Sistema', desc: 'Sistema', icone: 'fa-cog', classe: 'sistema' }
+      { name: 'Sistema', desc: 'Sistema', icone: 'fa-cog', classe: 'sistema' },
+      { name: 'TarefaInterna', desc: 'Tarefa Interna', icone: 'fa-tasks', classe: 'tarefainterna' }
     ];
 
     fallbackConfig.forEach(item => {
       this.iconeMap[item.name] = item.icone;
       this.classeMap[item.name] = item.classe;
       this.descricaoMap[item.name] = item.desc;
-      
-      // Configurar ações para fallback
+
       if (item.name.includes('Intervencao') || item.name.includes('Compra') || item.name.includes('Pedido')) {
+        this.configuracaoTipo[item.name] = { acao: 'modal' };
+      } else if (item.name.includes('TarefaInterna')) {
         this.configuracaoTipo[item.name] = { acao: 'modal' };
       } else {
         this.configuracaoTipo[item.name] = { acao: 'nenhuma' };
@@ -197,21 +205,29 @@ export class HeaderNotificacoesComponent implements OnInit, OnDestroy {
   }
 
   private executarAcao(notificacao: any): void {
-    const tipo = notificacao.origemTipo as string; // 🔥 Agora é string
+    const tipo = notificacao.origemTipo as string;
     const origemId = notificacao.origemId;
     const config = this.configuracaoTipo[tipo] || { acao: 'nenhuma' };
 
     switch (config.acao) {
       case 'modal':
-        this.abrirModalCotacoes(origemId);
-        break;
-        
-      case 'rota':
-        if (config.rota) {
-          this.router.navigate([config.rota]);
+        if (tipo.toLowerCase().includes('tarefainterna')) {
+          this.abrirModalTarefaInterna(origemId);
+        } else {
+          this.abrirModalCotacoes(origemId);
         }
         break;
-        
+
+      case 'rota':
+        if (config.rota) {
+          if (tipo.toLowerCase().includes('tarefainterna') && origemId) {
+            this.router.navigate([config.rota, origemId]);
+          } else {
+            this.router.navigate([config.rota]);
+          }
+        }
+        break;
+
       case 'nenhuma':
       default:
         console.log('Notificação sem ação definida:', notificacao);
@@ -229,8 +245,8 @@ export class HeaderNotificacoesComponent implements OnInit, OnDestroy {
       CotacoesListDialogComponent,
       {
         class: 'modal-xl modal-dialog-centered',
-        initialState: { 
-          solicitacaoId: solicitacaoId 
+        initialState: {
+          solicitacaoId: solicitacaoId
         },
         backdrop: 'static',
         keyboard: false
@@ -238,6 +254,30 @@ export class HeaderNotificacoesComponent implements OnInit, OnDestroy {
     );
 
     // Atualizar lista quando salvar
+    if (this.modalRef.content) {
+      (this.modalRef.content as any).onSave?.subscribe(() => {
+        this.carregarNotificacoes();
+      });
+    }
+  }
+
+  private abrirModalTarefaInterna(tarefaId: string): void {
+    if (this.modalRef) {
+      this.modalRef.hide();
+    }
+
+    this.modalRef = this.modalService.show(
+      ViewTarefaInternaDialogComponent,
+      {
+        class: 'modal-lg',
+        initialState: {
+          id: tarefaId
+        },
+        backdrop: 'static',
+        keyboard: false
+      }
+    );
+
     if (this.modalRef.content) {
       (this.modalRef.content as any).onSave?.subscribe(() => {
         this.carregarNotificacoes();
@@ -260,7 +300,7 @@ export class HeaderNotificacoesComponent implements OnInit, OnDestroy {
 
   marcarTodasComoLidas(): void {
     const naoLidas = this.notificacoes.filter(n => !n.lida);
-    
+
     if (naoLidas.length === 0) return;
 
     // Marcar todas otimisticamente
@@ -285,19 +325,19 @@ export class HeaderNotificacoesComponent implements OnInit, OnDestroy {
 
   private adicionarNotificacao(notificacao: any): void {
     this.notificacoes.unshift(notificacao);
-    
+
     if (!notificacao.lida) {
       this.naoLidas++;
-      
+
       // Mostrar notificação toast
       this.mostrarToastNotificacao(notificacao);
     }
-    
+
     // Limitar número de notificações na lista
     if (this.notificacoes.length > 50) {
       this.notificacoes = this.notificacoes.slice(0, 50);
     }
-    
+
     this.cdr.detectChanges();
   }
 

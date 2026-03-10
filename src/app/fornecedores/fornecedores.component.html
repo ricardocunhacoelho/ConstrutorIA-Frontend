@@ -6,10 +6,34 @@
                     <h1>{{ 'Fornecedores' | localize }}</h1>
                 </div>
                 <div class="col-6 text-right">
-                    <a href="javascript:;" class="btn bg-blue" (click)="createFornecedor()">
-                        <i class="fa fa-plus-square"></i>
-                        {{ 'Create' | localize }}
-                    </a>
+                    <div class="btn-group">
+                        <!-- Botão Criar -->
+                        <a href="javascript:;" class="btn bg-blue" (click)="createFornecedor()">
+                            <i class="fa fa-plus-square"></i>
+                            {{ 'Create' | localize }}
+                        </a>
+
+                        <!-- Botão Exportar (opcional) -->
+                        <div class="btn-group" dropdown>
+                            <button id="btn-exportar" dropdownToggle type="button" class="btn bg-green dropdown-toggle">
+                                <i class="fa fa-download"></i>
+                                {{ 'Exportar' | localize }}
+                            </button>
+                            <ul *dropdownMenu class="dropdown-menu dropdown-menu-right" role="menu"
+                                aria-labelledby="btn-exportar">
+                                <li role="menuitem">
+                                    <a class="dropdown-item" href="javascript:;" (click)="exportarParaExcel()">
+                                        <i class="fa fa-file-excel text-success"></i> Excel
+                                    </a>
+                                </li>
+                                <li role="menuitem">
+                                    <a class="dropdown-item" href="javascript:;" (click)="exportarParaPdf()">
+                                        <i class="fa fa-file-pdf text-danger"></i> PDF
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -49,29 +73,29 @@
                                     <div class="col-md-6">
                                         <div class="form-group row mb-0">
                                             <label class="col-md-3 col-form-label">
-                                                {{ 'IsActive' | localize }}
+                                                {{ 'Status' | localize }}
                                             </label>
                                             <div class="col-md-9 pt-2">
                                                 <div class="custom-control custom-radio d-inline">
-                                                    <input type="radio" class="custom-control-input" id="isActiveAll"
-                                                        name="isActive" [(ngModel)]="isActive" [value]="undefined"
+                                                    <input type="radio" class="custom-control-input" id="statusAll"
+                                                        name="statusAll" [(ngModel)]="isActive" [value]="undefined"
                                                         checked />
-                                                    <label class="custom-control-label" for="isActiveAll">
-                                                        {{ 'All' | localize }}
+                                                    <label class="custom-control-label" for="statusAll">
+                                                        {{ 'Todos' | localize }}
                                                     </label>
                                                 </div>
                                                 <div class="custom-control custom-radio d-inline mx-3">
-                                                    <input type="radio" class="custom-control-input" id="isActiveActive"
-                                                        name="isActive" [(ngModel)]="isActive" [value]="true" />
-                                                    <label class="custom-control-label" for="isActiveActive">
-                                                        {{ 'Yes' | localize }}
+                                                    <input type="radio" class="custom-control-input" id="statusActive"
+                                                        name="statusActive" [(ngModel)]="isActive" [value]="true" />
+                                                    <label class="custom-control-label" for="statusActive">
+                                                        <span class="badge-status ativo"></span> Ativo
                                                     </label>
                                                 </div>
                                                 <div class="custom-control custom-radio d-inline">
-                                                    <input type="radio" class="custom-control-input" id="isActivePassive"
-                                                        name="isActive" [(ngModel)]="isActive" [value]="false" />
-                                                    <label class="custom-control-label" for="isActivePassive">
-                                                        {{ 'No' | localize }}
+                                                    <input type="radio" class="custom-control-input" id="statusInactive"
+                                                        name="statusInactive" [(ngModel)]="isActive" [value]="false" />
+                                                    <label class="custom-control-label" for="statusInactive">
+                                                        <span class="badge-status inativo"></span> Inativo
                                                     </label>
                                                 </div>
                                             </div>
@@ -81,11 +105,11 @@
                             </form>
                         </div>
                         <div class="card-footer">
-                            <button type="button" class="btn bg-blue">
-                                {{ 'Search' | localize }}
+                            <button type="button" class="btn bg-blue" (click)="list()">
+                                <i class="fas fa-search mr-1"></i> {{ 'Search' | localize }}
                             </button>
                             <button type="button" class="btn btn-default float-right" (click)="clearFilters()">
-                                {{ 'Clear' | localize }}
+                                <i class="fas fa-eraser mr-1"></i> {{ 'Clear' | localize }}
                             </button>
                         </div>
                     </div>
@@ -97,52 +121,74 @@
                             [value]="primengTableHelper.records"
                             rows="{{ primengTableHelper.defaultRecordsCountPerPage }}" [paginator]="false" [lazy]="true"
                             [tableStyle]="{ 'min-width': '50rem' }">
+
                             <ng-template pTemplate="header">
                                 <tr>
-                                    <th style="min-width: 150px" pSortableColumn="nomeFantasia">
+                                    <th style="width: 180px" pSortableColumn="nomeFantasia">
                                         {{ 'Nome Fantasia' | localize }}
                                         <p-sortIcon field="nomeFantasia"></p-sortIcon>
                                     </th>
-                                    <th style="min-width: 150px" pSortableColumn="razaoSocial">
-                                        {{ 'Razao Social' | localize }}
+                                    <th style="width: 180px" pSortableColumn="razaoSocial">
+                                        {{ 'Razão Social' | localize }}
                                         <p-sortIcon field="razaoSocial"></p-sortIcon>
                                     </th>
-                                    <th style="min-width: 150px" pSortableColumn="cpfOrCnpj">
+                                    <th style="width: 150px" pSortableColumn="cpfOrCnpj">
                                         {{ 'CPF/CNPJ' | localize }}
                                         <p-sortIcon field="cpfOrCnpj"></p-sortIcon>
                                     </th>
-                                    <th style="min-width: 150px" pSortableColumn="email">
-                                        {{ 'Email' | localize }}
+                                    <th style="width: 200px" pSortableColumn="email">
+                                        {{ 'E-mail' | localize }}
                                         <p-sortIcon field="email"></p-sortIcon>
                                     </th>
-                                    <th style="min-width: 130px">
-                                        {{ 'Actions' | localize }}
+                                    <th style="width: 130px">
+                                        {{ 'Ações' | localize }}
                                     </th>
                                 </tr>
                             </ng-template>
 
                             <ng-template pTemplate="body" let-record="$implicit">
                                 <tr>
-                                    <td>{{ record.nomeFantasia }}</td>
-                                    <td>{{ record.razaoSocial }}</td>
-                                    <td>{{ record.cpfOrCnpj }}</td>
-                                    <td>{{ record.email }}</td>
                                     <td>
-                                        <button type="button" class="btn btn-sm bg-secondary"
-                                            (click)="editFornecedor(record)">
-                                            <i class="fas fa-pencil-alt"></i>
-                                        </button>
-                                        <button type="button" class="btn btn-sm bg-danger mx-2"
-                                            (click)="delete(record)">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
+                                        <span class="fw-500">{{ record.nomeFantasia || '-' }}</span>
+                                    </td>
+                                    <td>{{ record.razaoSocial || '-' }}</td>
+                                    <td>
+                                        <span class="cpf-cnpj">{{ record.cpfOrCnpj | cpfCnpj }}</span>
+                                    </td>
+                                    <td>
+                                        <a href="mailto:{{ record.email }}" class="email-link" *ngIf="record.email">
+                                            <i class="far fa-envelope mr-1"></i>{{ record.email }}
+                                        </a>
+                                        <span *ngIf="!record.email">-</span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group-actions">
+                                            <!-- Botão Visualizar (opcional) -->
+                                            <button type="button" class="btn btn-sm btn-outline-info"
+                                                (click)="viewFornecedor(record)" title="Visualizar fornecedor">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+
+                                            <!-- Botão Editar -->
+                                            <button type="button" class="btn btn-sm btn-outline-warning mx-1"
+                                                (click)="editFornecedor(record)" title="Editar fornecedor">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+
+                                            <!-- Botão Excluir -->
+                                            <button type="button" class="btn btn-sm btn-outline-danger"
+                                                (click)="delete(record)" title="Excluir fornecedor">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             </ng-template>
                         </p-table>
 
                         <div class="primeng-no-data" *ngIf="primengTableHelper.totalRecordsCount == 0">
-                            {{ 'NoData' | localize }}
+                            <i class="fas fa-building fa-2x mb-3 text-muted"></i>
+                            <p>{{ 'Nenhum fornecedor encontrado' | localize }}</p>
                         </div>
                     </div>
                 </div>
@@ -151,7 +197,7 @@
                     <div class="row">
                         <div class="col-sm-4 col-12 text-sm-left text-center">
                             <button class="btn btn-secondary" (click)="refresh()">
-                                <i class="fas fa-redo-alt"></i>
+                                <i class="fas fa-redo-alt mr-1"></i> {{ 'Atualizar' | localize }}
                             </button>
                         </div>
                         <div class="col-sm-8 col-12">
@@ -162,9 +208,8 @@
                                         [totalRecords]="primengTableHelper.totalRecordsCount"
                                         [rowsPerPageOptions]="primengTableHelper.predefinedRecordsCountPerPage"
                                         [showCurrentPageReport]="true"
-                                        [currentPageReportTemplate]="
-                                            'TotalRecordsCount' | localize: primengTableHelper.totalRecordsCount
-                                        "></p-paginator>
+                                        [currentPageReportTemplate]="'TotalRecordsCount' | localize: primengTableHelper.totalRecordsCount">
+                                    </p-paginator>
                                 </div>
                             </div>
                         </div>

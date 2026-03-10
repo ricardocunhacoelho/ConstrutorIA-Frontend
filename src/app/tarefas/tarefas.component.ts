@@ -22,10 +22,12 @@ import { CreateTarefaDialogComponent } from './create-tarefa/create-tarefa-dialo
 import { EditTarefaDialogComponent } from './edit-tarefa/edit-tarefa-dialog.component';
 import { BsDropdownDirective, BsDropdownToggleDirective, BsDropdownMenuDirective } from 'ngx-bootstrap/dropdown';
 import * as FileSaver from 'file-saver';
+import { ViewTarefaDialogComponent } from './view-tarefa/view-tarefa-dialog.component';
 
 @Component({
     templateUrl: './tarefas.component.html',
     animations: [appModuleAnimation()],
+    styleUrls: ['./tarefas.component.scss'],
     standalone: true,
     imports: [CommonModule, BsDropdownDirective, BsDropdownToggleDirective, BsDropdownMenuDirective, FormsModule, TableModule, PrimeTemplate, NgIf, PaginatorModule, LocalizePipe],
 })
@@ -212,5 +214,21 @@ export class TarefasComponent extends PagedListingComponentBase<TarefaDto> imple
 
         const blob = new Blob(byteArrays, { type: contentType });
         return blob;
+    }
+
+    viewTarefa(record: any): void {
+        const modalRef = this._modalService.show(
+            ViewTarefaDialogComponent,
+            {
+                class: 'modal-lg',
+                backdrop: 'static',
+                keyboard: false,
+                initialState: {
+                    tarefaId: record.id
+                }
+            }
+        );
+
+        modalRef.content.onClose.subscribe(() => { });
     }
 }

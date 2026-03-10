@@ -14,6 +14,9 @@ import moment from 'moment';
     styleUrls: ['./conversa-modal.component.scss']
 })
 export class ConversaModalComponent implements OnInit {
+    @Input() encarregadoId: string;
+    @Input() encarregadoNome: string;
+    @Input() fornecedorId: string;
     @Input() cotacaoId: string;
     @Input() titulo: string;
     @Input() fornecedorNome: string;
@@ -38,12 +41,27 @@ export class ConversaModalComponent implements OnInit {
     carregarMensagens(): void {
         this.loading = true;
 
-        this._mensagemService.getMensagensByCotacaoId(this.cotacaoId)
+        let request$;
+
+        if (this.encarregadoId) {
+            // Busca mensagens do encarregado
+            request$ = this._mensagemService.getMensagensByEncarregadoId(this.encarregadoId);
+        } else if (this.fornecedorId) {
+            // Busca mensagens do fornecedor
+            request$ = this._mensagemService.getMensagensByFornecedorId(this.fornecedorId);
+        } else if (this.cotacaoId) {
+            // Busca mensagens da cotação (compatibilidade)
+            request$ = this._mensagemService.getMensagensByCotacaoId(this.cotacaoId);
+        } else {
+            this.loading = false;
+            abp.notify.error('Nenhum identificador de conversa fornecido');
+            return;
+        }
+
+        request$
             .pipe(finalize(() => {
                 this.loading = false;
                 this.cdr.detectChanges();
-
-                // 🔥 FORÇAR O SCROLL APÓS A RENDERIZAÇÃO
                 setTimeout(() => this.scrollToBottom(), 100);
             }))
             .subscribe({
@@ -114,16 +132,14 @@ export class ConversaModalComponent implements OnInit {
         this.mensagensAgrupadas = grupos;
     }
 
-    // 🔥 FUNÇÃO DE SCROLL MELHORADA
     scrollToBottom(): void {
         try {
             const element = this.messagesContainer.nativeElement;
 
-            // Pequeno delay para garantir que tudo foi renderizado
             setTimeout(() => {
                 element.scrollTo({
                     top: element.scrollHeight,
-                    behavior: 'smooth' // Adiciona uma animação suave
+                    behavior: 'smooth'
                 });
             }, 50);
 
@@ -132,7 +148,6 @@ export class ConversaModalComponent implements OnInit {
         }
     }
 
-    // 🔥 FUNÇÃO PARA RECARREGAR (mantém no final)
     recarregar(): void {
         this.mensagens = [];
         this.mensagensAgrupadas = [];
@@ -178,6 +193,8 @@ export class ConversaModalComponent implements OnInit {
     getNomeRemetente(msg: MensagemDto): string {
         if (msg.tipoRemetente === 'Fornecedor') {
             return this.fornecedorNome || msg.nomeRemetente || 'Fornecedor';
+        } else if (msg.tipoRemetente === 'AgenteIA') {
+            return this.encarregadoNome || msg.nomeRemetente || 'Agente IA';
         }
         return msg.nomeRemetente || 'Sistema';
     }

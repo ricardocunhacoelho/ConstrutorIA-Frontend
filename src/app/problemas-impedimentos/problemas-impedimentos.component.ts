@@ -19,9 +19,11 @@ import {
 } from '../../shared/service-proxies/service-proxies';
 import { CreateProblemaImpedimentoDialogComponent } from './create-problema-impedimento/create-problema-impedimento-dialog.component';
 import { EditProblemaImpedimentoDialogComponent } from './edit-problema-impedimento/edit-problema-impedimento-dialog.component';
+import { ViewProblemaImpedimentoDialogComponent } from './view-problema-impedimento/view-problema-impedimento-dialog.component';
 
 @Component({
     templateUrl: './problemas-impedimentos.component.html',
+    styleUrls: ['./problemas-impedimentos.component.scss'],
     animations: [appModuleAnimation()],
     standalone: true,
     imports: [CommonModule, FormsModule, TableModule, PrimeTemplate, NgIf, PaginatorModule, LocalizePipe],
@@ -141,6 +143,20 @@ export class ProblemasImpedimentosComponent extends PagedListingComponentBase<Pr
             });
         }
         ref.content.onSave.subscribe(() => this.refresh());
+    }
+
+    viewProblema(problema: ProblemaImpedimentoDto): void {
+        const ref = this._modalService.show(ViewProblemaImpedimentoDialogComponent, {
+            class: 'modal-lg',
+            initialState: {
+                id: problema.id
+            },
+            backdrop: 'static'
+        });
+
+        ref.content.onSave.subscribe(() => {
+            this.refresh();
+        });
     }
 
     protected delete(entity: ProblemaImpedimentoDto): void {

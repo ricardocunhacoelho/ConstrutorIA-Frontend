@@ -1,0 +1,216 @@
+<abp-modal-header [title]="'Visualizar Fornecedor' | localize" (onCloseClick)="close()">
+</abp-modal-header>
+
+<div class="modal-body" *ngIf="!loading; else loadingTemplate">
+    <!-- HEADER com título e status -->
+    <div class="fornecedor-header">
+        <div class="d-flex justify-content-between align-items-start">
+            <div class="fornecedor-titulo">
+                <div class="fornecedor-meta">
+                    <span class="fornecedor-id">#{{ fornecedor.id | slice:0:8 }}</span>
+                    <span class="separator">•</span>
+                    <span class="fornecedor-data">
+                        <i class="far fa-calendar-alt"></i>
+                        Cadastrado {{ fornecedor.creationTime | timeAgo }}
+                    </span>
+                </div>
+                <h2>{{ fornecedor.nomeFantasia || fornecedor.razaoSocial || 'Fornecedor' }}</h2>
+            </div>
+        </div>
+    </div>
+
+    <!-- INFORMAÇÕES PRINCIPAIS em cards -->
+    <div class="info-grid">
+        <!-- Razão Social -->
+        <div class="info-card" *ngIf="fornecedor.razaoSocial">
+            <div class="info-icon">
+                <i class="fas fa-building"></i>
+            </div>
+            <div class="info-content">
+                <label>Razão Social</label>
+                <div class="info-value">{{ fornecedor.razaoSocial }}</div>
+            </div>
+        </div>
+
+        <!-- Nome Fantasia -->
+        <div class="info-card" *ngIf="fornecedor.nomeFantasia">
+            <div class="info-icon">
+                <i class="fas fa-store-alt"></i>
+            </div>
+            <div class="info-content">
+                <label>Nome Fantasia</label>
+                <div class="info-value">{{ fornecedor.nomeFantasia }}</div>
+            </div>
+        </div>
+
+        <!-- CPF/CNPJ -->
+        <div class="info-card" *ngIf="fornecedor.cpfOrCnpj">
+            <div class="info-icon">
+                <i class="fas fa-id-card"></i>
+            </div>
+            <div class="info-content">
+                <label>CPF/CNPJ</label>
+                <div class="info-value">{{ fornecedor.cpfOrCnpj | cpfCnpj }}</div>
+            </div>
+        </div>
+
+        <!-- E-mail -->
+        <div class="info-card" *ngIf="fornecedor.email">
+            <div class="info-icon">
+                <i class="fas fa-envelope"></i>
+            </div>
+            <div class="info-content">
+                <label>E-mail</label>
+                <div class="info-value">
+                    <a href="mailto:{{ fornecedor.email }}" class="email-link">
+                        {{ fornecedor.email }}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TELEFONE - ajustado para usar DDD + Numero -->
+    <div class="secao-container" *ngIf="fornecedor.telefone">
+        <div class="secao-header">
+            <div class="secao-titulo">
+                <i class="fas fa-phone-alt text-primary mr-2"></i>
+                <label>Telefone</label>
+            </div>
+        </div>
+        <div class="telefone-content">
+            <div class="telefone-item" *ngIf="fornecedor.telefone.numero">
+                <i class="fas fa-phone mr-2"></i>
+                <span>
+                    <span *ngIf="fornecedor.telefone.internacional">
+                        +{{ fornecedor.telefone.IDD }}
+                    </span>
+                    <span *ngIf="!fornecedor.telefone.internacional && fornecedor.telefone.DDD">
+                        ({{ fornecedor.telefone.DDD }})
+                    </span>
+                    {{ fornecedor.telefone.numero }}
+                </span>
+                <span class="badge badge-info ml-2" *ngIf="fornecedor.telefone.internacional">
+                    Internacional
+                </span>
+            </div>
+
+            <!-- WhatsApp - se tiver, usa o mesmo número ou outro -->
+            <div class="telefone-item" *ngIf="fornecedor.telefone.numero">
+                <i class="fab fa-whatsapp text-success mr-2"></i>
+                <span>
+                    <span *ngIf="fornecedor.telefone.internacional">
+                        +{{ fornecedor.telefone.IDD }}
+                    </span>
+                    <span *ngIf="!fornecedor.telefone.internacional && fornecedor.telefone.DDD">
+                        ({{ fornecedor.telefone.DDD }})
+                    </span>
+                    {{ fornecedor.telefone.numero }}
+                </span>
+                <span class="badge badge-success ml-2">WhatsApp</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ENDEREÇO - ajustado para usar os campos corretos -->
+    <div class="secao-container" *ngIf="fornecedor.endereco">
+        <div class="secao-header">
+            <div class="secao-titulo">
+                <i class="fas fa-map-marker-alt text-danger mr-2"></i>
+                <label>Endereço</label>
+            </div>
+        </div>
+        <div class="endereco-content">
+            <div class="endereco-linha">
+                <span class="endereco-rua">
+                    {{ fornecedor.endereco.rua }}, {{ fornecedor.endereco.numero }}
+                </span>
+            </div>
+            <div class="endereco-linha" *ngIf="fornecedor.endereco.bairro">
+                <span class="endereco-bairro">{{ fornecedor.endereco.bairro }}</span>
+            </div>
+            <div class="endereco-linha" *ngIf="fornecedor.endereco.cidade">
+                <span class="endereco-cidade">
+                    {{ fornecedor.endereco.cidade }}/{{ fornecedor.endereco.uf }}
+                </span>
+            </div>
+            <div class="endereco-linha" *ngIf="fornecedor.endereco.cep">
+                <span class="endereco-cep">CEP: {{ fornecedor.endereco.cep }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- MENSAGENS RECENTES -->
+    <div class="secao-container" *ngIf="fornecedor.mensagens?.length">
+        <div class="secao-header">
+            <div class="secao-titulo">
+                <i class="fas fa-comments text-info mr-2"></i>
+                <label>Mensagens Recentes</label>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <span class="badge badge-info">{{ fornecedor.mensagens.length }} mensagens</span>
+                <button class="btn-ver-mensagens" (click)="verMensagens()" title="Ver todas as mensagens">
+                    <i class="fas fa-external-link-alt"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="mensagens-preview">
+            <div *ngFor="let msg of fornecedor.mensagens.slice(0, 3)" class="mensagem-item">
+                <div class="mensagem-time">
+                    <i class="far fa-clock"></i>
+                    {{ formatDate(msg.dataHora) }}
+                </div>
+                <div class="mensagem-texto" [innerHTML]="msg.texto | nl2br"></div>
+                <div class="d-flex justify-content-between align-items-center mt-2">
+                    <div class="mensagem-remetente">
+                        <span class="badge"
+                            [ngClass]="msg.tipoRemetente === 'Encarregado' ? 'badge-primary' : 'badge-secondary'">
+                            <i class="fa fa-user mr-1"></i> {{ msg.nomeRemetente || msg.tipoRemetente }}
+                        </span>
+                    </div>
+                    <div class="mensagem-sentido"
+                        [ngClass]="msg.sentidoMensagem === 'ENVIADO' ? 'enviado' : 'recebido'">
+                        <i class="fa"
+                            [ngClass]="msg.sentidoMensagem === 'ENVIADO' ? 'fa-arrow-up' : 'fa-arrow-down'"></i>
+                        {{ msg.sentidoMensagem === 'ENVIADO' ? 'Enviada' : 'Recebida' }}
+                    </div>
+                </div>
+            </div>
+
+            <div *ngIf="fornecedor.mensagens.length > 3" class="mensagem-mais">
+                <button class="btn-ver-todas" (click)="verMensagens()">
+                    <i class="fas fa-comments mr-2"></i>
+                    Ver todas as {{ fornecedor.mensagens.length }} mensagens
+                    <i class="fas fa-chevron-right ml-2"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Se não tiver mensagens -->
+    <div class="secao-container" *ngIf="!fornecedor.mensagens?.length">
+        <div class="secao-header">
+            <div class="secao-titulo">
+                <i class="fas fa-comments text-muted mr-2"></i>
+                <label>Mensagens</label>
+            </div>
+        </div>
+        <div class="text-center py-4">
+            <i class="far fa-comment-dots fa-2x text-muted mb-2"></i>
+            <p class="text-muted mb-0">Nenhuma mensagem encontrada</p>
+        </div>
+    </div>
+</div>
+
+<ng-template #loadingTemplate>
+    <div class="modal-body text-center p-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="sr-only">Carregando...</span>
+        </div>
+        <p class="mt-3">Carregando fornecedor...</p>
+    </div>
+</ng-template>
+
+<abp-modal-footer [cancelDisabled]="false" (onCancelClick)="close()">
+</abp-modal-footer>

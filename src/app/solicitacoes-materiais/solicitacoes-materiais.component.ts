@@ -51,7 +51,6 @@ export class SolicitacoesMateriaisComponent extends PagedListingComponentBase<So
 
     statusOptions = [
         { label: this.l('All'), value: undefined },
-
         { label: 'Aberta', value: SolicitacaoMaterialStatusNullable._0 },
         { label: 'Cotações em andamento', value: SolicitacaoMaterialStatusNullable._1 },
         { label: 'Cotações em andamento e orçamentos disponíveis', value: SolicitacaoMaterialStatusNullable._2 },
@@ -62,6 +61,7 @@ export class SolicitacoesMateriaisComponent extends PagedListingComponentBase<So
         { label: 'Pedido cancelado', value: SolicitacaoMaterialStatusNullable._7 },
         { label: 'Intervenção necessária', value: SolicitacaoMaterialStatusNullable._8 },
         { label: 'Compras concluídas, pagamentos realizados', value: SolicitacaoMaterialStatusNullable._9 },
+        { label: 'Solicitação substituída', value: SolicitacaoMaterialStatusNullable._10 },
     ];
 
     constructor(
@@ -154,39 +154,41 @@ export class SolicitacoesMateriaisComponent extends PagedListingComponentBase<So
     }
 
     getStatusViewClass(record: SolicitacaoMaterialDto): string {
-    switch (record.status) {
-        case 0: // Aberta
-            return 'bg-secondary';
+        switch (record.status) {
+            case 0: // Aberta
+                return 'bg-secondary';
 
-        case 1: // Cotações em andamento
-        case 2: // Cotações + orçamentos
-            return 'bg-orange';
+            case 1: // Cotações em andamento
+            case 2: // Cotações + orçamentos
+                return 'bg-orange';
 
-        case 3: // Orçamentos disponíveis
-            return 'bg-purple text-white';
+            case 3: // Orçamentos disponíveis
+                return 'bg-purple text-white';
 
-        case 4: // Pedido realizado
-            return 'bg-info';
+            case 4: // Pedido realizado
+                return 'bg-info';
 
-        case 5: // Pedido parcialmente concluído
-            return 'bg-info';
+            case 5: // Pedido parcialmente concluído
+                return 'bg-info';
 
-        case 6: // Pedido concluído, disponível para pagamento
-            return 'bg-primary';
+            case 6: // Pedido concluído, disponível para pagamento
+                return 'bg-primary';
 
-        case 7: // Cancelado
-            return 'bg-danger';
+            case 7: // Cancelado
+                return 'bg-danger';
 
-        case 8: // Intervenção necessária
-            return 'bg-danger text-white';
+            case 8: // Intervenção necessária
+                return 'bg-danger text-white';
 
-        case 9: // Intervenção necessária
-            return 'bg-success text-white';
+            case 9: // Intervenção necessária
+                return 'bg-success text-white';
 
-        default:
-            return 'bg-light text-dark';
+            case 10: // Solicitação substituída
+                return 'bg-substituida text-white';
+            default:
+                return 'bg-light text-dark';
+        }
     }
-}
 
 
     private showCreateOrEditDialog(id?: string): void {
@@ -288,6 +290,58 @@ export class SolicitacoesMateriaisComponent extends PagedListingComponentBase<So
             });
 
             ref.content.onSave.subscribe(() => this.refresh());
+        }
+    }
+
+    // Adicione estes métodos no seu componente
+
+    getStatusClass(status: number): string {
+        switch (status) {
+            case 0: return 'bg-secondary';
+            case 1: return 'bg-orange';
+            case 2: return 'bg-orange';
+            case 3: return 'bg-purple';
+            case 4: return 'bg-info';
+            case 5: return 'bg-info';
+            case 6: return 'bg-primary';
+            case 7: return 'bg-danger';
+            case 8: return 'bg-danger';
+            case 9: return 'bg-success';
+            case 10: return 'bg-substituida';
+            default: return 'bg-light';
+        }
+    }
+
+    getStatusIcon(status: number): string {
+        switch (status) {
+            case 0: return 'fa-clock';              // Aberta
+            case 1: return 'fa-spinner';            // Cotações em andamento
+            case 2: return 'fa-file-invoice';       // Cotações + orçamentos
+            case 3: return 'fa-list';                // Orçamentos disponíveis
+            case 4: return 'fa-truck';               // Pedido realizado
+            case 5: return 'fa-truck-loading';       // Pedido parcial
+            case 6: return 'fa-check-circle';        // Concluído p/ pagamento
+            case 7: return 'fa-times-circle';        // Cancelado
+            case 8: return 'fa-exclamation-triangle'; // Intervenção necessária
+            case 9: return 'fa-check-double';        // Compras concluídas
+            case 10: return 'fa-clone';              // <-- ícone de substituição
+            default: return 'fa-question-circle';
+        }
+    }
+    getStatusText(status: number): string {
+        switch (status) {
+            case 0: return 'Aberta';
+            case 1: return 'Cotações';
+            case 2: return 'Cotações + Orç.';
+            case 3: return 'Orçamentos';
+            case 4: return 'Pedido';
+            case 5: return 'Parcial';
+            case 6: return 'Pagar';
+            case 7: return 'Cancelado';
+            case 8: return 'Intervenção';
+            case 9: return 'Concluído';
+            case 10: return 'Substituída';
+            default: return 'Desconhecido';
         }
     }
 }

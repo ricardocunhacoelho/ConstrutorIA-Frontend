@@ -23,6 +23,7 @@ import {
     CreateMaterialPedidoCompraDto,
     CreateMelhorCompraDto,
     CreatePedidoCompraDto,
+    CriarFluxoCompletoDto,
     FormaPagamento,
     GetMensagensNaoLidasCountInput,
     IntervencaoCompraDto,
@@ -34,6 +35,7 @@ import {
     OrcamentoDto,
     PedidoCompraDto,
     PedidoCompraServiceProxy,
+    ResolverIntervencaoDto,
     SimpleLookupDto,
     SimpleLookupWithAdressDto
 } from '../../../shared/service-proxies/service-proxies';
@@ -54,7 +56,26 @@ import { ConversaModalComponent } from '@shared/components/conversa-modal/conver
 
 const MENOR_VALOR_TIPO = 'MENOR_VALOR_POR_ITEM';
 
+// Type guards
+function isOpcaoOutroFornecedor(opcao: any): opcao is OpcaoOutroFornecedor {
+    return opcao && typeof opcao === 'object' && opcao.tipo === 'OUTRO_FORNECEDOR';
+}
 
+function isOpcaoSugestao(opcao: any): opcao is OpcaoSugestao {
+    return opcao && typeof opcao === 'object' && opcao.tipo === 'ACEITAR_SUGESTAO';
+}
+
+function isOpcaoManterOriginal(opcao: any): opcao is OpcaoManterOriginal {
+    return opcao && typeof opcao === 'object' && opcao.tipo === 'MANTER_ORIGINAL';
+}
+
+function isOpcaoManterOriginalPrazo(opcao: any): opcao is OpcaoManterOriginalPrazo {
+    return opcao && typeof opcao === 'object' && opcao.tipo === 'MANTER_ORIGINAL_PRAZO';
+}
+
+function isOpcaoNovoFornecedor(opcao: any): opcao is OpcaoNovoFornecedor {
+    return opcao && typeof opcao === 'object' && opcao.tipo === 'NOVO_FORNECEDOR';
+}
 interface ResultadoEnderecoPagamento {
     tipoEntrega: 'OBRA' | 'OUTRO' | 'RETIRADA';
     endereco?: CreateEnderecoDto;
@@ -62,7 +83,7 @@ interface ResultadoEnderecoPagamento {
     formaPagamento?: 'PIX' | 'CREDITO' | 'DEBITO' | 'DINHEIRO' | 'FATURADO';
 }
 
-
+type StatusGrupo = 'PAGO' | 'CONCLUIDO' | 'PEDIDO' | 'SUBSTITUIDO' | 'RESOLVIDO' | 'PENDENTE' | null;
 interface CotacaoComOrcamentoViewModel {
     id: string;
     solicitacaoMaterialId?: string;
@@ -178,10 +199,22 @@ interface MaterialVMGrupo {
     cotacaoSelecionadaId?: string;
     prazoEntrega?: string;
     observacao?: string;
-
     intervencao?: IntervencaoCompraDto;
+
+    intervencoes?: IntervencaoCompraDto[];
+    sugestoes?: {
+        intervencaoId: string;
+        especificacao: string;
+        precoItem: number;
+    }[];
     intervencaoResolvida?: boolean;
-    opcaoSelecionada?: string;
+    opcaoSelecionada?: OpcaoSelecionada;
+
+    materialCotadoId?: string;
+
+    substituido?: boolean;
+    novoFornecedorId?: string;
+    materialOriginalId?: string;
 }
 
 type InfoCompraFornecedor = {
@@ -195,6 +228,72 @@ type InfoPagamentoCompra = {
     valor?: number;
     formaPagamento?: any;
 };
+
+interface AlternativaFornecedor {
+    fornecedorId: string;
+    fornecedorNome: string;
+    cotacaoId: string;
+    orcamentoId: string;
+    materialId: string;
+    precoItem: number;
+    precoTotal: number;
+    especificacao: string;
+    quantidade: number;
+    unidade: string;
+    observacao?: string;
+    emFalta: boolean;
+
+    // Dados do orçamento original
+    valorFrete?: number;
+    valorDesconto?: number;
+    condicaoFrete?: string;
+    condicaoDesconto?: string;
+}
+
+// Tipos de opção possíveis
+interface OpcaoBase {
+    tipo: 'ACEITAR_SUGESTAO' | 'OUTRO_FORNECEDOR' | 'MANTER_ORIGINAL' | 'MANTER_ORIGINAL_PRAZO' | 'NOVO_FORNECEDOR';
+}
+
+interface OpcaoSugestao extends OpcaoBase {
+    tipo: 'ACEITAR_SUGESTAO';
+    intervencaoId?: string;
+    materialSugerido: {
+        especificacao: string;
+        precoItem: number;
+    };
+}
+
+interface OpcaoOutroFornecedor extends OpcaoBase {
+    tipo: 'OUTRO_FORNECEDOR';
+    fornecedorId: string;
+    fornecedorNome: string;
+    cotacaoId: string;
+    orcamentoId: string;
+    materialId: string;
+    precoItem: number;
+    precoTotal: number;
+    especificacao: string;
+}
+
+interface OpcaoManterOriginal extends OpcaoBase {
+    tipo: 'MANTER_ORIGINAL';
+}
+
+interface OpcaoManterOriginalPrazo extends OpcaoBase {
+    tipo: 'MANTER_ORIGINAL_PRAZO';
+}
+
+interface OpcaoNovoFornecedor extends OpcaoBase {
+    tipo: 'NOVO_FORNECEDOR';
+}
+
+type OpcaoSelecionada =
+    | OpcaoSugestao
+    | OpcaoOutroFornecedor
+    | OpcaoManterOriginal
+    | OpcaoNovoFornecedor
+    | string;
 
 @Component({
     selector: 'app-cotacoes-list-dialog',
@@ -247,6 +346,8 @@ export class CotacoesListDialogComponent implements OnInit {
         pagamentoConfirmado?: InfoPagamentoCompra;
         quantidadeNotificacoes?: number;
     }[] = [];
+
+    private alternativasCache = new Map<string, AlternativaFornecedor[]>();
 
     constructor(
         public bsModalRef: BsModalRef,
@@ -448,10 +549,18 @@ export class CotacoesListDialogComponent implements OnInit {
         const materiaisPedidos = new Set<string>();
         const materiaisComprados = new Set<string>();
 
+        const materialParaPedido = new Map<string, { pedidoId: string, fornecedorId: string, fornecedorNome: string }>();
+
         (pedidos || []).forEach(pedido => {
             (pedido.materiaisPedidosCompra || []).forEach((mat: any) => {
                 if (mat.materialOrcadoId) {
                     materiaisPedidos.add(mat.materialOrcadoId);
+
+                    materialParaPedido.set(mat.materialOrcadoId, {
+                        pedidoId: pedido.id,
+                        fornecedorId: pedido.fornecedorId,
+                        fornecedorNome: pedido.fornecedor?.nome || 'Fornecedor'
+                    });
                 }
             });
         });
@@ -466,9 +575,6 @@ export class CotacoesListDialogComponent implements OnInit {
 
         fluxos.forEach(fluxo => {
 
-            // ==========================
-            // STATUS DOS MATERIAIS
-            // ==========================
             let jaComprado = false;
 
             if (fluxo.materiaisAgrupados?.length) {
@@ -480,7 +586,21 @@ export class CotacoesListDialogComponent implements OnInit {
                     grupo.variacoes.forEach(v => {
                         if (!v.id) return;
 
-                        if (materiaisPedidos.has(v.id)) foiPedido = true;
+                        if (materiaisPedidos.has(v.id)) {
+                            foiPedido = true;
+
+                            const dadosPedido = materialParaPedido.get(v.id);
+                            if (dadosPedido && dadosPedido.fornecedorId !== v.fornecedorId) {
+                                grupo.substituido = true;
+                                grupo.novoFornecedorId = dadosPedido.fornecedorId;
+                                if (grupo.selected) {
+                                    grupo.selected.fornecedorId = dadosPedido.fornecedorId;
+                                    grupo.selected.fornecedorNome = dadosPedido.fornecedorNome;
+                                    grupo.selected.pedidoId = dadosPedido.pedidoId;
+                                }
+                            }
+                        }
+
                         if (materiaisComprados.has(v.id)) foiComprado = true;
                     });
 
@@ -572,19 +692,54 @@ export class CotacoesListDialogComponent implements OnInit {
         cotacoes: FluxoCompraViewModel[],
         intervencoes: IntervencaoCompraDto[]
     ): void {
-
         if (!intervencoes?.length) return;
+
+        // Agrupa intervenções por materialOrcadoId
+        const intervencoesPorMaterial = new Map<string, IntervencaoCompraDto[]>();
+        intervencoes.forEach(interv => {
+            const materialOrcadoId = interv.materialPedidoCompra?.materialOrcadoId;
+            if (!materialOrcadoId) return;
+            if (!intervencoesPorMaterial.has(materialOrcadoId)) {
+                intervencoesPorMaterial.set(materialOrcadoId, []);
+            }
+            intervencoesPorMaterial.get(materialOrcadoId)!.push(interv);
+        });
 
         cotacoes.forEach(cotacao => {
             cotacao.materiaisAgrupados?.forEach(grupo => {
+                // Se o grupo tem um material selecionado, verifica se há intervenções para ele
+                const materialOrcadoId = grupo.selected?.id;
+                if (!materialOrcadoId) return;
 
-                const intervencao = intervencoes.find(i =>
-                    i.materialPedidoCompra.materialOrcadoId === grupo.selected?.id
-                );
+                const intervencoesDoGrupo = intervencoesPorMaterial.get(materialOrcadoId) || [];
+                if (intervencoesDoGrupo.length === 0) return;
 
-                if (intervencao) {
-                    grupo.intervencao = intervencao;
-                    grupo.intervencaoResolvida = intervencao.resolvida;
+                // Guarda todas as intervenções do grupo
+                grupo.intervencoes = intervencoesDoGrupo;
+
+                // Extrai as sugestões das intervenções (apenas as que têm material sugerido)
+                const sugestoes = intervencoesDoGrupo
+                    .filter(i => !i.resolvida && i.materialSugeridoEspecificacao)
+                    .map(i => ({
+                        intervencaoId: i.id,
+                        especificacao: i.materialSugeridoEspecificacao!,
+                        precoItem: i.materialSugeridoPrecoItem || 0
+                    }));
+                grupo.sugestoes = sugestoes;
+
+
+                if (intervencoesDoGrupo.length > 0) {
+                    grupo.intervencao = intervencoesDoGrupo[0];
+                    grupo.intervencoes = intervencoesDoGrupo;
+                    grupo.intervencaoResolvida = intervencoesDoGrupo.every(i => i.resolvida);
+
+                    grupo.sugestoes = intervencoesDoGrupo
+                        .filter(i => !i.resolvida && i.materialSugeridoEspecificacao)
+                        .map(i => ({
+                            intervencaoId: i.id,
+                            especificacao: i.materialSugeridoEspecificacao!,
+                            precoItem: i.materialSugeridoPrecoItem || 0
+                        }));
                 }
             });
         });
@@ -722,6 +877,26 @@ export class CotacoesListDialogComponent implements OnInit {
         return Object.values(grupos);
     }
 
+    private isGrupoAtivoNoFluxo(grupo: MaterialVMGrupo): boolean {
+        if (grupo.removido) return false;
+        if (grupo.intervencao) {
+            return false;
+        }
+        return true;
+    }
+
+    private isGrupoInteragivel(grupo: MaterialVMGrupo): boolean {
+        if (grupo.removido) return false;
+        if (grupo.intervencao && !grupo.intervencao.resolvida) return false;
+        if (grupo.intervencao?.resolvida) return false;
+        if (grupo.feitoPedido || grupo.jaComprado || grupo.substituido) return false;
+        return true;
+    }
+
+    private isGrupoVisivelNoResumo(grupo: MaterialVMGrupo): boolean {
+        return !grupo.removido;
+    }
+
     private buildGruposPorFornecedor(
         cotacao: FluxoCompraViewModel
     ): {
@@ -848,18 +1023,9 @@ export class CotacoesListDialogComponent implements OnInit {
         return grupo.nome;
     }
 
-    getTotal(fluxo: any): number {
-        if (fluxo.tipo !== MENOR_VALOR_TIPO && !fluxo.hasOrcamento) return fluxo.total ?? 0;
-
-        return (fluxo.materiaisAgrupados || [])
-            .filter((g: any) => !g.removido)
-            .map((g: any) => g.selected?.precoTotal ?? 0)
-            .reduce((a: number, b: number) => a + b, 0);
-    }
-
     getTotalGasto(fluxo: FluxoCompraViewModel): number {
         return (fluxo.materiaisAgrupados || [])
-            .filter(g => g.jaComprado)
+            .filter((g: MaterialVMGrupo) => this.isGrupoAtivoNoFluxo(g) && g.jaComprado)
             .map(g => g.selected?.precoTotal ?? 0)
             .reduce((a, b) => a + b, 0);
     }
@@ -870,19 +1036,13 @@ export class CotacoesListDialogComponent implements OnInit {
         return total - gasto;
     }
 
-    getResumoStatus(fluxo: FluxoCompraViewModel): {
-        texto: string;
-        classe: string;
-    } {
-
+    getResumoStatus(fluxo: FluxoCompraViewModel): { texto: string; classe: string } {
         if (fluxo.pagamentoConfirmado) {
-            return {
-                texto: 'Pagamento realizado e custo lançado na obra',
-                classe: 'text-success'
-            };
+            return { texto: 'Pagamento realizado e custo lançado na obra', classe: 'text-success' };
         }
 
-        const grupos = fluxo.materiaisAgrupados || [];
+        const grupos = (fluxo.materiaisAgrupados || [])
+            .filter((g: MaterialVMGrupo) => this.isGrupoAtivoNoFluxo(g));
         const isMenorValorItem = fluxo.tipo === MENOR_VALOR_TIPO;
 
         if (!grupos.length) {
@@ -959,38 +1119,21 @@ export class CotacoesListDialogComponent implements OnInit {
     }
 
     getInfoPagamentoBloco(bloco: any): { texto: string; classe: string } | null {
+        const gruposAtivos = (bloco.grupos || [])
+            .filter((g: MaterialVMGrupo) => this.isGrupoAtivoNoFluxo(g));
 
-        // se tiver intervenção ja pega de cara aqui
+        if (!gruposAtivos.length) return null;
 
-        if (bloco.pagamentoConfirmado) {
-
-            const data = new Date(bloco.pagamentoConfirmado.data);
-
-            const dataFormatada =
-                data.toLocaleDateString('pt-BR') + ' ' +
-                data.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-
-            return {
-                texto: `Pagamento confirmado em ${dataFormatada}. Valor: R$ ${bloco.pagamentoConfirmado.valor.toFixed(2)}. Forma de pagamento: ${bloco.pagamentoConfirmado.formaPagamento}. Custo já lançado na obra.`,
-                classe: 'text-success'
-            };
-        }
-
-        const grupos = (bloco.grupos || [])
-            .filter(g => !g.removido);
-
-        if (!grupos.length) return null;
-
-        if(grupos.some(g => !!g.intervencao && !g.intervencao.resolvida)) {
+        if (gruposAtivos.some(g => !!g.intervencao && !g.intervencao.resolvida)) {
             return {
                 texto: 'Há intervenções não resolvidas.',
                 classe: 'text-danger'
             };
         }
 
-        const todosComprados = this.todosCompradosBloco(bloco);
-        const algumPedido = grupos.some(g => g.feitoPedido);
-        const algumNaoComprado = grupos.some(g => !g.jaComprado);
+        const todosComprados = gruposAtivos.every(g => g.jaComprado);
+        const algumPedido = gruposAtivos.some(g => g.feitoPedido);
+        const algumNaoComprado = gruposAtivos.some(g => !g.jaComprado);
 
         if (todosComprados) {
             return {
@@ -1011,9 +1154,18 @@ export class CotacoesListDialogComponent implements OnInit {
 
     getTotalBloco(bloco: any): number {
         return (bloco.grupos || [])
-            .filter(g => !g.removido && g.selected)
+            .filter((g: MaterialVMGrupo) => this.isGrupoAtivoNoFluxo(g))
             .map(g => g.selected?.precoTotal ?? 0)
             .reduce((a, b) => a + b, 0);
+    }
+
+    getTotal(fluxo: any): number {
+        if (fluxo.tipo !== MENOR_VALOR_TIPO && !fluxo.hasOrcamento) return fluxo.total ?? 0;
+
+        return (fluxo.materiaisAgrupados || [])
+            .filter((g: MaterialVMGrupo) => this.isGrupoAtivoNoFluxo(g))
+            .map((g: any) => g.selected?.precoTotal ?? 0)
+            .reduce((a: number, b: number) => a + b, 0);
     }
 
     getFreteBloco(bloco: any): number {
@@ -1040,38 +1192,29 @@ export class CotacoesListDialogComponent implements OnInit {
     }
 
     todosCompradosBloco(bloco: any): boolean {
-        const grupos = (bloco.grupos || []).filter(g => !g.removido);
+        const grupos = (bloco.grupos || [])
+            .filter((g: MaterialVMGrupo) => this.isGrupoAtivoNoFluxo(g));
         return grupos.length > 0 && grupos.every(g => g.jaComprado);
     }
 
-
     getInfoPagamentoFluxo(fluxo: any): { texto: string; classe: string } | null {
-
-        // se tiver intervenção ja pega de cara aqui
-
-
-        if (fluxo.pagamentoConfirmado) {
-
-            const data = new Date(fluxo.pagamentoConfirmado.data);
-
-            const dataFormatada =
-                data.toLocaleDateString('pt-BR') + ' ' +
-                data.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-
-            return {
-                texto: `Pagamento confirmado em ${dataFormatada}. Valor: R$ ${fluxo.pagamentoConfirmado.valor.toFixed(2)}. Forma de pagamento: ${fluxo.pagamentoConfirmado.formaPagamento}. Custo já lançado na obra.`,
-                classe: 'text-success'
-            };
-        }
+        if (this.temIntervencaoPendenteNoFluxo(fluxo)) return {
+            texto: 'Há intervenções não resolvidas.',
+            classe: 'text-danger'
+        };
 
         const gruposParaCompra = (fluxo.materiaisAgrupados || [])
-            .filter(g => !g.removido);
+            .filter((g: MaterialVMGrupo) => this.isGrupoAtivoNoFluxo(g));
 
         if (!gruposParaCompra.length) return null;
 
-        const todosComprados = this.todosCompradosFluxo(fluxo);
+        const todosComprados = gruposParaCompra.every(g => g.jaComprado);
         const algumPedido = gruposParaCompra.some(g => g.feitoPedido);
         const algumNaoComprado = gruposParaCompra.some(g => !g.jaComprado);
+
+        if (fluxo.pagamentoConfirmado) {
+            return { texto: 'Pagamento realizado e custo lançado na obra', classe: 'text-success' };
+        }
 
         if (todosComprados) {
             return {
@@ -1091,12 +1234,18 @@ export class CotacoesListDialogComponent implements OnInit {
     }
 
     todosCompradosFluxo(fluxo: any): boolean {
-        const grupos = (fluxo.materiaisAgrupados || [])
-            .filter(g => !g.removido);
+        if (this.temIntervencaoPendenteNoFluxo(fluxo)) return false;
 
+        const grupos = (fluxo.materiaisAgrupados || [])
+            .filter((g: MaterialVMGrupo) => this.isGrupoAtivoNoFluxo(g));
         return grupos.length > 0 && grupos.every(g => g.jaComprado);
     }
 
+    private temIntervencaoPendenteNoFluxo(fluxo: FluxoCompraViewModel): boolean {
+        return (fluxo.materiaisAgrupados || []).some(g =>
+            g.intervencao && !g.intervencao.resolvida
+        );
+    }
 
     toggleExpand(index: number): void {
         this.expanded[index] = !this.expanded[index];
@@ -1512,13 +1661,20 @@ export class CotacoesListDialogComponent implements OnInit {
     getStatusGrupo(
         grupo: MaterialVMGrupo,
         contexto: { pagamentoConfirmado?: any }
-    ): 'PAGO' | 'CONCLUIDO' | 'PEDIDO' | null {
-
+    ): StatusGrupo {
+        if (grupo.substituido) {
+            return 'SUBSTITUIDO';
+        }
         if (contexto?.pagamentoConfirmado) return 'PAGO';
         if (grupo.jaComprado) return 'CONCLUIDO';
+        if (grupo.intervencao && !grupo.intervencao.resolvida) return 'PENDENTE';
+        if (grupo.intervencao?.resolvida) return 'RESOLVIDO';
         if (grupo.feitoPedido) return 'PEDIDO';
-
         return null;
+    }
+
+    isGrupoSubstituido(grupo: MaterialVMGrupo, fluxo: FluxoCompraViewModel): boolean {
+        return this.getStatusGrupo(grupo, fluxo) === 'SUBSTITUIDO';
     }
 
     isGrupoPago(grupo: MaterialVMGrupo, fluxo: FluxoCompraViewModel): boolean {
@@ -1534,7 +1690,75 @@ export class CotacoesListDialogComponent implements OnInit {
     }
 
     isGrupoBloqueado(grupo: MaterialVMGrupo, contexto: any): boolean {
-        return this.getStatusGrupo(grupo, contexto) !== null;
+        return !this.isGrupoInteragivel(grupo);
+    }
+
+    isGrupoRemovivel(grupo: MaterialVMGrupo, contexto: any): boolean {
+        const status = this.getStatusGrupo(grupo, contexto);
+        return status === null && !grupo.substituido;
+    }
+
+    getGrupoTooltip(grupo: MaterialVMGrupo, contexto: any): string {
+        const status = this.getStatusGrupo(grupo, contexto);
+
+        switch (status) {
+            case 'PAGO':
+                return 'Pagamento confirmado — item bloqueado';
+            case 'CONCLUIDO':
+                return 'Item já comprado — não pode ser removido';
+            case 'PEDIDO':
+                return 'Item já foi pedido — aguardando compra';
+            case 'SUBSTITUIDO':
+                return 'Item substituído por outro fornecedor — não pode ser removido';
+            case 'RESOLVIDO':
+                return 'Intervenção resolvida — item não pode ser alterado';
+            case 'PENDENTE':
+                return 'Intervenção pendente — aguardando ação';
+            default:
+                return grupo.removido ? 'Adicionar item novamente' : 'Remover item';
+        }
+    }
+
+    getGrupoIcone(grupo: MaterialVMGrupo, contexto: any): string {
+        const status = this.getStatusGrupo(grupo, contexto);
+
+        switch (status) {
+            case 'PAGO':
+                return 'fa-check-circle';
+            case 'CONCLUIDO':
+                return 'fa-wallet';
+            case 'PEDIDO':
+                return 'fa-hourglass-half';
+            case 'SUBSTITUIDO':
+                return 'fa-exchange-alt';
+            case 'RESOLVIDO':
+                return 'fa-check-circle';
+            case 'PENDENTE':
+                return 'fa-exclamation-triangle';
+            default:
+                return grupo.removido ? 'fa-plus' : 'fa-times';
+        }
+    }
+
+    getGrupoButtonClass(grupo: MaterialVMGrupo, contexto: any): string {
+        const status = this.getStatusGrupo(grupo, contexto);
+
+        switch (status) {
+            case 'PAGO':
+                return 'btn-success';
+            case 'CONCLUIDO':
+                return 'btn-primary';
+            case 'PEDIDO':
+                return 'btn-info';
+            case 'SUBSTITUIDO':
+                return 'btn-secondary';
+            case 'RESOLVIDO':
+                return 'btn-secondary';
+            case 'PENDENTE':
+                return 'btn-danger';
+            default:
+                return grupo.removido ? 'btn-primary btn-pulse' : 'btn-outline-danger';
+        }
     }
 
 
@@ -1821,5 +2045,712 @@ export class CotacoesListDialogComponent implements OnInit {
         }
 
         this.cdr.detectChanges();
+    }
+
+    getAlternativasFornecedor(grupo: MaterialVMGrupo, fluxo: FluxoCompraViewModel): AlternativaFornecedor[] {
+        const cacheKey = `${grupo.nome}_${grupo.selected?.id}_${fluxo.id}`;
+
+        if (this.alternativasCache.has(cacheKey)) {
+            return this.alternativasCache.get(cacheKey)!;
+        }
+
+        const alternativas = this.calcularAlternativas(grupo, fluxo);
+        this.alternativasCache.set(cacheKey, alternativas);
+        return alternativas;
+    }
+
+    private calcularAlternativas(grupo: MaterialVMGrupo, fluxo: FluxoCompraViewModel): AlternativaFornecedor[] {
+        if (!grupo.nome || !this.cotacoesCache) return [];
+
+        const alternativas: AlternativaFornecedor[] = [];
+        const materialSelecionado = grupo.selected;
+
+        // Se não tem material selecionado ou é o atual, busca todos
+        this.cotacoesCache.forEach(cotacao => {
+            // Pula a cotação atual (do fornecedor que deu problema)
+            if (fluxo.tipo === 'COTACAO' && cotacao.id === fluxo.id) return;
+
+            // Se for menor valor por item, precisamos filtrar diferente
+            if (fluxo.tipo === 'MENOR_VALOR_POR_ITEM' &&
+                materialSelecionado?.fornecedorId === cotacao.fornecedor?.id) return;
+
+            if (!cotacao.hasOrcamento || !cotacao.orcamento?.materiaisOrcados) return;
+
+            // Procura o mesmo material (pelo nome ou materialCotadoId)
+            const materialAlternativo = cotacao.orcamento.materiaisOrcados.find(m => {
+                // Compara por nome (ignorando espaços e maiúsculas)
+                const mesmoNome = m.nome?.trim().toLowerCase() === grupo.nome?.trim().toLowerCase();
+
+                // Compara por materialCotadoId (se existir)
+                const mesmoId = materialSelecionado?.cotacaoId &&
+                    (m as any).materialCotadoId === materialSelecionado.cotacaoId;
+
+                return mesmoNome || mesmoId;
+            });
+
+            if (materialAlternativo && !materialAlternativo.emFalta) {
+                alternativas.push({
+                    fornecedorId: cotacao.fornecedor.id,
+                    fornecedorNome: cotacao.fornecedor.nome,
+                    cotacaoId: cotacao.id,
+                    orcamentoId: cotacao.orcamento.id,
+                    materialId: materialAlternativo.id,
+                    precoItem: materialAlternativo.precoItem,
+                    precoTotal: materialAlternativo.precoTotal,
+                    especificacao: materialAlternativo.especificacao,
+                    quantidade: materialAlternativo.quantidade,
+                    unidade: materialAlternativo.unidade,
+                    emFalta: materialAlternativo.emFalta,
+
+                    valorFrete: cotacao.orcamento.valorFrete,
+                    valorDesconto: cotacao.orcamento.valorDesconto,
+                    condicaoFrete: cotacao.orcamento.condicaoFrete,
+                    condicaoDesconto: cotacao.orcamento.condicaoDesconto
+                });
+            }
+        });
+
+        // Ordena por preço (menor primeiro)
+        return alternativas.sort((a, b) => a.precoTotal - b.precoTotal);
+    }
+
+    getFornecedorAtual(fluxo: FluxoCompraViewModel): string {
+        if (fluxo.tipo === 'COTACAO') {
+            return (fluxo as CotacaoFluxoViewModel).fornecedor?.nome || 'Fornecedor atual';
+        }
+        return 'Fornecedor atual';
+    }
+
+    getSugestaoValue(sugestao: { intervencaoId: string; especificacao: string; precoItem: number }): OpcaoSugestao {
+        return {
+            tipo: 'ACEITAR_SUGESTAO',
+            intervencaoId: sugestao.intervencaoId,
+            materialSugerido: {
+                especificacao: sugestao.especificacao,
+                precoItem: sugestao.precoItem
+            }
+        };
+    }
+
+    getAlternativaValue(alternativa: AlternativaFornecedor): OpcaoOutroFornecedor {
+        return {
+            tipo: 'OUTRO_FORNECEDOR',
+            fornecedorId: alternativa.fornecedorId,
+            fornecedorNome: alternativa.fornecedorNome,
+            cotacaoId: alternativa.cotacaoId,
+            orcamentoId: alternativa.orcamentoId,
+            materialId: alternativa.materialId,
+            precoItem: alternativa.precoItem,
+            precoTotal: alternativa.precoTotal,
+            especificacao: alternativa.especificacao
+        };
+    }
+
+    resolverIntervencao(grupo: MaterialVMGrupo): void {
+        console.log('Resolver intervenção para grupo:', grupo);
+
+        if (!grupo.opcaoSelecionada) return;
+
+        let opcao: any = grupo.opcaoSelecionada;
+
+        // Se for string, tenta parsear como JSON
+        if (typeof opcao === 'string') {
+            if (opcao.startsWith('{')) {
+                try {
+                    opcao = JSON.parse(opcao);
+                } catch (e) {
+                    console.error('Erro ao parsear opção:', e);
+                    // Se falhar o parse, assume que é uma string simples
+                    this.resolverOpcaoString(grupo, opcao);
+                    return;
+                }
+            } else {
+                // É uma string simples (ex: "OUTRO_FORNECEDOR" sem dados)
+                this.resolverOpcaoString(grupo, opcao);
+                return;
+            }
+        }
+
+        // Agora temos um objeto, usar type guards
+        if (isOpcaoOutroFornecedor(opcao)) {
+            this.trocarFornecedor(grupo, opcao);
+        }
+        else if (isOpcaoSugestao(opcao)) {
+            this.aceitarSugestao(grupo, opcao);
+        }
+        else if (isOpcaoManterOriginal(opcao)) {
+            this.manterOriginal(grupo);
+        }
+        else if (isOpcaoManterOriginalPrazo(opcao)) {
+            this.manterOriginalPrazo(grupo);
+        }
+        else if (isOpcaoNovoFornecedor(opcao)) {
+            this.criarNovaCotacaoParaMaterial(grupo);
+        }
+        else {
+            console.warn('Opção não reconhecida:', opcao);
+            this.resolverOutrasOpcoes(grupo, opcao);
+        }
+    }
+
+    private resolverOpcaoString(grupo: MaterialVMGrupo, opcaoString: string): void {
+        switch (opcaoString) {
+            case 'OUTRO_FORNECEDOR':
+                this.mostrarDialogoEscolherFornecedor(grupo);
+                break;
+            case 'ACEITAR_SUGESTAO':
+                abp.message.warn('Selecione uma sugestão específica');
+                break;
+            case 'MANTER_ORIGINAL':
+                this.manterOriginal(grupo);
+                break;
+            case 'MANTER_ORIGINAL_PRAZO':
+                this.manterOriginalPrazo(grupo);
+                break;
+            case 'NOVO_FORNECEDOR':
+                this.criarNovaCotacaoParaMaterial(grupo);
+                break;
+            default:
+                console.warn('Opção string não reconhecida:', opcaoString);
+        }
+    }
+
+    private async aceitarSugestao(grupo: MaterialVMGrupo, opcao: OpcaoSugestao): Promise<void> {
+        console.log('Aceitar sugestão:', opcao);
+
+        const intervencaoId = opcao.intervencaoId;
+        if (!intervencaoId) {
+            abp.notify.error('Intervenção não identificada');
+            return;
+        }
+
+        const fluxoAtual = this.fluxoCompraVM.find(f =>
+            f.materiaisAgrupados?.some(g => g === grupo)
+        );
+
+        if (!fluxoAtual) {
+            abp.notify.error('Erro ao identificar o fluxo da compra');
+            return;
+        }
+
+        if (!grupo.selected) {
+            abp.notify.warn('Nenhum material selecionado');
+            return;
+        }
+
+        const enderecoResult = await this.abrirDialogEndereco(fluxoAtual);
+        if (!enderecoResult) return;
+
+        this.savingCompra = true;
+        abp.ui.setBusy();
+
+        try {
+            const dto = new CriarFluxoCompletoDto();
+
+            dto.solicitacaoMaterialId = this.solicitacaoId;
+            dto.obraId = fluxoAtual.obraId;
+            dto.userId = abp.session.userId;
+
+            dto.fornecedorId = (fluxoAtual as CotacaoFluxoViewModel).fornecedor?.id;
+            if (!dto.fornecedorId) {
+                abp.notify.error('Fornecedor não identificado');
+                return;
+            }
+
+            dto.materialNome = grupo.nome;
+            dto.quantidade = grupo.selected.quantidade || 0;
+            dto.unidade = grupo.selected.unidade || '';
+            dto.especificacao = opcao.materialSugerido.especificacao;
+            dto.justificativa = `Aceita sugestão do fornecedor: ${opcao.materialSugerido.especificacao}`;
+            dto.precoItem = opcao.materialSugerido.precoItem;
+            dto.precoTotal = (grupo.selected.quantidade || 0) * opcao.materialSugerido.precoItem;
+
+            dto.cotacaoOrigemId = grupo.selected.cotacaoId;
+            dto.orcamentoOrigemId = grupo.selected.orcamentoId;
+            dto.materialOrcadoOrigemId = grupo.selected.id;
+
+            dto.enderecoEntregaId = enderecoResult.tipoEntrega === 'OBRA' ? enderecoResult.enderecoObraId : null;
+            dto.enderecoEntrega = enderecoResult.tipoEntrega === 'OUTRO' ? enderecoResult.endereco : null;
+            dto.retiradaNoFornecedor = enderecoResult.tipoEntrega === 'RETIRADA';
+            dto.formaDePagamento = this.mapFormaPagamento(enderecoResult.formaPagamento);
+
+            dto.valorFrete = (fluxoAtual as any).orcamento?.valorFrete;
+            dto.condicaoFrete = (fluxoAtual as any).orcamento?.condicaoFrete;
+            dto.valorDesconto = (fluxoAtual as any).orcamento?.valorDesconto;
+            dto.condicaoDesconto = (fluxoAtual as any).orcamento?.condicaoDesconto;
+
+            dto.observacao = `Gerado automaticamente a partir de intervenção - aceitação de sugestão: ${opcao.materialSugerido.especificacao}`;
+            dto.observacaoFornecedor = `Aceitamos sua sugestão de substituição para o material ${opcao.materialSugerido.especificacao}. O pedido foi ajustado conforme indicado. Obrigado!`;
+
+            const pedidoCriado = await this._pedidoCompraService.criarFluxoCompleto(dto).toPromise();
+
+            if (!pedidoCriado) {
+                throw new Error('Erro ao criar pedido');
+            }
+
+            const resolverPrincipal = new ResolverIntervencaoDto();
+            resolverPrincipal.intervencaoId = intervencaoId;
+            resolverPrincipal.opcaoSelecionada = 'ACEITAR_SUGESTAO';
+            resolverPrincipal.observacaoResolucao = `Aceita sugestão: ${opcao.materialSugerido.especificacao}`;
+            resolverPrincipal.novoPedidoCompraId = pedidoCriado.id;
+            resolverPrincipal.novaSolicitacaoMaterialId = pedidoCriado.solicitacaoMaterialId;
+            resolverPrincipal.novaCotacaoId = pedidoCriado.cotacaoId;
+            resolverPrincipal.novoOrcamentoId = pedidoCriado.orcamentoId;
+
+            await this._intervencaoCompraService.resolverIntervencao(resolverPrincipal).toPromise();
+
+            this.savingCompra = false;
+            abp.ui.clearBusy();
+
+            abp.notify.success(`Intervenção resolvida! Pedido #${pedidoCriado.id.substring(0, 8)} criado.`, 'Sucesso');
+            this.onSave.emit();
+            this.bsModalRef.hide();
+
+        } catch (error) {
+            console.error('Erro no aceitarSugestao:', error);
+            this.savingCompra = false;
+            abp.ui.clearBusy();
+            abp.notify.error('Erro ao processar. Tente novamente.');
+        }
+    }
+
+    private trocarFornecedor(grupo: MaterialVMGrupo, dadosFornecedor: OpcaoOutroFornecedor): void {
+        console.log('Trocar fornecedor:', dadosFornecedor);
+
+        const fluxoAtual = this.fluxoCompraVM.find(f =>
+            f.materiaisAgrupados?.some(g => g === grupo)
+        );
+
+        if (!fluxoAtual) {
+            abp.notify.error('Erro ao identificar o fluxo da compra');
+            return;
+        }
+
+        this.criarNovoPedidoParaMaterial(grupo, dadosFornecedor, fluxoAtual);
+    }
+
+    private async criarNovoPedidoParaMaterial(
+        grupo: MaterialVMGrupo,
+        dadosFornecedor: OpcaoOutroFornecedor,
+        fluxoAtual: FluxoCompraViewModel
+    ): Promise<void> {
+
+        const enderecoResult = await this.abrirDialogEndereco(fluxoAtual);
+        if (!enderecoResult) return;
+
+        this.savingCompra = true;
+        abp.ui.setBusy();
+
+        try {
+            // ✅ Usar a classe gerada pelo Service Proxy
+            const dto = new CriarFluxoCompletoDto();
+
+            // Referência à solicitação original
+            dto.solicitacaoMaterialId = this.solicitacaoId;
+
+            // Dados básicos
+            dto.obraId = fluxoAtual.obraId;
+            dto.userId = abp.session.userId;
+            dto.fornecedorId = dadosFornecedor.fornecedorId;
+            dto.observacao = `Gerado automaticamente a partir de intervenção - material original: ${grupo.nome}`;
+
+            // Dados do material
+            dto.materialNome = grupo.nome;
+            dto.quantidade = grupo.selected?.quantidade || 0;
+            dto.unidade = grupo.selected?.unidade || '';
+            dto.especificacao = dadosFornecedor.especificacao || grupo.selected?.especificacao || '';
+            dto.justificativa = `Substituição de fornecedor - original: ${dadosFornecedor.fornecedorNome}`;
+            dto.precoItem = dadosFornecedor.precoItem;
+            dto.precoTotal = dadosFornecedor.precoTotal;
+
+            // Referências do orçamento original
+            dto.cotacaoOrigemId = dadosFornecedor.cotacaoId;
+            dto.orcamentoOrigemId = dadosFornecedor.orcamentoId;
+            dto.materialOrcadoOrigemId = dadosFornecedor.materialId;
+
+            // Endereço e pagamento
+            dto.enderecoEntregaId = enderecoResult.tipoEntrega === 'OBRA' ? enderecoResult.enderecoObraId : null;
+            dto.enderecoEntrega = enderecoResult.tipoEntrega === 'OUTRO' ? enderecoResult.endereco : null;
+            dto.retiradaNoFornecedor = enderecoResult.tipoEntrega === 'RETIRADA';
+            dto.formaDePagamento = this.mapFormaPagamento(enderecoResult.formaPagamento);
+
+            // Frete e desconto
+            dto.valorFrete = (fluxoAtual as any).orcamento?.valorFrete;
+            dto.condicaoFrete = (fluxoAtual as any).orcamento?.condicaoFrete;
+            dto.valorDesconto = (fluxoAtual as any).orcamento?.valorDesconto;
+            dto.condicaoDesconto = (fluxoAtual as any).orcamento?.condicaoDesconto;
+
+            this._pedidoCompraService.criarFluxoCompleto(dto).subscribe({
+                next: (pedidoCriado) => {
+                    this.resolverIntervencaoAposPedido(
+                        grupo,
+                        dadosFornecedor,
+                        pedidoCriado,
+                        `Novo fluxo criado com fornecedor ${dadosFornecedor.fornecedorNome} para material ${grupo.nome}`
+                    );
+                },
+                error: (error) => {
+                    console.error('Erro ao criar fluxo:', error);
+                    this.savingCompra = false;
+                    abp.ui.clearBusy();
+                    abp.notify.error('Erro ao criar novo pedido. Tente novamente.');
+                }
+            });
+
+        } catch (error) {
+            console.error('Erro inesperado:', error);
+            this.savingCompra = false;
+            abp.ui.clearBusy();
+            abp.notify.error('Erro inesperado ao processar pedido');
+        }
+    }
+
+    private resolverIntervencaoAposPedido(
+        grupo: MaterialVMGrupo,
+        dadosFornecedor: OpcaoOutroFornecedor,
+        novoPedidoId: PedidoCompraDto,
+        observacao: string
+    ): void {
+
+        const resolverDto = new ResolverIntervencaoDto();
+        resolverDto.intervencaoId = grupo.intervencao?.id;
+        resolverDto.opcaoSelecionada = 'OUTRO_FORNECEDOR';
+        resolverDto.observacaoResolucao = observacao;
+        resolverDto.novoPedidoCompraId = novoPedidoId.id;
+        resolverDto.novaCotacaoId = novoPedidoId.cotacaoId;
+        resolverDto.novoOrcamentoId = novoPedidoId.orcamentoId;
+
+        this._intervencaoCompraService.resolverIntervencao(resolverDto).subscribe({
+            next: () => {
+                this.savingCompra = false;
+                abp.ui.clearBusy();
+
+
+                abp.notify.success(
+                    `Intervenção resolvida! Pedido #${novoPedidoId.id.substring(0, 8)} criado com ${dadosFornecedor.fornecedorNome}`,
+                    'Sucesso'
+                );
+
+                this.onSave.emit();
+                this.bsModalRef.hide();
+            },
+            error: (error) => {
+                console.error('Erro ao resolver intervenção:', error);
+                this.savingCompra = false;
+                abp.ui.clearBusy();
+
+                abp.notify.warn(
+                    `Pedido criado, mas houve erro ao registrar resolução. ID do pedido: ${novoPedidoId}`,
+                    'Atenção'
+                );
+
+                this.onSave.emit();
+                this.bsModalRef.hide();
+            }
+        });
+    }
+
+    private manterOriginal(grupo: MaterialVMGrupo): void {
+        console.log('Manter material original');
+
+        const fluxoAtual = this.fluxoCompraVM.find(f =>
+            f.materiaisAgrupados?.some(g => g === grupo)
+        );
+
+        if (!fluxoAtual) {
+            abp.notify.error('Erro ao identificar o fluxo da compra');
+            return;
+        }
+
+        if (!grupo.selected) {
+            abp.notify.warn('Nenhum material selecionado para manter o original');
+            return;
+        }
+
+        this.criarPedidoManterOriginal(grupo, fluxoAtual);
+    }
+
+    private manterOriginalPrazo(grupo: MaterialVMGrupo): void {
+        console.log('Manter material original');
+
+        const fluxoAtual = this.fluxoCompraVM.find(f =>
+            f.materiaisAgrupados?.some(g => g === grupo)
+        );
+
+        if (!fluxoAtual) {
+            abp.notify.error('Erro ao identificar o fluxo da compra');
+            return;
+        }
+
+        if (!grupo.selected) {
+            abp.notify.warn('Nenhum material selecionado para manter o original');
+            return;
+        }
+
+        this.criarPedidoManterOriginal(grupo, fluxoAtual, true);
+    }
+
+    private async criarPedidoManterOriginal(
+        grupo: MaterialVMGrupo,
+        fluxoAtual: FluxoCompraViewModel,
+        prazoIndefinido: boolean = false
+    ): Promise<void> {
+
+        const enderecoResult = await this.abrirDialogEndereco(fluxoAtual);
+        if (!enderecoResult) return;
+
+        this.savingCompra = true;
+        abp.ui.setBusy();
+
+        try {
+            const dto = new CriarFluxoCompletoDto();
+
+            dto.solicitacaoMaterialId = this.solicitacaoId;
+            dto.obraId = fluxoAtual.obraId;
+            dto.userId = abp.session.userId;
+
+            dto.fornecedorId = grupo.selected.fornecedorId;
+
+            dto.observacaoFornecedor = prazoIndefinido ?
+                `Optamos por manter o material mesmo com o prazo indefinido. ` +
+                `Material: ${grupo.nome} ${grupo.selected.especificacao}. ` +
+                `Justificativa: Decisão de manter especificações originais do projeto, optamos por aguardar o prazo.` :
+
+                `Optamos por manter o material conforme solicitado originalmente. ` +
+                `Material: ${grupo.nome} ${grupo.selected.especificacao}. ` +
+                `Justificativa: Decisão de manter especificações originais do projeto.`;
+
+            dto.observacao = prazoIndefinido ?
+                `Gerado automaticamente a partir de intervenção - mantendo material original apesar de prazo indefinido: ${grupo.nome} ${grupo.selected.especificacao}` :
+                `Gerado automaticamente a partir de intervenção - mantendo material original: ${grupo.nome} ${grupo.selected.especificacao}`;
+
+            dto.materialNome = grupo.nome;
+            dto.quantidade = grupo.selected.quantidade || 0;
+            dto.unidade = grupo.selected.unidade || '';
+            dto.especificacao = grupo.selected.especificacao || '';
+            dto.justificativa = prazoIndefinido ?
+                'Manter material original conforme solicitado na cotação apesar de material com prazo de entrega indefinido' :
+                'Manter material original conforme solicitado na cotação';
+            dto.precoItem = grupo.selected.precoItem || 0;
+            dto.precoTotal = grupo.selected.precoTotal || 0;
+
+            dto.cotacaoOrigemId = grupo.selected.cotacaoId;
+            dto.orcamentoOrigemId = grupo.selected.orcamentoId;
+            dto.materialOrcadoOrigemId = grupo.selected.id;
+
+            dto.enderecoEntregaId = enderecoResult.tipoEntrega === 'OBRA' ? enderecoResult.enderecoObraId : null;
+            dto.enderecoEntrega = enderecoResult.tipoEntrega === 'OUTRO' ? enderecoResult.endereco : null;
+            dto.retiradaNoFornecedor = enderecoResult.tipoEntrega === 'RETIRADA';
+            dto.formaDePagamento = this.mapFormaPagamento(enderecoResult.formaPagamento);
+
+            dto.valorFrete = grupo.selected.valorFreteOrcamentoOrigem;
+            dto.condicaoFrete = grupo.selected.condicaoFreteOrcamentoOrigem;
+            dto.valorDesconto = grupo.selected.valorDescontoOrcamentoOrigem;
+            dto.condicaoDesconto = grupo.selected.condicaoDescontoOrcamentoOrigem;
+
+            this._pedidoCompraService.criarFluxoCompleto(dto).subscribe({
+                next: (pedidoCriado) => {
+                    if (grupo.intervencao) {
+                        this.resolverIntervencaoManterOriginal(
+                            grupo,
+                            pedidoCriado,
+                            pedidoCriado.solicitacaoMaterialId,
+                            `Pedido mantendo material original criado com fornecedor ${grupo.selected?.fornecedorNome}`
+                        );
+                    } else {
+                        this.finalizarManterOriginal(pedidoCriado.id);
+                    }
+                },
+                error: (error) => {
+                    console.error('Erro ao criar pedido mantendo original:', error);
+                    this.savingCompra = false;
+                    abp.ui.clearBusy();
+                    abp.notify.error('Erro ao criar pedido mantendo material original. Tente novamente.');
+                }
+            });
+
+        } catch (error) {
+            console.error('Erro inesperado:', error);
+            this.savingCompra = false;
+            abp.ui.clearBusy();
+            abp.notify.error('Erro inesperado ao processar pedido');
+        }
+    }
+
+    private resolverIntervencaoManterOriginal(
+        grupo: MaterialVMGrupo,
+        novoPedido: PedidoCompraDto,
+        novaSolicitacaoMaterialId: string,
+        observacao: string
+    ): void {
+
+        const resolverDto = new ResolverIntervencaoDto();
+        resolverDto.intervencaoId = grupo.intervencao?.id;
+        resolverDto.opcaoSelecionada = 'MANTER_ORIGINAL';
+        resolverDto.observacaoResolucao = observacao;
+        resolverDto.novoPedidoCompraId = novoPedido.id;
+        resolverDto.novaSolicitacaoMaterialId = novaSolicitacaoMaterialId;
+        resolverDto.novaCotacaoId = novoPedido.cotacaoId;
+        resolverDto.novoOrcamentoId = novoPedido.orcamentoId;
+
+        this._intervencaoCompraService.resolverIntervencao(resolverDto).subscribe({
+            next: () => {
+                this.finalizarManterOriginal(novoPedido.id);
+            },
+            error: (error) => {
+                console.error('Erro ao resolver intervenção:', error);
+                this.savingCompra = false;
+                abp.ui.clearBusy();
+
+                abp.notify.warn(
+                    `Pedido criado mantendo original, mas houve erro ao registrar resolução. ID do pedido: ${novoPedido.id}`,
+                    'Atenção'
+                );
+
+                this.onSave.emit();
+                this.bsModalRef.hide();
+            }
+        });
+    }
+
+    private finalizarManterOriginal(novoPedidoId: string): void {
+        this.savingCompra = false;
+        abp.ui.clearBusy();
+
+        abp.notify.success(
+            `Pedido #${novoPedidoId.substring(0, 8)} criado mantendo o material original!`,
+            'Sucesso'
+        );
+
+        this.onSave.emit();
+        this.bsModalRef.hide();
+    }
+
+    private mostrarDialogoEscolherFornecedor(grupo: MaterialVMGrupo): void {
+        abp.message.info(
+            'Selecione um fornecedor específico da lista de alternativas acima.',
+            'Escolher Fornecedor'
+        );
+    }
+
+    private criarNovaCotacaoParaMaterial(grupo: MaterialVMGrupo): void {
+        console.log('Criar nova cotação para material:', grupo);
+
+        // Abrir modal de nova cotação para este material específico
+        const modalRef = this._modalService.show(CreateCotacaoDialogComponent, {
+            class: 'modal-xl',
+            initialState: {
+                // solicitacaoId: this.solicitacaoId,
+                // materialNome: grupo.nome,
+                // quantidade: grupo.selected?.quantidade,
+                // unidade: grupo.selected?.unidade
+            }
+        });
+
+        modalRef.content.onSave.subscribe(() => {
+            this.loadCotacoes(); // Recarregar tudo
+        });
+    }
+
+    private resolverOutrasOpcoes(grupo: MaterialVMGrupo, opcao: any): void {
+        console.log('Resolver outras opções:', opcao);
+
+        // Fallback - apenas remover a intervenção
+        grupo.intervencao = null;
+        grupo.opcaoSelecionada = null;
+
+        abp.notify.success('Intervenção resolvida!');
+        this.cdr.detectChanges();
+    }
+
+    /**
+ * Abre o modal de cotações para a solicitação relacionada ao pedido
+ * @param pedidoId ID do pedido (pode ser da intervenção ou do pedido original)
+ */
+    abrirPedido(grupo: MaterialVMGrupo, contexto: any): void {
+
+        if (grupo.intervencaoResolvida) {
+            let intervencao = grupo.intervencao;
+            let solicitacaoId = intervencao.novaSolicitacaoMaterialId;
+
+            if (!solicitacaoId && intervencao.novoPedidoCompraId) {
+                let pedidoId = intervencao.novoPedidoCompraId;
+
+                abp.ui.setBusy();
+                this._pedidoCompraService.get(pedidoId).subscribe({
+                    next: (pedido) => {
+                        abp.ui.clearBusy();
+
+                        if (!pedido || !pedido.solicitacaoMaterialId) {
+                            abp.notify.error('Não foi possível identificar a solicitação relacionada a este pedido');
+                            return;
+                        }
+
+                        this.bsModalRef.hide();
+
+                        const ref = this._modalService.show(CotacoesListDialogComponent, {
+                            class: 'modal-lg',
+                            initialState: {
+                                solicitacaoId: pedido.solicitacaoMaterialId
+                            },
+                            backdrop: 'static'
+                        });
+
+                        ref.content.onSave.subscribe(() => {
+                            this.onSave.emit();
+                        });
+
+                    },
+                    error: (error) => {
+                        abp.ui.clearBusy();
+                        console.error('Erro ao buscar pedido:', error);
+                        abp.notify.error('Erro ao carregar informações do pedido');
+                    }
+                });
+            } else if (solicitacaoId) {
+
+                this.bsModalRef.hide();
+
+                const ref = this._modalService.show(CotacoesListDialogComponent, {
+                    class: 'modal-lg',
+                    initialState: {
+                        solicitacaoId: intervencao.novaSolicitacaoMaterialId
+                    },
+                    backdrop: 'static'
+                });
+
+                ref.content.onSave.subscribe(() => {
+                    this.onSave.emit();
+                });
+
+            }
+        }
+        console.log('Abrir pedido para grupo:', grupo, 'com contexto:', contexto);
+        // if (!pedidoId) {
+        //     abp.notify.warn('Pedido não identificado');
+        //     return;
+        // }
+
+        // abp.ui.setBusy();
+
+        // // Busca os detalhes do pedido para obter a solicitação relacionada
+        // this._pedidoCompraService.get(pedidoId).subscribe({
+        //     next: (pedido) => {
+        //         abp.ui.clearBusy();
+
+        //         if (!pedido || !pedido.solicitacaoMaterialId) {
+        //             abp.notify.error('Não foi possível identificar a solicitação relacionada a este pedido');
+        //             return;
+        //         }
+
+        //         
+
+        //     },
+        //     error: (error) => {
+        //         abp.ui.clearBusy();
+        //         console.error('Erro ao buscar pedido:', error);
+        //         abp.notify.error('Erro ao carregar informações do pedido');
+        //     }
+        // });
     }
 }

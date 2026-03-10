@@ -167,9 +167,9 @@
                                         {{ 'Status' | localize }}
                                         <p-sortIcon field="status"></p-sortIcon>
                                     </th>
-                                    <th>{{ 'Descrição' | localize }}</th>
+                                    <th style="min-width: 300px">{{ 'Descrição' | localize }}</th>
                                     <th>{{ 'Previsão de Finalização' | localize }}</th>
-                                    <th style="min-width: 130px">{{ 'Ações' | localize }}</th>
+                                    <th style="min-width: 200px">{{ 'Ações' | localize }}</th>
                                 </tr>
                             </ng-template>
 
@@ -184,24 +184,51 @@
                                     </td>
                                     <td>{{ record.obra?.nome || '-' }}</td>
                                     <td>{{ record.responsavelNome || record.user?.name || '-' }}</td>
-                                    <td>{{ record.status }}</td>
-                                    <td>{{ record.descricao }}</td>
                                     <td>
-                                        {{
-                                        record.dataPrevistaFinalizacao
-                                        ? (record.dataPrevistaFinalizacao | date: 'short')
-                                        : '-'
-                                        }}
+                                        <span class="badge" [ngClass]="{
+                                            'badge-warning': record.status === 'PENDENTE',
+                                            'badge-success': record.status === 'FINALIZADA'
+                                        }">
+                                                                                <i class="fa" [ngClass]="{
+                                                'fa-clock': record.status === 'PENDENTE',
+                                                'fa-check-circle': record.status === 'FINALIZADA'
+                                            }"></i>
+                                            {{ record.status === 'PENDENTE' ? 'Pendente' : 'Finalizada' }}
+                                        </span>
                                     </td>
                                     <td>
-                                        <button type="button" class="btn btn-sm bg-secondary"
-                                            (click)="editTarefa(record)">
-                                            <i class="fas fa-pencil-alt"></i>
-                                        </button>
-                                        <button type="button" class="btn btn-sm bg-danger mx-2"
-                                            (click)="deleteTarefa(record)">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
+                                        <div class="descricao-limitada" [title]="record.descricao">
+                                            {{ record.descricao }}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-info" *ngIf="record.dataPrevistaFinalizacao">
+                                            <i class="far fa-calendar-alt mr-1"></i>
+                                            {{ record.dataPrevistaFinalizacao | date:'dd/MM/yyyy' }}
+                                        </span>
+                                        <span class="text-muted" *ngIf="!record.dataPrevistaFinalizacao">-</span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group-actions">
+                                            <!-- Botão Visualizar -->
+                                            <button type="button" class="btn btn-sm btn-outline-info"
+                                                (click)="viewTarefa(record)" title="Visualizar tarefa">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+
+                                            <!-- Botão Editar (só aparece se pendente) -->
+                                            <button type="button" class="btn btn-sm btn-outline-warning mx-1"
+                                                *ngIf="record.status === 'PENDENTE'" (click)="editTarefa(record)"
+                                                title="Editar tarefa">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+
+                                            <!-- Botão Excluir -->
+                                            <button type="button" class="btn btn-sm btn-outline-danger"
+                                                (click)="deleteTarefa(record)" title="Excluir tarefa">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             </ng-template>

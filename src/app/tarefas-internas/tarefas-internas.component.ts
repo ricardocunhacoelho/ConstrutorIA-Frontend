@@ -22,11 +22,13 @@ import { CreateTarefaInternaDialogComponent } from './create-tarefa-interna/crea
 import { EditTarefaInternaDialogComponent } from './edit-tarefa-interna/edit-tarefa-interna-dialog.component';
 import * as FileSaver from 'file-saver';
 import { Table, TableModule } from 'primeng/table';
+import { ViewTarefaInternaDialogComponent } from './view-tarefa-interna/view-tarefa-interna-dialog.component';
 
 @Component({
     templateUrl: './tarefas-internas.component.html',
     animations: [appModuleAnimation()],
     standalone: true,
+    styleUrls: ['./tarefas-internas.component.scss'],
     imports: [
         CommonModule,
         FormsModule,
@@ -135,17 +137,36 @@ export class TarefasInternasComponent extends PagedListingComponentBase<TarefaIn
     private showCreateOrEditDialog(id?: string): void {
         let ref: BsModalRef;
         if (!id) {
-            ref = this._modalService.show(CreateTarefaInternaDialogComponent, { class: 'modal-lg' });
+            ref = this._modalService.show(CreateTarefaInternaDialogComponent, {
+                class: 'modal-lg',
+                backdrop: 'static'
+            });
         } else {
             ref = this._modalService.show(EditTarefaInternaDialogComponent, {
                 class: 'modal-lg',
                 initialState: { id },
+                backdrop: 'static'
             });
         }
 
-        ref.content.onSave.subscribe(() => this.refresh());
+        ref.content.onSave.subscribe(() => {
+            this.refresh();
+        });
     }
 
+    viewTarefa(item: TarefaInternaDto): void {
+        const ref = this._modalService.show(ViewTarefaInternaDialogComponent, {
+            class: 'modal-lg',
+            initialState: {
+                id: item.id
+            },
+            backdrop: 'static'
+        });
+
+        ref.content.onSave.subscribe(() => {
+            this.refresh();
+        });
+    }
 
     exportarParaPdf() {
         abp.ui.setBusy();

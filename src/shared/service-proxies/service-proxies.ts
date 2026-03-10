@@ -1925,6 +1925,58 @@ export class IntervencaoCompraServiceProxy {
         }
         return _observableOf(null as any);
     }
+
+    /**
+     * @param body (optional) 
+     * @return OK
+     */
+    resolverIntervencao(body: ResolverIntervencaoDto | undefined): Observable<void> {
+        let url_ = this.baseUrl + "/api/services/app/IntervencaoCompra/ResolverIntervencao";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processResolverIntervencao(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processResolverIntervencao(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<void>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<void>;
+        }));
+    }
+
+    protected processResolverIntervencao(response: HttpResponseBase): Observable<void> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return _observableOf(null as any);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
 }
 
 @Injectable()
@@ -2099,6 +2151,69 @@ export class MensagemServiceProxy {
     }
 
     protected processGetMensagensByFornecedorId(response: HttpResponseBase): Observable<MensagemDto[]> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200.push(MensagemDto.fromJS(item));
+            }
+            else {
+                result200 = <any>null;
+            }
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param encarregadoId (optional) 
+     * @return OK
+     */
+    getMensagensByEncarregadoId(encarregadoId: string | undefined): Observable<MensagemDto[]> {
+        let url_ = this.baseUrl + "/api/services/app/Mensagem/GetMensagensByEncarregadoId?";
+        if (encarregadoId === null)
+            throw new Error("The parameter 'encarregadoId' cannot be null.");
+        else if (encarregadoId !== undefined)
+            url_ += "encarregadoId=" + encodeURIComponent("" + encarregadoId) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetMensagensByEncarregadoId(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetMensagensByEncarregadoId(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<MensagemDto[]>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<MensagemDto[]>;
+        }));
+    }
+
+    protected processGetMensagensByEncarregadoId(response: HttpResponseBase): Observable<MensagemDto[]> {
         const status = response.status;
         const responseBlob =
             response instanceof HttpResponse ? response.body :
@@ -2364,21 +2479,21 @@ export class NotificacaoUsuarioServiceProxy {
     }
 
     /**
-     * @param body (optional) 
+     * @param input (optional) 
      * @return OK
      */
-    marcarComoLida(body: GuidEntityDto | undefined): Observable<void> {
-        let url_ = this.baseUrl + "/api/services/app/NotificacaoUsuario/MarcarComoLida";
+    marcarComoLida(input: string | undefined): Observable<void> {
+        let url_ = this.baseUrl + "/api/services/app/NotificacaoUsuario/MarcarComoLida?";
+        if (input === null)
+            throw new Error("The parameter 'input' cannot be null.");
+        else if (input !== undefined)
+            url_ += "input=" + encodeURIComponent("" + input) + "&";
         url_ = url_.replace(/[?&]$/, "");
 
-        const content_ = JSON.stringify(body);
-
         let options_ : any = {
-            body: content_,
             observe: "response",
             responseType: "blob",
             headers: new HttpHeaders({
-                "Content-Type": "application/json",
             })
         };
 
@@ -3917,6 +4032,62 @@ export class PedidoCompraServiceProxy {
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
                 result200 = resultData200 !== undefined ? resultData200 : <any>null;
     
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param body (optional) 
+     * @return OK
+     */
+    criarFluxoCompleto(body: CriarFluxoCompletoDto | undefined): Observable<PedidoCompraDto> {
+        let url_ = this.baseUrl + "/api/services/app/PedidoCompra/CriarFluxoCompleto";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processCriarFluxoCompleto(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processCriarFluxoCompleto(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<PedidoCompraDto>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<PedidoCompraDto>;
+        }));
+    }
+
+    protected processCriarFluxoCompleto(response: HttpResponseBase): Observable<PedidoCompraDto> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = PedidoCompraDto.fromJS(resultData200);
             return _observableOf(result200);
             }));
         } else if (status !== 200 && status !== 204) {
@@ -10314,6 +10485,141 @@ export interface ICreateUserDto {
     password: string;
 }
 
+export class CriarFluxoCompletoDto implements ICriarFluxoCompletoDto {
+    solicitacaoMaterialId: string | undefined;
+    obraId: string | undefined;
+    userId: number;
+    fornecedorId: string | undefined;
+    observacao: string | undefined;
+    observacaoFornecedor: string | undefined;
+    materialNome: string | undefined;
+    quantidade: number;
+    unidade: string | undefined;
+    especificacao: string | undefined;
+    justificativa: string | undefined;
+    precoItem: number;
+    precoTotal: number;
+    cotacaoOrigemId: string | undefined;
+    orcamentoOrigemId: string | undefined;
+    materialOrcadoOrigemId: string | undefined;
+    enderecoEntregaId: string | undefined;
+    enderecoEntrega: CreateEnderecoDto;
+    retiradaNoFornecedor: boolean;
+    formaDePagamento: FormaPagamento;
+    valorFrete: number | undefined;
+    condicaoFrete: string | undefined;
+    valorDesconto: number | undefined;
+    condicaoDesconto: string | undefined;
+
+    constructor(data?: ICriarFluxoCompletoDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.solicitacaoMaterialId = _data["solicitacaoMaterialId"];
+            this.obraId = _data["obraId"];
+            this.userId = _data["userId"];
+            this.fornecedorId = _data["fornecedorId"];
+            this.observacao = _data["observacao"];
+            this.observacaoFornecedor = _data["observacaoFornecedor"];
+            this.materialNome = _data["materialNome"];
+            this.quantidade = _data["quantidade"];
+            this.unidade = _data["unidade"];
+            this.especificacao = _data["especificacao"];
+            this.justificativa = _data["justificativa"];
+            this.precoItem = _data["precoItem"];
+            this.precoTotal = _data["precoTotal"];
+            this.cotacaoOrigemId = _data["cotacaoOrigemId"];
+            this.orcamentoOrigemId = _data["orcamentoOrigemId"];
+            this.materialOrcadoOrigemId = _data["materialOrcadoOrigemId"];
+            this.enderecoEntregaId = _data["enderecoEntregaId"];
+            this.enderecoEntrega = _data["enderecoEntrega"] ? CreateEnderecoDto.fromJS(_data["enderecoEntrega"]) : <any>undefined;
+            this.retiradaNoFornecedor = _data["retiradaNoFornecedor"];
+            this.formaDePagamento = _data["formaDePagamento"];
+            this.valorFrete = _data["valorFrete"];
+            this.condicaoFrete = _data["condicaoFrete"];
+            this.valorDesconto = _data["valorDesconto"];
+            this.condicaoDesconto = _data["condicaoDesconto"];
+        }
+    }
+
+    static fromJS(data: any): CriarFluxoCompletoDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new CriarFluxoCompletoDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["solicitacaoMaterialId"] = this.solicitacaoMaterialId;
+        data["obraId"] = this.obraId;
+        data["userId"] = this.userId;
+        data["fornecedorId"] = this.fornecedorId;
+        data["observacao"] = this.observacao;
+        data["observacaoFornecedor"] = this.observacaoFornecedor;
+        data["materialNome"] = this.materialNome;
+        data["quantidade"] = this.quantidade;
+        data["unidade"] = this.unidade;
+        data["especificacao"] = this.especificacao;
+        data["justificativa"] = this.justificativa;
+        data["precoItem"] = this.precoItem;
+        data["precoTotal"] = this.precoTotal;
+        data["cotacaoOrigemId"] = this.cotacaoOrigemId;
+        data["orcamentoOrigemId"] = this.orcamentoOrigemId;
+        data["materialOrcadoOrigemId"] = this.materialOrcadoOrigemId;
+        data["enderecoEntregaId"] = this.enderecoEntregaId;
+        data["enderecoEntrega"] = this.enderecoEntrega ? this.enderecoEntrega.toJSON() : <any>undefined;
+        data["retiradaNoFornecedor"] = this.retiradaNoFornecedor;
+        data["formaDePagamento"] = this.formaDePagamento;
+        data["valorFrete"] = this.valorFrete;
+        data["condicaoFrete"] = this.condicaoFrete;
+        data["valorDesconto"] = this.valorDesconto;
+        data["condicaoDesconto"] = this.condicaoDesconto;
+        return data;
+    }
+
+    clone(): CriarFluxoCompletoDto {
+        const json = this.toJSON();
+        let result = new CriarFluxoCompletoDto();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface ICriarFluxoCompletoDto {
+    solicitacaoMaterialId: string | undefined;
+    obraId: string | undefined;
+    userId: number;
+    fornecedorId: string | undefined;
+    observacao: string | undefined;
+    observacaoFornecedor: string | undefined;
+    materialNome: string | undefined;
+    quantidade: number;
+    unidade: string | undefined;
+    especificacao: string | undefined;
+    justificativa: string | undefined;
+    precoItem: number;
+    precoTotal: number;
+    cotacaoOrigemId: string | undefined;
+    orcamentoOrigemId: string | undefined;
+    materialOrcadoOrigemId: string | undefined;
+    enderecoEntregaId: string | undefined;
+    enderecoEntrega: CreateEnderecoDto;
+    retiradaNoFornecedor: boolean;
+    formaDePagamento: FormaPagamento;
+    valorFrete: number | undefined;
+    condicaoFrete: string | undefined;
+    valorDesconto: number | undefined;
+    condicaoDesconto: string | undefined;
+}
+
 export class EncarregadoComObraDto implements IEncarregadoComObraDto {
     id: string;
     nomeEncarregado: string | undefined;
@@ -11507,49 +11813,6 @@ export interface IGetRoleForEditOutput {
     grantedPermissionNames: string[] | undefined;
 }
 
-export class GuidEntityDto implements IGuidEntityDto {
-    id: string;
-
-    constructor(data?: IGuidEntityDto) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.id = _data["id"];
-        }
-    }
-
-    static fromJS(data: any): GuidEntityDto {
-        data = typeof data === 'object' ? data : {};
-        let result = new GuidEntityDto();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["id"] = this.id;
-        return data;
-    }
-
-    clone(): GuidEntityDto {
-        const json = this.toJSON();
-        let result = new GuidEntityDto();
-        result.init(json);
-        return result;
-    }
-}
-
-export interface IGuidEntityDto {
-    id: string;
-}
-
 export class Int64EntityDto implements IInt64EntityDto {
     id: number;
 
@@ -11611,6 +11874,11 @@ export class IntervencaoCompraDto implements IIntervencaoCompraDto {
     fornecedor: SimpleLookupDto;
     userId: number | undefined;
     user: SimpleLookupDto;
+    opcaoSelecionada: string | undefined;
+    observacaoResolucao: string | undefined;
+    novoPedidoCompraId: string | undefined;
+    novaCotacaoId: string | undefined;
+    novaSolicitacaoMaterialId: string | undefined;
 
     constructor(data?: IIntervencaoCompraDto) {
         if (data) {
@@ -11640,6 +11908,11 @@ export class IntervencaoCompraDto implements IIntervencaoCompraDto {
             this.fornecedor = _data["fornecedor"] ? SimpleLookupDto.fromJS(_data["fornecedor"]) : <any>undefined;
             this.userId = _data["userId"];
             this.user = _data["user"] ? SimpleLookupDto.fromJS(_data["user"]) : <any>undefined;
+            this.opcaoSelecionada = _data["opcaoSelecionada"];
+            this.observacaoResolucao = _data["observacaoResolucao"];
+            this.novoPedidoCompraId = _data["novoPedidoCompraId"];
+            this.novaCotacaoId = _data["novaCotacaoId"];
+            this.novaSolicitacaoMaterialId = _data["novaSolicitacaoMaterialId"];
         }
     }
 
@@ -11669,6 +11942,11 @@ export class IntervencaoCompraDto implements IIntervencaoCompraDto {
         data["fornecedor"] = this.fornecedor ? this.fornecedor.toJSON() : <any>undefined;
         data["userId"] = this.userId;
         data["user"] = this.user ? this.user.toJSON() : <any>undefined;
+        data["opcaoSelecionada"] = this.opcaoSelecionada;
+        data["observacaoResolucao"] = this.observacaoResolucao;
+        data["novoPedidoCompraId"] = this.novoPedidoCompraId;
+        data["novaCotacaoId"] = this.novaCotacaoId;
+        data["novaSolicitacaoMaterialId"] = this.novaSolicitacaoMaterialId;
         return data;
     }
 
@@ -11698,6 +11976,11 @@ export interface IIntervencaoCompraDto {
     fornecedor: SimpleLookupDto;
     userId: number | undefined;
     user: SimpleLookupDto;
+    opcaoSelecionada: string | undefined;
+    observacaoResolucao: string | undefined;
+    novoPedidoCompraId: string | undefined;
+    novaCotacaoId: string | undefined;
+    novaSolicitacaoMaterialId: string | undefined;
 }
 
 export enum IntervencaoCompraTipo {
@@ -13301,6 +13584,7 @@ export enum NotificacaoOrigemTipo {
     Compra = "Compra",
     IntervencaoCompra = "IntervencaoCompra",
     Sistema = "Sistema",
+    TarefaInterna = "TarefaInterna",
 }
 
 export class NotificacaoUsuarioDto implements INotificacaoUsuarioDto {
@@ -14668,6 +14952,7 @@ export class PedidoCompraDto implements IPedidoCompraDto {
     compra: CompraEntity;
     solicitacaoMaterialId: string | undefined;
     cotacaoId: string | undefined;
+    orcamentoId: string | undefined;
     obraId: string | undefined;
     obra: SimpleLookupDto;
     fornecedorId: string | undefined;
@@ -14704,6 +14989,7 @@ export class PedidoCompraDto implements IPedidoCompraDto {
             this.compra = _data["compra"] ? CompraEntity.fromJS(_data["compra"]) : <any>undefined;
             this.solicitacaoMaterialId = _data["solicitacaoMaterialId"];
             this.cotacaoId = _data["cotacaoId"];
+            this.orcamentoId = _data["orcamentoId"];
             this.obraId = _data["obraId"];
             this.obra = _data["obra"] ? SimpleLookupDto.fromJS(_data["obra"]) : <any>undefined;
             this.fornecedorId = _data["fornecedorId"];
@@ -14744,6 +15030,7 @@ export class PedidoCompraDto implements IPedidoCompraDto {
         data["compra"] = this.compra ? this.compra.toJSON() : <any>undefined;
         data["solicitacaoMaterialId"] = this.solicitacaoMaterialId;
         data["cotacaoId"] = this.cotacaoId;
+        data["orcamentoId"] = this.orcamentoId;
         data["obraId"] = this.obraId;
         data["obra"] = this.obra ? this.obra.toJSON() : <any>undefined;
         data["fornecedorId"] = this.fornecedorId;
@@ -14784,6 +15071,7 @@ export interface IPedidoCompraDto {
     compra: CompraEntity;
     solicitacaoMaterialId: string | undefined;
     cotacaoId: string | undefined;
+    orcamentoId: string | undefined;
     obraId: string | undefined;
     obra: SimpleLookupDto;
     fornecedorId: string | undefined;
@@ -15671,6 +15959,73 @@ export interface IResetPasswordDto {
     adminPassword: string;
     userId: number;
     newPassword: string;
+}
+
+export class ResolverIntervencaoDto implements IResolverIntervencaoDto {
+    intervencaoId: string;
+    opcaoSelecionada: string | undefined;
+    observacaoResolucao: string | undefined;
+    novaSolicitacaoMaterialId: string | undefined;
+    novaCotacaoId: string | undefined;
+    novoOrcamentoId: string | undefined;
+    novoPedidoCompraId: string | undefined;
+
+    constructor(data?: IResolverIntervencaoDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.intervencaoId = _data["intervencaoId"];
+            this.opcaoSelecionada = _data["opcaoSelecionada"];
+            this.observacaoResolucao = _data["observacaoResolucao"];
+            this.novaSolicitacaoMaterialId = _data["novaSolicitacaoMaterialId"];
+            this.novaCotacaoId = _data["novaCotacaoId"];
+            this.novoOrcamentoId = _data["novoOrcamentoId"];
+            this.novoPedidoCompraId = _data["novoPedidoCompraId"];
+        }
+    }
+
+    static fromJS(data: any): ResolverIntervencaoDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new ResolverIntervencaoDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["intervencaoId"] = this.intervencaoId;
+        data["opcaoSelecionada"] = this.opcaoSelecionada;
+        data["observacaoResolucao"] = this.observacaoResolucao;
+        data["novaSolicitacaoMaterialId"] = this.novaSolicitacaoMaterialId;
+        data["novaCotacaoId"] = this.novaCotacaoId;
+        data["novoOrcamentoId"] = this.novoOrcamentoId;
+        data["novoPedidoCompraId"] = this.novoPedidoCompraId;
+        return data;
+    }
+
+    clone(): ResolverIntervencaoDto {
+        const json = this.toJSON();
+        let result = new ResolverIntervencaoDto();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IResolverIntervencaoDto {
+    intervencaoId: string;
+    opcaoSelecionada: string | undefined;
+    observacaoResolucao: string | undefined;
+    novaSolicitacaoMaterialId: string | undefined;
+    novaCotacaoId: string | undefined;
+    novoOrcamentoId: string | undefined;
+    novoPedidoCompraId: string | undefined;
 }
 
 export class RoleDto implements IRoleDto {
@@ -16755,6 +17110,7 @@ export enum SolicitacaoMaterialStatus {
     _7 = 7,
     _8 = 8,
     _9 = 9,
+    _10 = 10,
 }
 
 export enum SolicitacaoMaterialStatusNullable {
@@ -16768,6 +17124,7 @@ export enum SolicitacaoMaterialStatusNullable {
     _7 = 7,
     _8 = 8,
     _9 = 9,
+    _10 = 10,
 }
 
 export class SolicitacaoPorObraDashboard implements ISolicitacaoPorObraDashboard {

@@ -9,6 +9,9 @@ import { AppAuthService } from './auth/app-auth.service';
 import { AppRouteGuard } from './auth/auth-route-guard';
 import { LocalizePipe } from '@shared/pipes/localize.pipe';
 import { TimeAgoPipe } from '@shared/pipes/time-ago.pipe';
+import { Nl2brPipe } from '@shared/pipes/nl2br.pipe';
+import { CpfCnpjPipe } from '@shared/pipes/cpf-cnpj.pipe';
+
 
 import { AbpPaginationControlsComponent } from './components/pagination/abp-pagination-controls.component';
 import { AbpValidationSummaryComponent } from './components/validation/abp-validation.summary.component';
@@ -54,6 +57,8 @@ import { NgxMaskDirective, NgxMaskPipe, provideNgxMask } from 'ngx-mask';
         AbpModalFooterComponent,
         LocalizePipe,
         TimeAgoPipe,
+        Nl2brPipe,
+        CpfCnpjPipe,
         BusyDirective,
         EqualValidator,
         FornecedorMultiselectComponent,
@@ -70,6 +75,8 @@ import { NgxMaskDirective, NgxMaskPipe, provideNgxMask } from 'ngx-mask';
         AbpModalFooterComponent,
         LocalizePipe,
         TimeAgoPipe,
+        Nl2brPipe,
+        CpfCnpjPipe,
         BusyDirective,
         EqualValidator,
         FormsModule,

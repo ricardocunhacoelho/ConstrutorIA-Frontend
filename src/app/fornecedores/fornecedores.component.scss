@@ -15,103 +15,66 @@
     }
 }
 
-/* Cores dos status */
-.status-badge.bg-secondary {
-    background: black !important;
-    color: white;
+.status-ativo {
+    background: #d4edda;
+    color: #155724;
+    border-color: #c3e6cb;
 }
 
-.status-badge.bg-orange {
-    background: #fd7e14;
-    color: white;
+.status-inativo {
+    background: #f8d7da;
+    color: #721c24;
+    border-color: #f5c6cb;
 }
 
-.status-badge.bg-purple {
-    background: #6f42c1;
-    color: white;
+/* Badges para filtros */
+.badge-status {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 0.5rem;
+
+    &.ativo {
+        background: #28a745;
+        box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.2);
+    }
+
+    &.inativo {
+        background: #dc3545;
+        box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.2);
+    }
 }
 
-.status-badge.bg-info {
-    background: #17a2b8;
-    color: white;
+/* CPF/CNPJ */
+.cpf-cnpj {
+    font-family: monospace;
+    font-size: 0.85rem;
+    color: #495057;
 }
 
-.status-badge.bg-primary {
-    background: #007bff;
-    color: white;
-}
-
-.status-badge.bg-danger {
-    background: #dc3545;
-    color: white;
-}
-
-.status-badge.bg-success {
-    background: #28a745;
-    color: white;
-}
-
-.status-badge.bg-light {
-    background: #f8f9fa;
-    color: #212529;
-    border: 1px solid #dee2e6;
-}
-
-.bg-substituida {
-    background-color: #6c757d;
-    color: white;
-}
-
-/* Container de materiais */
-.materiais-container {
-    max-width: 250px;
-}
-
-.materiais-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-}
-
-.material-item {
-    display: flex;
+/* Email link */
+.email-link {
+    color: #007bff;
+    text-decoration: none;
+    font-size: 0.85rem;
+    display: inline-flex;
     align-items: center;
-    justify-content: space-between;
-    background: #f8f9fa;
-    padding: 0.25rem 0.5rem;
-    border-radius: 4px;
-    font-size: 0.8rem;
-    border: 1px solid #e9ecef;
-
-    .material-nome {
-        color: #495057;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        max-width: 150px;
-        font-weight: 500;
-    }
-
-    .material-quantidade {
-        background: #e9ecef;
-        padding: 0.15rem 0.4rem;
-        border-radius: 12px;
-        font-size: 0.65rem;
-        font-weight: 600;
-        color: #495057;
-        margin-left: 0.5rem;
-    }
-}
-
-.material-mais {
-    font-size: 0.75rem;
-    color: #6c757d;
-    margin-top: 0.25rem;
-    font-style: italic;
+    transition: all 0.2s;
 
     i {
-        font-size: 0.6rem;
-        margin-right: 0.25rem;
+        font-size: 0.8rem;
+        color: #6c757d;
+        transition: all 0.2s;
+    }
+
+    &:hover {
+        color: #0056b3;
+        text-decoration: underline;
+
+        i {
+            color: #0056b3;
+        }
     }
 }
 
@@ -141,7 +104,7 @@
     }
 }
 
-/* Botão Info (Cotações) */
+/* Botão Visualizar - Info */
 .btn-outline-info {
     border-color: #17a2b8 !important;
     color: #17a2b8 !important;
@@ -161,7 +124,7 @@
     }
 }
 
-/* Botão Warning (Editar) */
+/* Botão Editar - Warning */
 .btn-outline-warning {
     border-color: #ffc107 !important;
     color: #ffc107 !important;
@@ -181,7 +144,7 @@
     }
 }
 
-/* Botão Danger (Excluir) */
+/* Botão Excluir - Danger */
 .btn-outline-danger {
     border-color: #dc3545 !important;
     color: #dc3545 !important;
@@ -204,7 +167,7 @@
 /* Ajustes na tabela */
 .primeng-datatable-container {
     ::ng-deep .ui-table {
-        .ui-table-thead>tr>th {
+        .ui-table-thead > tr > th {
             background: #f8f9fa;
             color: #495057;
             font-weight: 600;
@@ -213,12 +176,12 @@
             border-bottom: 2px solid #dee2e6;
         }
 
-        .ui-table-tbody>tr>td {
+        .ui-table-tbody > tr > td {
             padding: 0.75rem 1rem;
             vertical-align: middle;
         }
 
-        .ui-table-tbody>tr:hover {
+        .ui-table-tbody > tr:hover {
             background: #f8f9fa;
         }
     }
@@ -245,34 +208,8 @@
 }
 
 /* Utilitários */
-.text-white {
-    color: white !important;
-}
-
-.bg-orange {
-    background-color: #fd7e14 !important;
-}
-
-.bg-purple {
-    background-color: #6f42c1 !important;
-}
-
-/* Status badges antigos (mantido para compatibilidade) */
-.status-badges {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    align-items: flex-start;
-
-    .status-warning {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        font-size: 12px;
-        font-weight: 700;
-        color: #850404;
-        line-height: 1.3;
-    }
+.fw-500 {
+    font-weight: 500;
 }
 
 /* Responsividade */
@@ -287,11 +224,11 @@
         }
     }
 
-    .materiais-container {
-        max-width: 150px;
-    }
-
-    .material-item .material-nome {
-        max-width: 80px;
+    .email-link {
+        max-width: 120px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        display: block;
     }
 }

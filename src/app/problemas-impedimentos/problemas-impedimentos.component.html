@@ -150,19 +150,53 @@
                                 <td>{{ record.dataHora | date:'short' }}</td>
                                 <td>{{ record.obra?.nome }}</td>
                                 <td>{{ record.encarregado?.nome }}</td>
-                                <td>{{ record.status }}</td>
-                                <td>{{ record.descricao }}</td>
-                                <td>{{ record.impacto }}</td>
-                                <td>{{ record.urgencia }}</td>
                                 <td>
-                                    <button type="button" class="btn btn-sm bg-secondary"
-                                        (click)="editProblema(record)">
-                                        <i class="fas fa-pencil-alt"></i>
-                                    </button>
-                                    <button type="button" class="btn btn-sm bg-danger mx-2"
-                                        (click)="deleteProblema(record)">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
+                                    <span class="badge" [ngClass]="{
+                'badge-warning': record.status === 'ABERTO',
+                'badge-success': record.status === 'CONCLUIDO'
+            }">
+                                        {{ record.status }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="texto-limitado" [title]="record.descricao">
+                                        {{ record.descricao }}
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="texto-limitado" [title]="record.impacto">
+                                        {{ record.impacto }}
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge" [ngClass]="{
+                'badge-info': record.urgencia === 'Baixa',
+                'badge-warning': record.urgencia === 'Media',
+                'badge-danger': record.urgencia === 'Alta'
+            }">
+                                        {{ record.urgencia }}
+                                    </span>
+                                </td>
+                                <td style="min-width: 200px">
+                                    <div class="btn-group-actions">
+                                        <!-- Botão Visualizar -->
+                                        <button type="button" class="btn btn-sm btn-outline-info"
+                                            (click)="viewProblema(record)" title="Visualizar problema/impedimento">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+
+                                        <!-- Botão Editar -->
+                                        <button type="button" class="btn btn-sm btn-outline-warning mx-1"
+                                            (click)="editProblema(record)" title="Editar problema/impedimento">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+
+                                        <!-- Botão Excluir -->
+                                        <button type="button" class="btn btn-sm btn-outline-danger"
+                                            (click)="deleteProblema(record)" title="Excluir problema/impedimento">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         </ng-template>

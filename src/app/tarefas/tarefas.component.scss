@@ -1,0 +1,195 @@
+/* Badges para status */
+.badge {
+    padding: 0.4rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 50px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+
+    i {
+        font-size: 0.7rem;
+    }
+}
+
+.badge-warning {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
+}
+
+.badge-success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.badge-info {
+    background: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+    white-space: nowrap;
+}
+
+/* Grupo de ações */
+.btn-group-actions {
+    display: flex;
+    gap: 0.25rem;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.btn-group-actions .btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    border-radius: 4px;
+    transition: all 0.2s;
+    background: white;
+    border: 1px solid transparent;
+
+    i {
+        transition: color 0.2s;
+    }
+}
+
+/* Botão Visualizar - Info */
+/* Botão Visualizar - Info */
+.btn-outline-info {
+    border-color: #17a2b8 !important;
+    color: #17a2b8 !important;
+
+    i {
+        color: #17a2b8 !important;
+    }
+
+    &:hover {
+        background: #17a2b8 !important;
+        color: white !important;
+        border-color: #17a2b8 !important;
+
+        i {
+            color: white !important;
+        }
+    }
+}
+
+/* Botão Editar - Warning */
+.btn-outline-warning {
+    border-color: #ffc107 !important;
+    color: #ffc107 !important;
+
+    i {
+        color: #ffc107 !important;
+    }
+
+    &:hover {
+        background: #ffc107 !important;
+        color: white !important;
+        border-color: #ffc107 !important;
+
+        i {
+            color: white !important;
+        }
+    }
+}
+
+/* Botão Excluir - Danger */
+.btn-outline-danger {
+    border-color: #dc3545 !important;
+    color: #dc3545 !important;
+
+    i {
+        color: #dc3545 !important;
+    }
+
+    &:hover {
+        background: #dc3545 !important;
+        color: white !important;
+        border-color: #dc3545 !important;
+
+        i {
+            color: white !important;
+        }
+    }
+}
+
+/* Adicionar um efeito sutil de elevação */
+.btn-group-actions .btn-sm:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Descrição limitada */
+.descricao-limitada {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 300px;
+    white-space: normal;
+    word-wrap: break-word;
+    line-height: 1.4;
+    max-height: calc(1.4em * 3);
+    cursor: help;
+    color: #495057;
+}
+
+/* Ajustes na tabela */
+.primeng-datatable-container {
+    ::ng-deep .ui-table {
+        .ui-table-thead>tr>th {
+            background: #f8f9fa;
+            color: #495057;
+            font-weight: 600;
+            font-size: 0.85rem;
+            padding: 1rem;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        .ui-table-tbody>tr>td {
+            padding: 0.75rem 1rem;
+            vertical-align: middle;
+        }
+
+        .ui-table-tbody>tr:hover {
+            background: #f8f9fa;
+        }
+    }
+}
+
+/* Mensagem sem dados */
+.primeng-no-data {
+    text-align: center;
+    padding: 3rem;
+    color: #6c757d;
+    font-size: 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin: 1rem;
+
+    i {
+        opacity: 0.5;
+    }
+
+    p {
+        margin: 0;
+    }
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .btn-group-actions {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+
+        .btn-sm {
+            flex: 1;
+        }
+    }
+
+    .descricao-limitada {
+        max-width: 200px;
+    }
+}

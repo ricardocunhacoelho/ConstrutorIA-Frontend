@@ -1,0 +1,247 @@
+<abp-modal-header [title]="'Visualizar Tarefa' | localize" (onCloseClick)="close()">
+</abp-modal-header>
+
+<div class="modal-body" *ngIf="!loading; else loadingTemplate">
+    <!-- Header com título e metadados -->
+    <div class="tarefa-header">
+        <div class="tarefa-titulo">
+            <div class="tarefa-meta">
+                <span class="tarefa-id">#{{ tarefa.id | slice:0:8 }}</span>
+                <span class="separator">•</span>
+                <span class="tarefa-data">
+                    <i class="far fa-calendar-alt"></i>
+                    Criada {{ tarefa.creationTime | timeAgo }}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Badge de Status e Ações em linha separada -->
+    <div class="status-actions-bar">
+        <div class="d-flex justify-content-between align-items-center">
+            <span class="status-badge" [ngClass]="getStatusClass(tarefa.status)">
+                <i class="fa" [ngClass]="getStatusIcon(tarefa.status)"></i>
+                {{ getStatusText(tarefa.status) }}
+            </span>
+
+            <div class="btn-group" *ngIf="!editMode">
+                <button class="btn btn-sm btn-outline-primary" (click)="toggleEditMode()" *ngIf="tarefa.status === TarefaStatus.PENDENTE">
+                    <i class="fa fa-pencil-alt"></i> Editar
+                </button>
+                <button class="btn btn-sm btn-outline-success" *ngIf="tarefa.status === TarefaStatus.PENDENTE"
+                    (click)="finalizarTarefa()">
+                    <i class="fa fa-check"></i> Finalizar
+                </button>
+                <button class="btn btn-sm btn-outline-warning" *ngIf="tarefa.status === TarefaStatus.FINALIZADA"
+                    (click)="reabrirTarefa()">
+                    <i class="fa fa-undo"></i> Reabrir
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Descrição Longa com expansão -->
+    <div class="descricao-container" *ngIf="tarefa.descricao">
+        <div class="descricao-header">
+            <label>Descrição</label>
+            <button class="btn-expand" (click)="toggleDescricaoExpandida()" *ngIf="isDescricaoLonga">
+                <i class="fa" [ngClass]="descricaoExpandida ? 'fa-compress' : 'fa-expand'"></i>
+                {{ descricaoExpandida ? 'Ver menos' : 'Ver descrição completa' }}
+            </button>
+        </div>
+        <div class="descricao-conteudo" [class.expandida]="descricaoExpandida">
+            <p>{{ tarefa.descricao }}</p>
+        </div>
+        <div class="descricao-fade" *ngIf="isDescricaoLonga && !descricaoExpandida"></div>
+    </div>
+
+    <!-- Conteúdo principal em tabs -->
+    <tabset class="tarefa-tabs">
+        <!-- Aba Detalhes (agora mais compacta) -->
+        <tab [heading]="'Detalhes' | localize" class="pt-3 px-2">
+            <div class="info-grid">
+                <!-- Responsável -->
+                <div class="info-card">
+                    <div class="info-icon">
+                        <i class="fa fa-user-circle"></i>
+                    </div>
+                    <div class="info-content">
+                        <label>Responsável</label>
+                        <div class="info-value">
+                            <strong>{{ tarefa.responsavelNome || 'Não definido' }}</strong>
+                            <small *ngIf="tarefa.responsavelEmail">{{ tarefa.responsavelEmail }}</small>
+                            <small *ngIf="tarefa.user" class="text-muted">
+                                ({{ tarefa.user.userName }})
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Obra -->
+                <div class="info-card">
+                    <div class="info-icon">
+                        <i class="fa fa-building"></i>
+                    </div>
+                    <div class="info-content">
+                        <label>Obra</label>
+                        <div class="info-value">
+                            <strong>{{ tarefa.obra?.nome || 'Não vinculada' }}</strong>
+                            <small *ngIf="tarefa.obra" class="text-muted">
+                                {{ tarefa.obra.descricao | slice:0:60 }}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Datas -->
+                <div class="info-card">
+                    <div class="info-icon">
+                        <i class="fa fa-clock"></i>
+                    </div>
+                    <div class="info-content">
+                        <label>Datas</label>
+                        <div class="info-value">
+                            <div *ngIf="tarefa.dataPrevistaFinalizacao">
+                                <strong>Prevista:</strong>
+                                {{ tarefa.dataPrevistaFinalizacao | date:'dd/MM/yyyy' }}
+                            </div>
+                            <div *ngIf="tarefa.dataFinalizacao">
+                                <strong>Concluída:</strong>
+                                {{ tarefa.dataFinalizacao | date:'dd/MM/yyyy' }}
+                            </div>
+                            <small *ngIf="!tarefa.dataPrevistaFinalizacao">
+                                Sem data prevista
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Última atualização -->
+                <div class="info-card">
+                    <div class="info-icon">
+                        <i class="fa fa-history"></i>
+                    </div>
+                    <div class="info-content">
+                        <label>Última atualização</label>
+                        <div class="info-value">
+                            <strong>{{ tarefa.lastModificationTime | timeAgo }}</strong>
+                            <small>por {{ tarefa.user?.userName || 'Sistema' }}</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </tab>
+
+        <!-- Aba Observações -->
+        <tab [heading]="'Observações' | localize" class="pt-3 px-2">
+            <div class="observacoes-container">
+                <div class="observacoes-header" *ngIf="editMode">
+                    <label>Observações da tarefa</label>
+                    <span class="badge badge-info">Modo edição</span>
+                </div>
+
+                <div *ngIf="!editMode" class="observacoes-content">
+                    <p *ngIf="tarefa.observacoes" class="observacoes-texto">
+                        {{ tarefa.observacoes }}
+                    </p>
+                    <p *ngIf="!tarefa.observacoes" class="observacoes-vazio">
+                        <i class="far fa-file-alt"></i>
+                        Nenhuma observação registrada
+                    </p>
+                </div>
+
+                <div *ngIf="editMode" class="form-group">
+                    <textarea class="form-control" rows="6" [(ngModel)]="observacoes"
+                        placeholder="Adicione observações sobre a tarefa..."></textarea>
+                </div>
+            </div>
+        </tab>
+
+        <!-- Aba Resolução -->
+        <tab [heading]="'Resolução' | localize" [disabled]="tarefa.status === TarefaStatus.PENDENTE && !editMode"
+            class="pt-3 px-2">
+            <div class="resolucao-container">
+                <div class="resolucao-header" *ngIf="editMode">
+                    <label>Resolução da tarefa</label>
+                    <span class="badge badge-success" *ngIf="tarefa.status === TarefaStatus.FINALIZADA">
+                        Tarefa finalizada
+                    </span>
+                </div>
+
+                <div *ngIf="!editMode && tarefa.resolucao" class="resolucao-content">
+                    <div class="resolucao-texto">
+                        {{ tarefa.resolucao }}
+                    </div>
+                </div>
+
+                <div *ngIf="!editMode && !tarefa.resolucao" class="resolucao-vazio">
+                    <i class="fa fa-pencil-alt"></i>
+                    <p *ngIf="tarefa.status === TarefaStatus.PENDENTE">
+                        Tarefa ainda não foi resolvida
+                    </p>
+                    <p *ngIf="tarefa.status === TarefaStatus.FINALIZADA">
+                        Nenhuma resolução registrada
+                    </p>
+                </div>
+
+                <div *ngIf="editMode" class="form-group">
+                    <textarea class="form-control" rows="6" [(ngModel)]="resolucao"
+                        placeholder="Descreva como a tarefa foi resolvida..."></textarea>
+                </div>
+            </div>
+        </tab>
+
+        <!-- Aba Timeline -->
+        <tab [heading]="'Timeline' | localize" class="pt-3 px-2">
+            <div class="timeline-container">
+                <div class="timeline-item">
+                    <div class="timeline-icon bg-primary">
+                        <i class="fa fa-plus"></i>
+                    </div>
+                    <div class="timeline-content">
+                        <div class="timeline-title">Tarefa criada</div>
+                        <div class="timeline-date">{{ tarefa.creationTime | date:'dd/MM/yyyy HH:mm' }}</div>
+                        <div class="timeline-description">por {{ tarefa.user?.userName || 'Sistema' }}</div>
+                    </div>
+                </div>
+
+                <div class="timeline-item"
+                    *ngIf="tarefa.lastModificationTime && tarefa.lastModificationTime !== tarefa.creationTime">
+                    <div class="timeline-icon bg-info">
+                        <i class="fa fa-pencil-alt"></i>
+                    </div>
+                    <div class="timeline-content">
+                        <div class="timeline-title">Última atualização</div>
+                        <div class="timeline-date">{{ tarefa.lastModificationTime | date:'dd/MM/yyyy HH:mm' }}</div>
+                    </div>
+                </div>
+
+                <div class="timeline-item" *ngIf="tarefa.dataFinalizacao">
+                    <div class="timeline-icon bg-success">
+                        <i class="fa fa-check"></i>
+                    </div>
+                    <div class="timeline-content">
+                        <div class="timeline-title">Tarefa finalizada</div>
+                        <div class="timeline-date">{{ tarefa.dataFinalizacao | date:'dd/MM/yyyy HH:mm' }}</div>
+                    </div>
+                </div>
+            </div>
+        </tab>
+    </tabset>
+</div>
+
+<ng-template #loadingTemplate>
+    <div class="modal-body text-center p-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="sr-only">Carregando...</span>
+        </div>
+        <p class="mt-3">Carregando tarefa...</p>
+    </div>
+</ng-template>
+
+<abp-modal-footer *ngIf="!editMode" [cancelDisabled]="false" [showSave]="false" (onCancelClick)="close()">
+</abp-modal-footer>
+
+<abp-modal-footer *ngIf="editMode" [cancelDisabled]="false" [saveDisabled]="false" saveText="Salvar alterações"
+    (onCancelClick)="toggleEditMode()" (onSaveClick)="salvarAlteracoes()">
+</abp-modal-footer>
