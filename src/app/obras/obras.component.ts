@@ -100,23 +100,22 @@ export class ObrasComponent extends PagedListingComponentBase<ObraDto> {
     }
 
     private showCreateOrEditObraDialog(id?: string): void {
-        let createOrEditObraDialog: BsModalRef;
         if (!id) {
-            createOrEditObraDialog = this._modalService.show(CreateObraDialogComponent, {
+            const ref = this._modalService.show(CreateObraDialogComponent, {
                 class: 'modal-lg',
+                backdrop: 'static'
             });
-        } else {
-            createOrEditObraDialog = this._modalService.show(EditObraDialogComponent, {
-                class: 'modal-lg',
-                initialState: {
-                    id: id,
-                },
-            });
-        }
 
-        createOrEditObraDialog.content.onSave.subscribe(() => {
-            this.refresh();
-        });
+            ref.content.onSave.subscribe(() => this.refresh());
+        } else {
+            const ref = this._modalService.show(EditObraDialogComponent, {
+                class: 'modal-lg',
+                initialState: { id: id },
+                backdrop: 'static'
+            });
+
+            ref.content.onSave.subscribe(() => this.refresh());
+        }
     }
 
     private showFinanceiroObraDialog(obra: ObraDto): void {

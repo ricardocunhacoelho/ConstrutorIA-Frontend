@@ -30,6 +30,25 @@
         </div>
     </div>
 
+    <!-- RESOLUÇÃO (se concluído) -->
+    <div class="secao-container resolucao"
+        *ngIf="problema.status === ProblemaImpedimentoStatus.CONCLUIDO && problema.resolucao">
+        <div class="secao-header">
+            <div class="secao-titulo">
+                <i class="fas fa-check-circle text-success mr-2"></i>
+                <label>Resolução</label>
+            </div>
+        </div>
+        <div class="secao-conteudo expandida">
+            <p [innerHTML]="problema.resolucao | nl2br"></p>
+        </div>
+        <div class="mt-2 text-right" *ngIf="problema.user">
+            <small class="text-muted">
+                Resolvido por {{ problema.user.nome }} em {{ formatDate(problema.lastModificationTime) }}
+            </small>
+        </div>
+    </div>
+
     <!-- DESCRIÇÃO -->
     <div class="secao-container" *ngIf="problema.descricao">
         <div class="secao-header">
@@ -214,5 +233,9 @@
     </div>
 </ng-template>
 
-<abp-modal-footer [cancelDisabled]="false" (onCancelClick)="close()">
+<abp-modal-footer [cancelDisabled]="false" [showSaveButton]="false" (onCancelClick)="close()">
+    <button type="button" class="btn btn-success mr-2" *ngIf="problema?.status === ProblemaImpedimentoStatus.ABERTO"
+        (click)="resolverProblema()" [disabled]="loading">
+        <i class="fa fa-check-circle mr-2"></i> Resolver Problema
+    </button>
 </abp-modal-footer>

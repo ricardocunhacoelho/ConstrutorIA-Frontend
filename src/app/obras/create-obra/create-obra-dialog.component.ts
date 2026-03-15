@@ -88,7 +88,6 @@ export class CreateObraDialogComponent extends AppComponentBase implements OnIni
     save(): void {
         this.saving = true;
 
-        // atribui e converte antes de enviar
         this.obra.dataInicio = this.dataInicio
             ? moment(this.dataInicio, 'YYYY-MM-DD')
             : undefined;
@@ -103,8 +102,8 @@ export class CreateObraDialogComponent extends AppComponentBase implements OnIni
         this._obraService.create(this.obra).subscribe(
             () => {
                 this.notify.info(this.l('SavedSuccessfully'));
-                this.bsModalRef.hide();
                 this.onSave.emit();
+                this.bsModalRef.hide();
             },
             () => {
                 this.saving = false;

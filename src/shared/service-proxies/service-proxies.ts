@@ -1494,6 +1494,64 @@ export class EnumServiceProxy {
         }
         return _observableOf(null as any);
     }
+
+    /**
+     * @return OK
+     */
+    getSolicitacaoMaterialStatus(): Observable<EnumValueDto[]> {
+        let url_ = this.baseUrl + "/api/services/app/Enum/GetSolicitacaoMaterialStatus";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetSolicitacaoMaterialStatus(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetSolicitacaoMaterialStatus(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<EnumValueDto[]>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<EnumValueDto[]>;
+        }));
+    }
+
+    protected processGetSolicitacaoMaterialStatus(response: HttpResponseBase): Observable<EnumValueDto[]> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200.push(EnumValueDto.fromJS(item));
+            }
+            else {
+                result200 = <any>null;
+            }
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
 }
 
 @Injectable()
@@ -4407,6 +4465,62 @@ export class ProblemaImpedimentoServiceProxy {
             else {
                 result200 = <any>null;
             }
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param body (optional) 
+     * @return OK
+     */
+    resolver(body: ResolverProblemaImpedimentoDto | undefined): Observable<ProblemaImpedimentoDto> {
+        let url_ = this.baseUrl + "/api/services/app/ProblemaImpedimento/Resolver";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processResolver(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processResolver(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<ProblemaImpedimentoDto>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<ProblemaImpedimentoDto>;
+        }));
+    }
+
+    protected processResolver(response: HttpResponseBase): Observable<ProblemaImpedimentoDto> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = ProblemaImpedimentoDto.fromJS(resultData200);
             return _observableOf(result200);
             }));
         } else if (status !== 200 && status !== 204) {
@@ -12821,6 +12935,7 @@ export class MaterialPedidoCompraEntity implements IMaterialPedidoCompraEntity {
     materialOrcado: MaterialOrcadoEntity;
     precoItem: number | undefined;
     precoTotal: number | undefined;
+    geradoOutroEmIntervencao: boolean;
 
     constructor(data?: IMaterialPedidoCompraEntity) {
         if (data) {
@@ -12859,6 +12974,7 @@ export class MaterialPedidoCompraEntity implements IMaterialPedidoCompraEntity {
             this.materialOrcado = _data["materialOrcado"] ? MaterialOrcadoEntity.fromJS(_data["materialOrcado"]) : <any>undefined;
             this.precoItem = _data["precoItem"];
             this.precoTotal = _data["precoTotal"];
+            this.geradoOutroEmIntervencao = _data["geradoOutroEmIntervencao"];
         }
     }
 
@@ -12897,6 +13013,7 @@ export class MaterialPedidoCompraEntity implements IMaterialPedidoCompraEntity {
         data["materialOrcado"] = this.materialOrcado ? this.materialOrcado.toJSON() : <any>undefined;
         data["precoItem"] = this.precoItem;
         data["precoTotal"] = this.precoTotal;
+        data["geradoOutroEmIntervencao"] = this.geradoOutroEmIntervencao;
         return data;
     }
 
@@ -12935,6 +13052,7 @@ export interface IMaterialPedidoCompraEntity {
     materialOrcado: MaterialOrcadoEntity;
     precoItem: number | undefined;
     precoTotal: number | undefined;
+    geradoOutroEmIntervencao: boolean;
 }
 
 export class MaterialSolicitadoDto implements IMaterialSolicitadoDto {
@@ -15415,6 +15533,10 @@ export class ProblemaImpedimentoDto implements IProblemaImpedimentoDto {
     obra: ObraDto;
     encarregadoId: string | undefined;
     encarregado: EncarregadoDto;
+    resolucao: string | undefined;
+    userId: number | undefined;
+    user: SimpleLookupDto;
+    lastModificationTime: moment.Moment | undefined;
 
     constructor(data?: IProblemaImpedimentoDto) {
         if (data) {
@@ -15440,6 +15562,10 @@ export class ProblemaImpedimentoDto implements IProblemaImpedimentoDto {
             this.obra = _data["obra"] ? ObraDto.fromJS(_data["obra"]) : <any>undefined;
             this.encarregadoId = _data["encarregadoId"];
             this.encarregado = _data["encarregado"] ? EncarregadoDto.fromJS(_data["encarregado"]) : <any>undefined;
+            this.resolucao = _data["resolucao"];
+            this.userId = _data["userId"];
+            this.user = _data["user"] ? SimpleLookupDto.fromJS(_data["user"]) : <any>undefined;
+            this.lastModificationTime = _data["lastModificationTime"] ? moment(_data["lastModificationTime"].toString()) : <any>undefined;
         }
     }
 
@@ -15465,6 +15591,10 @@ export class ProblemaImpedimentoDto implements IProblemaImpedimentoDto {
         data["obra"] = this.obra ? this.obra.toJSON() : <any>undefined;
         data["encarregadoId"] = this.encarregadoId;
         data["encarregado"] = this.encarregado ? this.encarregado.toJSON() : <any>undefined;
+        data["resolucao"] = this.resolucao;
+        data["userId"] = this.userId;
+        data["user"] = this.user ? this.user.toJSON() : <any>undefined;
+        data["lastModificationTime"] = this.lastModificationTime ? this.lastModificationTime.toISOString() : <any>undefined;
         return data;
     }
 
@@ -15490,6 +15620,10 @@ export interface IProblemaImpedimentoDto {
     obra: ObraDto;
     encarregadoId: string | undefined;
     encarregado: EncarregadoDto;
+    resolucao: string | undefined;
+    userId: number | undefined;
+    user: SimpleLookupDto;
+    lastModificationTime: moment.Moment | undefined;
 }
 
 export class ProblemaImpedimentoDtoPagedResultDto implements IProblemaImpedimentoDtoPagedResultDto {
@@ -16026,6 +16160,53 @@ export interface IResolverIntervencaoDto {
     novaCotacaoId: string | undefined;
     novoOrcamentoId: string | undefined;
     novoPedidoCompraId: string | undefined;
+}
+
+export class ResolverProblemaImpedimentoDto implements IResolverProblemaImpedimentoDto {
+    id: string;
+    resolucao: string;
+
+    constructor(data?: IResolverProblemaImpedimentoDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.resolucao = _data["resolucao"];
+        }
+    }
+
+    static fromJS(data: any): ResolverProblemaImpedimentoDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new ResolverProblemaImpedimentoDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["resolucao"] = this.resolucao;
+        return data;
+    }
+
+    clone(): ResolverProblemaImpedimentoDto {
+        const json = this.toJSON();
+        let result = new ResolverProblemaImpedimentoDto();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IResolverProblemaImpedimentoDto {
+    id: string;
+    resolucao: string;
 }
 
 export class RoleDto implements IRoleDto {

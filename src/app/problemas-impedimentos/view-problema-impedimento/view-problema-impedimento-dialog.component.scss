@@ -398,3 +398,9 @@
         grid-template-columns: 1fr;
     }
 }
+
+.secao-container {
+    &.resolucao {
+        border-left: 4px solid #28a745;
+    }
+}

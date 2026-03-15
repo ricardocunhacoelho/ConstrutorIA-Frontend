@@ -1,5 +1,5 @@
 import { Component, Injector, OnInit, EventEmitter, Output, ChangeDetectorRef } from '@angular/core';
-import { BsModalRef } from 'ngx-bootstrap/modal';
+import { BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
 import { FormsModule } from '@angular/forms';
 import { CommonModule, NgIf, DatePipe } from '@angular/common';
 import { TabsetComponent, TabDirective } from 'ngx-bootstrap/tabs';
@@ -18,6 +18,7 @@ import {
 } from '../../../shared/service-proxies/service-proxies';
 
 import moment from 'moment';
+import { ResolveProblemaImpedimentoDialogComponent } from '../resolve-problema-impedimento-dialog.component/resolve-problema-impedimento-dialog.component';
 
 @Component({
   templateUrl: './view-problema-impedimento-dialog.component.html',
@@ -43,7 +44,7 @@ export class ViewProblemaImpedimentoDialogComponent extends AppComponentBase imp
   id: string;
   problema: ProblemaImpedimentoDto;
   loading = false;
-  
+
   // Enums
   ProblemaImpedimentoStatus = ProblemaImpedimentoStatus;
   NivelUrgencia = NivelUrgencia;
@@ -52,17 +53,18 @@ export class ViewProblemaImpedimentoDialogComponent extends AppComponentBase imp
   descricaoExpandida = false;
   impactoExpandido = false;
   observacaoExpandida = false;
-  
+
   isDescricaoLonga = false;
   isImpactoLongo = false;
   isObservacaoLonga = false;
-  
+
   private readonly TEXTO_LIMITE = 200;
 
   constructor(
     injector: Injector,
     public _problemaService: ProblemaImpedimentoServiceProxy,
     public bsModalRef: BsModalRef,
+    private modalService: BsModalService,
     private cd: ChangeDetectorRef
   ) {
     super(injector);
@@ -196,6 +198,19 @@ export class ViewProblemaImpedimentoDialogComponent extends AppComponentBase imp
   formatDateOnly(date: moment.Moment | Date | undefined): string {
     if (!date) return '-';
     return moment(date).format('DD/MM/YYYY');
+  }
+
+  resolverProblema(): void {
+    const modal = this.modalService.show(ResolveProblemaImpedimentoDialogComponent, {
+      initialState: {
+        id: this.problema.id
+      },
+      class: 'modal-md'
+    });
+    modal.content.onSave.subscribe(() => {
+      this.carregarProblema();
+      this.onSave.emit();
+    });
   }
 
   close(): void {

@@ -1,21 +1,15 @@
 <div class="modal-footer justify-content-between">
     <div>
-        <button type="button"
-                class="btn btn-default"
-                [disabled]="cancelDisabled()"
-                (click)="onCancelClick.emit()">
+        <button type="button" class="btn btn-default" [disabled]="cancelDisabled()" (click)="onCancelClick.emit()">
             {{ cancelLabel() }}
         </button>
     </div>
 
     <div class="d-flex gap-2">
-        <!-- Aqui você pode injetar botões extras -->
         <ng-content></ng-content>
 
-        <button type="submit"
-                class="btn btn-primary"
-                [disabled]="saveDisabled()"
-                (click)="onSaveClick.emit()">
+        <button *ngIf="showSaveButton" type="submit" class="btn btn-primary" [disabled]="saveDisabled()"
+            (click)="onSaveClick.emit()">
             {{ saveLabel() }}
         </button>
     </div>
