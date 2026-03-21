@@ -49,6 +49,7 @@ export class EditObraDialogComponent extends AppComponentBase implements OnInit 
     }
 
     ngOnInit(): void {
+        abp.ui.setBusy();
         this.obra = new UpdateObraDto();
         this.obra.endereco = new CreateEnderecoDto();
 
@@ -78,7 +79,7 @@ export class EditObraDialogComponent extends AppComponentBase implements OnInit 
                 }
                 return enc;
             });
-
+            abp.ui.clearBusy();
             this.cd.detectChanges();
         });
     }

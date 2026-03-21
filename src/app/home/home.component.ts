@@ -1,13 +1,13 @@
 import { Component, Injector, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild } from '@angular/core';
 import { AppComponentBase } from '@shared/app-component-base';
-import { 
-    ObraComTarefasDto, 
-    RankingMaterialSolicitadoDto, 
-    SolicitacaoMaterialDto, 
-    SolicitacaoMaterialServiceProxy, 
-    TarefaDto, 
+import {
+    ObraComTarefasDto,
+    RankingMaterialSolicitadoDto,
+    SolicitacaoMaterialDto,
+    SolicitacaoMaterialServiceProxy,
+    TarefaDto,
     TarefaServiceProxy,
-    SolicitacaoMaterialStatus 
+    SolicitacaoMaterialStatus
 } from '../../shared/service-proxies/service-proxies';
 import { EnumServiceProxy, EnumValueDto } from '../../shared/service-proxies/service-proxies'; // Adicione esta importação
 import { LocalizePipe } from '@shared/pipes/localize.pipe';
@@ -45,20 +45,21 @@ export class HomeComponent extends AppComponentBase implements OnInit {
 
     // Mapeamento de status será preenchido pelo service
     private statusMap: Map<number, { label: string; class: string; color: string }> = new Map();
-    
+
     // Cores pré-definidas para cada status (serão associadas dinamicamente)
+    // Cores pré-definidas para cada status (alinhadas com a lista de solicitações)
     private statusColors: string[] = [
-        '#ffc107', // Amarelo - Aberta
-        '#17a2b8', // Azul claro - Cotações em andamento
-        '#007bff', // Azul - Cotações e orçamentos
-        '#28a745', // Verde - Orçamentos disponíveis
-        '#6c757d', // Cinza - Aguardando confirmação
-        '#ffc107', // Amarelo - Parcialmente concluído
-        '#28a745', // Verde - Disponível p/ pagamento
-        '#dc3545', // Vermelho - Cancelado
-        '#dc3545', // Vermelho - Intervenção necessária
-        '#28a745', // Verde - Concluída
-        '#6c757d'  // Cinza - Substituída
+        '#616161',    // 0 - Aberta (bg-secondary = preto)
+        '#fd7e14',    // 1 - Cotações em andamento (bg-orange)
+        '#fd7e14',    // 2 - Cotações + orçamentos (bg-orange)
+        '#6f42c1',    // 3 - Orçamentos disponíveis (bg-purple)
+        '#17a2b8',    // 4 - Pedido realizado (bg-info)
+        '#17a2b8',    // 5 - Pedido parcialmente concluído (bg-info)
+        '#007bff',    // 6 - Pedido concluído, disponível para pagamento (bg-primary)
+        '#dc3545',    // 7 - Pedido cancelado (bg-danger)
+        '#dc3545',    // 8 - Intervenção necessária (bg-danger)
+        '#28a745',    // 9 - Compras concluídas, pagamentos realizados (bg-success)
+        '#6c757d'     // 10 - Solicitação substituída (bg-substituida = cinza)
     ];
 
     @ViewChild('donutChart') donutChart?: BaseChartDirective;
@@ -70,8 +71,8 @@ export class HomeComponent extends AppComponentBase implements OnInit {
     public donutChartOptions: ChartConfiguration['options'] = {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: { 
-            legend: { 
+        plugins: {
+            legend: {
                 position: 'bottom',
                 labels: {
                     generateLabels: (chart) => {
@@ -79,8 +80,8 @@ export class HomeComponent extends AppComponentBase implements OnInit {
                         if (data.labels?.length && data.datasets.length) {
                             return data.labels.map((label, i) => ({
                                 text: label as string,
-                                fillStyle: Array.isArray(data.datasets[0].backgroundColor) 
-                                    ? data.datasets[0].backgroundColor[i] 
+                                fillStyle: Array.isArray(data.datasets[0].backgroundColor)
+                                    ? data.datasets[0].backgroundColor[i]
                                     : '#000',
                                 strokeStyle: 'transparent',
                                 lineWidth: 0,
@@ -91,7 +92,7 @@ export class HomeComponent extends AppComponentBase implements OnInit {
                         return [];
                     }
                 }
-            } 
+            }
         }
     };
 
@@ -221,7 +222,7 @@ export class HomeComponent extends AppComponentBase implements OnInit {
     ngOnInit(): void {
         // Primeiro carrega os status do enum
         this.carregarStatusSolicitacao();
-        
+
         this.carregarUltimasSolicitacoes();
         this.carregarTopMateriais();
         this.carregarSolicitacoesPorObra();
@@ -246,19 +247,19 @@ export class HomeComponent extends AppComponentBase implements OnInit {
                 statusList.forEach((status, index) => {
                     // Determina a classe CSS baseada no tipo de status
                     let cssClass = this.determinarClasseStatus(status.value);
-                    
+
                     this.statusMap.set(status.value, {
                         label: status.description || status.name,
                         class: cssClass,
                         color: this.statusColors[index] || '#6c757d'
                     });
                 });
-                
+
                 // Atualiza o gráfico se já houver solicitações carregadas
                 if (this.ultimasSolicitacoes.length > 0) {
                     this.atualizarGraficoStatusSolicitacoes();
                 }
-                
+
                 this.cdr.markForCheck();
             },
             error: (error) => {
@@ -272,19 +273,19 @@ export class HomeComponent extends AppComponentBase implements OnInit {
     // Fallback caso o service de enums falhe
     private carregarStatusFallback(): void {
         const statusFallback = [
-            { value: 0, label: 'Aberta', class: 'bg-warning text-dark', color: '#ffc107' },
-            { value: 1, label: 'Cotações em andamento', class: 'bg-info text-white', color: '#17a2b8' },
-            { value: 2, label: 'Cotações e orçamentos', class: 'bg-primary text-white', color: '#007bff' },
-            { value: 3, label: 'Orçamentos disponíveis', class: 'bg-success text-white', color: '#28a745' },
-            { value: 4, label: 'Aguardando confirmação', class: 'bg-secondary text-white', color: '#6c757d' },
-            { value: 5, label: 'Parcialmente concluído', class: 'bg-warning text-dark', color: '#ffc107' },
-            { value: 6, label: 'Disponível p/ pagamento', class: 'bg-success text-white', color: '#28a745' },
+            { value: 0, label: 'Aberta', class: 'bg-secondary text-white', color: '#000000' },
+            { value: 1, label: 'Cotações em andamento', class: 'bg-orange text-white', color: '#fd7e14' },
+            { value: 2, label: 'Cotações e orçamentos', class: 'bg-orange text-white', color: '#fd7e14' },
+            { value: 3, label: 'Orçamentos disponíveis', class: 'bg-purple text-white', color: '#6f42c1' },
+            { value: 4, label: 'Pedido realizado', class: 'bg-info text-white', color: '#17a2b8' },
+            { value: 5, label: 'Parcialmente concluído', class: 'bg-info text-white', color: '#17a2b8' },
+            { value: 6, label: 'Disponível p/ pagamento', class: 'bg-primary text-white', color: '#007bff' },
             { value: 7, label: 'Cancelado', class: 'bg-danger text-white', color: '#dc3545' },
             { value: 8, label: 'Intervenção necessária', class: 'bg-danger text-white', color: '#dc3545' },
             { value: 9, label: 'Concluída', class: 'bg-success text-white', color: '#28a745' },
-            { value: 10, label: 'Substituída', class: 'bg-secondary text-white', color: '#6c757d' }
+            { value: 10, label: 'Substituída', class: 'bg-substituida text-white', color: '#6c757d' }
         ];
-        
+
         statusFallback.forEach(status => {
             this.statusMap.set(status.value, {
                 label: status.label,
@@ -294,17 +295,22 @@ export class HomeComponent extends AppComponentBase implements OnInit {
         });
     }
 
-    // Determina a classe CSS baseada no valor do status
+    // Determina a classe CSS baseada no valor do status (alinhada com getStatusClass da lista)
     private determinarClasseStatus(statusValue: number): string {
-        // Lógica para determinar a classe baseada no tipo de status
-        if (statusValue === 0) return 'bg-warning text-dark'; // Aberta
-        if (statusValue >= 1 && statusValue <= 2) return 'bg-info text-white'; // Em andamento/cotações
-        if (statusValue === 3 || statusValue === 6 || statusValue === 9) return 'bg-success text-white'; // Concluídos/disponíveis
-        if (statusValue === 4 || statusValue === 10) return 'bg-secondary text-white'; // Aguardando/substituída
-        if (statusValue === 5) return 'bg-warning text-dark'; // Parcial
-        if (statusValue === 7 || statusValue === 8) return 'bg-danger text-white'; // Cancelado/intervenção
-        
-        return 'bg-secondary text-white'; // Default
+        switch (statusValue) {
+            case 0: return 'bg-secondary text-white';      // Aberta
+            case 1: return 'bg-orange text-white';         // Cotações em andamento
+            case 2: return 'bg-orange text-white';         // Cotações + orçamentos
+            case 3: return 'bg-purple text-white';         // Orçamentos disponíveis
+            case 4: return 'bg-info text-white';           // Pedido realizado
+            case 5: return 'bg-info text-white';           // Pedido parcialmente concluído
+            case 6: return 'bg-primary text-white';        // Pedido concluído, disponível para pagamento
+            case 7: return 'bg-danger text-white';         // Cancelado
+            case 8: return 'bg-danger text-white';         // Intervenção necessária
+            case 9: return 'bg-success text-white';        // Compras concluídas
+            case 10: return 'bg-substituida text-white';   // Solicitação substituída
+            default: return 'bg-secondary text-white';
+        }
     }
 
     carregarUltimasSolicitacoes() {
@@ -312,10 +318,10 @@ export class HomeComponent extends AppComponentBase implements OnInit {
             .subscribe(result => {
                 this.ultimasSolicitacoes = result.items || [];
                 this.collapseStatesSolic = this.ultimasSolicitacoes.map(() => false);
-                
+
                 // Atualizar gráfico de donut com todos os status
                 this.atualizarGraficoStatusSolicitacoes();
-                
+
                 this.cdr.markForCheck();
             });
     }
@@ -326,7 +332,7 @@ export class HomeComponent extends AppComponentBase implements OnInit {
 
         // Agrupar solicitações por status
         const statusCount = new Map<number, number>();
-        
+
         this.ultimasSolicitacoes.forEach(s => {
             const count = statusCount.get(s.status) || 0;
             statusCount.set(s.status, count + 1);
@@ -387,28 +393,143 @@ export class HomeComponent extends AppComponentBase implements OnInit {
     }
 
     carregarSolicitacoesPorObra() {
-        this._solicitacaoService.getSolicitacoesPorObra()
-            .subscribe(result => {
-                this.obrasChartData = {
-                    labels: result.map(r => r.nomeObra),
-                    datasets: [
-                        {
-                            label: 'Abertas',
-                            data: result.map(r => r.quantidadeAbertas),
-                            backgroundColor: '#ffc107'
-                        },
-                        {
-                            label: 'Concluídas',
-                            data: result.map(r => r.quantidadeConcluidas),
-                            backgroundColor: '#28a745'
-                        }
-                    ]
-                };
+    this._solicitacaoService.getSolicitacoesPorObra()
+        .subscribe(result => {
+            // Cores alinhadas com a lista de solicitações e o mapeamento de status
+            const cores = [
+                '#616161',    // 0 - Aberta (bg-secondary = preto)
+                '#fd7e14',    // 1 - Cotações em andamento (bg-orange)
+                '#6f42c1',    // 3 - Orçamentos disponíveis (bg-purple)
+                '#17a2b8',    // 4 - Pedido realizado (bg-info)
+                '#17a2b8',    // 5 - Pedido parcialmente concluído (bg-info)
+                '#007bff',    // 6 - Pedido concluído, disponível para pagamento (bg-primary)
+                '#dc3545',    // 7 - Pedido cancelado (bg-danger)
+                '#dc3545',    // 8 - Intervenção necessária (bg-danger)
+                '#28a745'     // 9 - Compras concluídas, pagamentos realizados (bg-success)
+                // Nota: Status 10 (Substituída) pode ser adicionado se existir no DTO
+            ];
 
+            this.obrasChartData = {
+                labels: result.map(r => r.nomeObra),
+                datasets: [
+                    {
+                        label: 'Aberta',
+                        data: result.map(r => r.quantidadeAbertas),
+                        backgroundColor: cores[0],
+                        stack: 'status'
+                    },
+                    {
+                        label: 'Cotações em andamento',
+                        data: result.map(r => r.quantidadeCotacoesEmAndamento),
+                        backgroundColor: cores[1],
+                        stack: 'status'
+                    },
+                    {
+                        label: 'Orçamentos disponíveis',
+                        data: result.map(r => r.quantidadeOrcamentosDisponiveis),
+                        backgroundColor: cores[2],
+                        stack: 'status'
+                    },
+                    {
+                        label: 'Aguardando confirmação',
+                        data: result.map(r => r.quantidadeAguardandoConfirmacao),
+                        backgroundColor: cores[3],
+                        stack: 'status'
+                    },
+                    {
+                        label: 'Parcialmente concluído',
+                        data: result.map(r => r.quantidadeParcialmenteConcluido),
+                        backgroundColor: cores[4],
+                        stack: 'status'
+                    },
+                    {
+                        label: 'Disponível p/ pagamento',
+                        data: result.map(r => r.quantidadeDisponivelPagamento),
+                        backgroundColor: cores[5],
+                        stack: 'status'
+                    },
+                    {
+                        label: 'Canceladas',
+                        data: result.map(r => r.quantidadeCanceladas),
+                        backgroundColor: cores[6],
+                        stack: 'status'
+                    },
+                    {
+                        label: 'Intervenção necessária',
+                        data: result.map(r => r.quantidadeIntervencao),
+                        backgroundColor: cores[7],
+                        stack: 'status'
+                    },
+                    {
+                        label: 'Concluída (pago)',
+                        data: result.map(r => r.quantidadeConcluidas),
+                        backgroundColor: cores[8],
+                        stack: 'status'
+                    }
+                ]
+            };
+
+            this.obrasChartOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        maxHeight: 150,
+                        labels: { 
+                            boxWidth: 12,
+                            font: {
+                                size: 11,
+                                weight: 'normal'
+                            }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: (context) => {
+                                const label = context.dataset.label || '';
+                                const value = context.raw as number;
+                                return `${label}: ${value}`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        stacked: true,
+                        ticks: { 
+                            autoSkip: false, 
+                            maxRotation: 45, 
+                            minRotation: 45,
+                            font: {
+                                size: 11,
+                                weight: 'normal' // Use 'normal' ao invés de '500'
+                            }
+                        }
+                    },
+                    y: {
+                        stacked: true,
+                        beginAtZero: true,
+                        title: { 
+                            display: true, 
+                            text: 'Quantidade de solicitações',
+                            font: {
+                                size: 12,
+                                weight: 'bold' // Use 'bold' ao invés de '500' para negrito
+                            }
+                        }
+                    }
+                }
+            };
+
+            // Forçar atualização do gráfico
+            setTimeout(() => {
                 this.obrasChart?.chart?.update();
-                this.cdr.markForCheck();
-            });
-    }
+            }, 100);
+            
+            this.cdr.markForCheck();
+        });
+}
 
     carregarUltimasTarefas() {
         this._tarefaService.getAll(undefined, undefined, undefined, undefined, 0, 20)

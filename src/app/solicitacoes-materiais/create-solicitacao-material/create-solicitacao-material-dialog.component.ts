@@ -106,6 +106,7 @@ export class CreateSolicitacaoMaterialDialogComponent extends AppComponentBase i
     ];
 
     unidadesParaComplementar = [
+        'unidades(s) de',
         'saco(s) de',
         'lata(s) de',
         'balde(s) de',

@@ -168,3 +168,40 @@ $font-size-sm: 0.875rem;    // aumentado de 0.8125rem → 14px
     height: 320px; // um pouco maior que antes
   }
 }
+
+// Cores personalizadas para os badges (mesmas da lista de solicitações)
+.bg-orange {
+    background-color: #fd7e14 !important;
+    color: white;
+}
+
+.bg-purple {
+    background-color: #6f42c1 !important;
+    color: white;
+}
+
+.bg-substituida {
+    background-color: #6c757d !important;
+    color: white;
+}
+
+// Override das cores padrão do Bootstrap se necessário
+.bg-secondary {
+    background-color: #616161 !important; // Preto para status "Aberta"
+}
+
+.bg-info {
+    background-color: #17a2b8 !important;
+}
+
+.bg-primary {
+    background-color: #007bff !important;
+}
+
+.bg-danger {
+    background-color: #dc3545 !important;
+}
+
+.bg-success {
+    background-color: #28a745 !important;
+}

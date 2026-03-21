@@ -17312,7 +17312,15 @@ export class SolicitacaoPorObraDashboard implements ISolicitacaoPorObraDashboard
     obraId: string | undefined;
     nomeObra: string | undefined;
     quantidadeAbertas: number;
+    quantidadeCotacoesEmAndamento: number;
+    quantidadeOrcamentosDisponiveis: number;
+    quantidadeAguardandoConfirmacao: number;
+    quantidadeParcialmenteConcluido: number;
+    quantidadeDisponivelPagamento: number;
     quantidadeConcluidas: number;
+    quantidadeCanceladas: number;
+    quantidadeIntervencao: number;
+    readonly total: number;
 
     constructor(data?: ISolicitacaoPorObraDashboard) {
         if (data) {
@@ -17328,7 +17336,15 @@ export class SolicitacaoPorObraDashboard implements ISolicitacaoPorObraDashboard
             this.obraId = _data["obraId"];
             this.nomeObra = _data["nomeObra"];
             this.quantidadeAbertas = _data["quantidadeAbertas"];
+            this.quantidadeCotacoesEmAndamento = _data["quantidadeCotacoesEmAndamento"];
+            this.quantidadeOrcamentosDisponiveis = _data["quantidadeOrcamentosDisponiveis"];
+            this.quantidadeAguardandoConfirmacao = _data["quantidadeAguardandoConfirmacao"];
+            this.quantidadeParcialmenteConcluido = _data["quantidadeParcialmenteConcluido"];
+            this.quantidadeDisponivelPagamento = _data["quantidadeDisponivelPagamento"];
             this.quantidadeConcluidas = _data["quantidadeConcluidas"];
+            this.quantidadeCanceladas = _data["quantidadeCanceladas"];
+            this.quantidadeIntervencao = _data["quantidadeIntervencao"];
+            (<any>this).total = _data["total"];
         }
     }
 
@@ -17344,7 +17360,15 @@ export class SolicitacaoPorObraDashboard implements ISolicitacaoPorObraDashboard
         data["obraId"] = this.obraId;
         data["nomeObra"] = this.nomeObra;
         data["quantidadeAbertas"] = this.quantidadeAbertas;
+        data["quantidadeCotacoesEmAndamento"] = this.quantidadeCotacoesEmAndamento;
+        data["quantidadeOrcamentosDisponiveis"] = this.quantidadeOrcamentosDisponiveis;
+        data["quantidadeAguardandoConfirmacao"] = this.quantidadeAguardandoConfirmacao;
+        data["quantidadeParcialmenteConcluido"] = this.quantidadeParcialmenteConcluido;
+        data["quantidadeDisponivelPagamento"] = this.quantidadeDisponivelPagamento;
         data["quantidadeConcluidas"] = this.quantidadeConcluidas;
+        data["quantidadeCanceladas"] = this.quantidadeCanceladas;
+        data["quantidadeIntervencao"] = this.quantidadeIntervencao;
+        data["total"] = this.total;
         return data;
     }
 
@@ -17360,7 +17384,15 @@ export interface ISolicitacaoPorObraDashboard {
     obraId: string | undefined;
     nomeObra: string | undefined;
     quantidadeAbertas: number;
+    quantidadeCotacoesEmAndamento: number;
+    quantidadeOrcamentosDisponiveis: number;
+    quantidadeAguardandoConfirmacao: number;
+    quantidadeParcialmenteConcluido: number;
+    quantidadeDisponivelPagamento: number;
     quantidadeConcluidas: number;
+    quantidadeCanceladas: number;
+    quantidadeIntervencao: number;
+    total: number;
 }
 
 export class TarefaDto implements ITarefaDto {
