@@ -1,10 +1,10 @@
-import { GRKConstrutoraTemplatePage } from './app.po';
+﻿import { ConstrutorIATemplatePage } from './app.po';
 
-describe('GRKConstrutora App', function () {
-    let page: GRKConstrutoraTemplatePage;
+describe('ConstrutorIA App', function () {
+    let page: ConstrutorIATemplatePage;
 
     beforeEach(() => {
-        page = new GRKConstrutoraTemplatePage();
+        page = new ConstrutorIATemplatePage();
     });
 
     it('should display message saying app works', () => {
@@ -12,3 +12,4 @@ describe('GRKConstrutora App', function () {
         expect(page.getParagraphText()).toEqual('app works!');
     });
 });
+

@@ -1,6 +1,6 @@
-import { browser, element, by } from 'protractor';
+﻿import { browser, element, by } from 'protractor';
 
-export class GRKConstrutoraTemplatePage {
+export class ConstrutorIATemplatePage {
     navigateTo() {
         return browser.get('/');
     }
@@ -9,3 +9,4 @@ export class GRKConstrutoraTemplatePage {
         return element(by.css('app-root h1')).getText();
     }
 }
+

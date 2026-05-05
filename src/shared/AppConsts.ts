@@ -1,4 +1,4 @@
-export class AppConsts {
+﻿export class AppConsts {
     static readonly tenancyNamePlaceHolderInUrl = '{TENANCY_NAME}';
 
     static remoteServiceBaseUrl: string;
@@ -12,10 +12,11 @@ export class AppConsts {
     };
 
     static readonly localization = {
-        defaultLocalizationSourceName: 'GRKConstrutora',
+        defaultLocalizationSourceName: 'ConstrutorIA',
     };
 
     static readonly authorization = {
         encryptedAuthTokenName: 'enc_auth_token',
     };
 }
+
