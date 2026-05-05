@@ -6256,6 +6256,316 @@ export class TarefaServiceProxy {
 }
 
 @Injectable()
+export class TarefaDomainServiceServiceProxy {
+    private http: HttpClient;
+    private baseUrl: string;
+    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+
+    constructor(@Inject(HttpClient) http: HttpClient, @Optional() @Inject(API_BASE_URL) baseUrl?: string) {
+        this.http = http;
+        this.baseUrl = baseUrl ?? "";
+    }
+
+    /**
+     * @return OK
+     */
+    listarEncarregadosComTarefasPendentes(): Observable<EncarregadoTarefasDto[]> {
+        let url_ = this.baseUrl + "/api/services/app/TarefaDomainService/ListarEncarregadosComTarefasPendentes";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processListarEncarregadosComTarefasPendentes(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processListarEncarregadosComTarefasPendentes(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<EncarregadoTarefasDto[]>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<EncarregadoTarefasDto[]>;
+        }));
+    }
+
+    protected processListarEncarregadosComTarefasPendentes(response: HttpResponseBase): Observable<EncarregadoTarefasDto[]> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200.push(EncarregadoTarefasDto.fromJS(item));
+            }
+            else {
+                result200 = <any>null;
+            }
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param encarregadoId (optional) 
+     * @return OK
+     */
+    getThreadTarefaAberta(encarregadoId: string | undefined): Observable<SessaoIAEntity> {
+        let url_ = this.baseUrl + "/api/services/app/TarefaDomainService/GetThreadTarefaAberta?";
+        if (encarregadoId === null)
+            throw new Error("The parameter 'encarregadoId' cannot be null.");
+        else if (encarregadoId !== undefined)
+            url_ += "encarregadoId=" + encodeURIComponent("" + encarregadoId) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetThreadTarefaAberta(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetThreadTarefaAberta(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<SessaoIAEntity>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<SessaoIAEntity>;
+        }));
+    }
+
+    protected processGetThreadTarefaAberta(response: HttpResponseBase): Observable<SessaoIAEntity> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = SessaoIAEntity.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param encarregadoId (optional) 
+     * @param threadId (optional) 
+     * @param textoMensagem (optional) 
+     * @return OK
+     */
+    salvarThreadTarefaComMensagem(encarregadoId: string | undefined, threadId: string | undefined, textoMensagem: string | undefined): Observable<SessaoIAEntity> {
+        let url_ = this.baseUrl + "/api/services/app/TarefaDomainService/SalvarThreadTarefaComMensagem?";
+        if (encarregadoId === null)
+            throw new Error("The parameter 'encarregadoId' cannot be null.");
+        else if (encarregadoId !== undefined)
+            url_ += "encarregadoId=" + encodeURIComponent("" + encarregadoId) + "&";
+        if (threadId === null)
+            throw new Error("The parameter 'threadId' cannot be null.");
+        else if (threadId !== undefined)
+            url_ += "threadId=" + encodeURIComponent("" + threadId) + "&";
+        if (textoMensagem === null)
+            throw new Error("The parameter 'textoMensagem' cannot be null.");
+        else if (textoMensagem !== undefined)
+            url_ += "textoMensagem=" + encodeURIComponent("" + textoMensagem) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processSalvarThreadTarefaComMensagem(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processSalvarThreadTarefaComMensagem(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<SessaoIAEntity>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<SessaoIAEntity>;
+        }));
+    }
+
+    protected processSalvarThreadTarefaComMensagem(response: HttpResponseBase): Observable<SessaoIAEntity> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = SessaoIAEntity.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param encarregadoId (optional) 
+     * @param sessaoId (optional) 
+     * @return OK
+     */
+    salvarFluxoTarefa(encarregadoId: string | undefined, sessaoId: string | undefined): Observable<FluxoOrquestracaoEntity> {
+        let url_ = this.baseUrl + "/api/services/app/TarefaDomainService/SalvarFluxoTarefa?";
+        if (encarregadoId === null)
+            throw new Error("The parameter 'encarregadoId' cannot be null.");
+        else if (encarregadoId !== undefined)
+            url_ += "encarregadoId=" + encodeURIComponent("" + encarregadoId) + "&";
+        if (sessaoId === null)
+            throw new Error("The parameter 'sessaoId' cannot be null.");
+        else if (sessaoId !== undefined)
+            url_ += "sessaoId=" + encodeURIComponent("" + sessaoId) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processSalvarFluxoTarefa(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processSalvarFluxoTarefa(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<FluxoOrquestracaoEntity>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<FluxoOrquestracaoEntity>;
+        }));
+    }
+
+    protected processSalvarFluxoTarefa(response: HttpResponseBase): Observable<FluxoOrquestracaoEntity> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = FluxoOrquestracaoEntity.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param encarregadoId (optional) 
+     * @return OK
+     */
+    getLastUserMessageTime(encarregadoId: string | undefined): Observable<moment.Moment | null> {
+        let url_ = this.baseUrl + "/api/services/app/TarefaDomainService/GetLastUserMessageTime?";
+        if (encarregadoId === null)
+            throw new Error("The parameter 'encarregadoId' cannot be null.");
+        else if (encarregadoId !== undefined)
+            url_ += "encarregadoId=" + encodeURIComponent("" + encarregadoId) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetLastUserMessageTime(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetLastUserMessageTime(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<moment.Moment | null>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<moment.Moment | null>;
+        }));
+    }
+
+    protected processGetLastUserMessageTime(response: HttpResponseBase): Observable<moment.Moment | null> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+                result200 = resultData200 ? moment(resultData200.toString()) : <any>null;
+    
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+}
+
+@Injectable()
 export class TarefaInternaServiceProxy {
     private http: HttpClient;
     private baseUrl: string;
@@ -8110,6 +8420,15 @@ export interface IApplicationInfoDto {
 }
 
 export enum AssuntoMensagem {
+    OUTROS = "OUTROS",
+    TarefasPendentes = "TarefasPendentes",
+    SolicitacaoMateriais = "SolicitacaoMateriais",
+    ProblemasObra = "ProblemasObra",
+    Agradecimento = "Agradecimento",
+    Cotacao = "Cotacao",
+}
+
+export enum AssuntoMensagemNullable {
     OUTROS = "OUTROS",
     TarefasPendentes = "TarefasPendentes",
     SolicitacaoMateriais = "SolicitacaoMateriais",
@@ -11007,6 +11326,73 @@ export interface IEncarregadoEntity {
     tarefas: TarefaEntity[] | undefined;
 }
 
+export class EncarregadoTarefasDto implements IEncarregadoTarefasDto {
+    id: string;
+    nome: string | undefined;
+    telefone: TelefoneDto;
+    tarefas: TarefaDto[] | undefined;
+    readonly celular: string | undefined;
+
+    constructor(data?: IEncarregadoTarefasDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.nome = _data["nome"];
+            this.telefone = _data["telefone"] ? TelefoneDto.fromJS(_data["telefone"]) : <any>undefined;
+            if (Array.isArray(_data["tarefas"])) {
+                this.tarefas = [] as any;
+                for (let item of _data["tarefas"])
+                    this.tarefas.push(TarefaDto.fromJS(item));
+            }
+            (<any>this).celular = _data["celular"];
+        }
+    }
+
+    static fromJS(data: any): EncarregadoTarefasDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new EncarregadoTarefasDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["nome"] = this.nome;
+        data["telefone"] = this.telefone ? this.telefone.toJSON() : <any>undefined;
+        if (Array.isArray(this.tarefas)) {
+            data["tarefas"] = [];
+            for (let item of this.tarefas)
+                data["tarefas"].push(item.toJSON());
+        }
+        data["celular"] = this.celular;
+        return data;
+    }
+
+    clone(): EncarregadoTarefasDto {
+        const json = this.toJSON();
+        let result = new EncarregadoTarefasDto();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IEncarregadoTarefasDto {
+    id: string;
+    nome: string | undefined;
+    telefone: TelefoneDto;
+    tarefas: TarefaDto[] | undefined;
+    celular: string | undefined;
+}
+
 export class EnderecoDto implements IEnderecoDto {
     id: string;
     rua: string | undefined;
@@ -11375,6 +11761,129 @@ export interface IFlatPermissionDto {
     name: string | undefined;
     displayName: string | undefined;
     description: string | undefined;
+}
+
+export class FluxoOrquestracaoEntity implements IFluxoOrquestracaoEntity {
+    id: string;
+    creationTime: moment.Moment;
+    creatorUserId: number | undefined;
+    lastModificationTime: moment.Moment | undefined;
+    lastModifierUserId: number | undefined;
+    isDeleted: boolean;
+    deleterUserId: number | undefined;
+    deletionTime: moment.Moment | undefined;
+    encarregadoId: string;
+    encarregado: EncarregadoEntity;
+    fluxoPrincipal: AssuntoMensagemNullable | undefined;
+    sessaoPrincipalId: string | undefined;
+    sessaoPrincipal: SessaoIAEntity;
+    subfluxoAtual: AssuntoMensagemNullable | undefined;
+    sessaoSubfluxoId: string | undefined;
+    sessaoSubfluxo: SessaoIAEntity;
+    ativo: boolean;
+    observacoes: string | undefined;
+    tarefaFluxoId: string | undefined;
+    tarefaFluxo: TarefaEntity;
+    primeiraPassagem: boolean;
+
+    constructor(data?: IFluxoOrquestracaoEntity) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.creationTime = _data["creationTime"] ? moment(_data["creationTime"].toString()) : <any>undefined;
+            this.creatorUserId = _data["creatorUserId"];
+            this.lastModificationTime = _data["lastModificationTime"] ? moment(_data["lastModificationTime"].toString()) : <any>undefined;
+            this.lastModifierUserId = _data["lastModifierUserId"];
+            this.isDeleted = _data["isDeleted"];
+            this.deleterUserId = _data["deleterUserId"];
+            this.deletionTime = _data["deletionTime"] ? moment(_data["deletionTime"].toString()) : <any>undefined;
+            this.encarregadoId = _data["encarregadoId"];
+            this.encarregado = _data["encarregado"] ? EncarregadoEntity.fromJS(_data["encarregado"]) : <any>undefined;
+            this.fluxoPrincipal = _data["fluxoPrincipal"];
+            this.sessaoPrincipalId = _data["sessaoPrincipalId"];
+            this.sessaoPrincipal = _data["sessaoPrincipal"] ? SessaoIAEntity.fromJS(_data["sessaoPrincipal"]) : <any>undefined;
+            this.subfluxoAtual = _data["subfluxoAtual"];
+            this.sessaoSubfluxoId = _data["sessaoSubfluxoId"];
+            this.sessaoSubfluxo = _data["sessaoSubfluxo"] ? SessaoIAEntity.fromJS(_data["sessaoSubfluxo"]) : <any>undefined;
+            this.ativo = _data["ativo"];
+            this.observacoes = _data["observacoes"];
+            this.tarefaFluxoId = _data["tarefaFluxoId"];
+            this.tarefaFluxo = _data["tarefaFluxo"] ? TarefaEntity.fromJS(_data["tarefaFluxo"]) : <any>undefined;
+            this.primeiraPassagem = _data["primeiraPassagem"];
+        }
+    }
+
+    static fromJS(data: any): FluxoOrquestracaoEntity {
+        data = typeof data === 'object' ? data : {};
+        let result = new FluxoOrquestracaoEntity();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["creationTime"] = this.creationTime ? this.creationTime.toISOString() : <any>undefined;
+        data["creatorUserId"] = this.creatorUserId;
+        data["lastModificationTime"] = this.lastModificationTime ? this.lastModificationTime.toISOString() : <any>undefined;
+        data["lastModifierUserId"] = this.lastModifierUserId;
+        data["isDeleted"] = this.isDeleted;
+        data["deleterUserId"] = this.deleterUserId;
+        data["deletionTime"] = this.deletionTime ? this.deletionTime.toISOString() : <any>undefined;
+        data["encarregadoId"] = this.encarregadoId;
+        data["encarregado"] = this.encarregado ? this.encarregado.toJSON() : <any>undefined;
+        data["fluxoPrincipal"] = this.fluxoPrincipal;
+        data["sessaoPrincipalId"] = this.sessaoPrincipalId;
+        data["sessaoPrincipal"] = this.sessaoPrincipal ? this.sessaoPrincipal.toJSON() : <any>undefined;
+        data["subfluxoAtual"] = this.subfluxoAtual;
+        data["sessaoSubfluxoId"] = this.sessaoSubfluxoId;
+        data["sessaoSubfluxo"] = this.sessaoSubfluxo ? this.sessaoSubfluxo.toJSON() : <any>undefined;
+        data["ativo"] = this.ativo;
+        data["observacoes"] = this.observacoes;
+        data["tarefaFluxoId"] = this.tarefaFluxoId;
+        data["tarefaFluxo"] = this.tarefaFluxo ? this.tarefaFluxo.toJSON() : <any>undefined;
+        data["primeiraPassagem"] = this.primeiraPassagem;
+        return data;
+    }
+
+    clone(): FluxoOrquestracaoEntity {
+        const json = this.toJSON();
+        let result = new FluxoOrquestracaoEntity();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IFluxoOrquestracaoEntity {
+    id: string;
+    creationTime: moment.Moment;
+    creatorUserId: number | undefined;
+    lastModificationTime: moment.Moment | undefined;
+    lastModifierUserId: number | undefined;
+    isDeleted: boolean;
+    deleterUserId: number | undefined;
+    deletionTime: moment.Moment | undefined;
+    encarregadoId: string;
+    encarregado: EncarregadoEntity;
+    fluxoPrincipal: AssuntoMensagemNullable | undefined;
+    sessaoPrincipalId: string | undefined;
+    sessaoPrincipal: SessaoIAEntity;
+    subfluxoAtual: AssuntoMensagemNullable | undefined;
+    sessaoSubfluxoId: string | undefined;
+    sessaoSubfluxo: SessaoIAEntity;
+    ativo: boolean;
+    observacoes: string | undefined;
+    tarefaFluxoId: string | undefined;
+    tarefaFluxo: TarefaEntity;
+    primeiraPassagem: boolean;
 }
 
 export enum FormaPagamento {
