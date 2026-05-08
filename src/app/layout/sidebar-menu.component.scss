@@ -1,3 +1,8 @@
 .nav-link {
     border-left: 0 !important;
 }
+
+::ng-deep .main-sidebar .nav-sidebar .nav-link.active {
+    background-color: #014fce !important;
+    color: rgb(255, 255, 255) !important;
+}

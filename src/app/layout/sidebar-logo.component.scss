@@ -1,0 +1,57 @@
+.ia-highlight {
+    color: #f5a000;
+}
+
+.brand-link:hover .ia-highlight {
+    color: #f5a000;
+    /* mantém a mesma cor, ou pode escurecer um pouco */
+}
+
+.side-logo-size {
+    height: 130px !important;
+    display: flex; // ativa o flexbox
+    align-items: center; // centraliza verticalmente
+    justify-content: flex-start; // ou center, se quiser tudo centralizado horizontalmente
+    gap: 0.5rem; // espaço entre a imagem e o texto (ajuste conforme desejar)
+    padding: 0 1rem; // evita que o texto encoste na borda
+      border-bottom: none !important;
+    box-shadow: none !important; /* remove qualquer sombra que possa simular linha */
+}
+
+.brand-image {
+    // garante que a imagem não distorça
+    max-height: 50px; // ajuste conforme o tamanho desejado
+    width: auto;
+}
+
+.texto-logo {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 800;
+    line-height: 1.2; // evita que o texto quebre o alinhamento
+    margin: 0; // remove margens extras
+}
+
+.texto-logo1 {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 500;
+    line-height: 1.2; // evita que o texto quebre o alinhamento
+    margin: 0; // remove margens extras
+}
+
+.logo-stilo {
+    max-height: 50px; /* ajuste conforme o tamanho desejado */
+    width: auto;
+}
+
+.side-logo-size {
+    display: flex;
+    align-items: center; // mantém
+}
+
+.logo-stilo {
+    align-self: center;  // reforça
+}
+
+.texto-logo {
+    align-self: center;  // reforça
+}
