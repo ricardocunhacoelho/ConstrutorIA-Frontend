@@ -6,7 +6,7 @@ import { AbpModalHeaderComponent } from '../../../shared/components/modal/abp-mo
 import { AbpModalFooterComponent } from '../../../shared/components/modal/abp-modal-footer.component';
 import { LocalizePipe } from '@shared/pipes/localize.pipe';
 import { AppComponentBase } from '@shared/app-component-base';
-import { ProblemaImpedimentoServiceProxy, ProblemaImpedimentoDto, EncarregadoComObraDto, UpdateProblemaImpedimentoDto, NivelUrgencia } from '../../../shared/service-proxies/service-proxies';
+import { ProblemaImpedimentoServiceProxy, ProblemaImpedimentoDto, EncarregadoComObraDto, UpdateProblemaImpedimentoDto, NivelUrgenciaNullable } from '../../../shared/service-proxies/service-proxies';
 import { forkJoin } from 'rxjs';
 
 @Component({
@@ -28,7 +28,7 @@ export class EditProblemaImpedimentoDialogComponent extends AppComponentBase imp
     problema = new UpdateProblemaImpedimentoDto();
     encarregadosComObras: EncarregadoComObraDto[] = [];
     selectedEncarregado?: EncarregadoComObraDto;
-    niveisUrgencia = Object.values(NivelUrgencia);
+    niveisUrgencia = Object.values(NivelUrgenciaNullable);
 
     id?: string;
 

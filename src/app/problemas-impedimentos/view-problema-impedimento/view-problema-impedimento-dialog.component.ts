@@ -14,7 +14,7 @@ import {
   ProblemaImpedimentoServiceProxy,
   ProblemaImpedimentoDto,
   ProblemaImpedimentoStatus,
-  NivelUrgencia
+  NivelUrgenciaNullable
 } from '../../../shared/service-proxies/service-proxies';
 
 import moment from 'moment';
@@ -47,7 +47,7 @@ export class ViewProblemaImpedimentoDialogComponent extends AppComponentBase imp
 
   // Enums
   ProblemaImpedimentoStatus = ProblemaImpedimentoStatus;
-  NivelUrgencia = NivelUrgencia;
+  NivelUrgencia = NivelUrgenciaNullable;
 
   // Controle de expansão de textos longos
   descricaoExpandida = false;
@@ -151,39 +151,39 @@ export class ViewProblemaImpedimentoDialogComponent extends AppComponentBase imp
     }
   }
 
-  getUrgenciaClass(urgencia: NivelUrgencia): string {
+  getUrgenciaClass(urgencia: NivelUrgenciaNullable): string {
     switch (urgencia) {
-      case NivelUrgencia.Baixa:
+      case NivelUrgenciaNullable.Baixa:
         return 'urgencia-baixa';
-      case NivelUrgencia.Media:
+      case NivelUrgenciaNullable.Media:
         return 'urgencia-media';
-      case NivelUrgencia.Alta:
+      case NivelUrgenciaNullable.Alta:
         return 'urgencia-alta';
       default:
         return '';
     }
   }
 
-  getUrgenciaIcon(urgencia: NivelUrgencia): string {
+  getUrgenciaIcon(urgencia: NivelUrgenciaNullable): string {
     switch (urgencia) {
-      case NivelUrgencia.Baixa:
+      case NivelUrgenciaNullable.Baixa:
         return 'fa-arrow-down';
-      case NivelUrgencia.Media:
+      case NivelUrgenciaNullable.Media:
         return 'fa-minus';
-      case NivelUrgencia.Alta:
+      case NivelUrgenciaNullable.Alta:
         return 'fa-arrow-up';
       default:
         return 'fa-circle';
     }
   }
 
-  getUrgenciaText(urgencia: NivelUrgencia): string {
+  getUrgenciaText(urgencia: NivelUrgenciaNullable): string {
     switch (urgencia) {
-      case NivelUrgencia.Baixa:
+      case NivelUrgenciaNullable.Baixa:
         return 'Baixa';
-      case NivelUrgencia.Media:
+      case NivelUrgenciaNullable.Media:
         return 'Média';
-      case NivelUrgencia.Alta:
+      case NivelUrgenciaNullable.Alta:
         return 'Alta';
       default:
         return urgencia;

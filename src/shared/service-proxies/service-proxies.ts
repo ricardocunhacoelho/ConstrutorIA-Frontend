@@ -815,25 +815,25 @@ export class CotacaoServiceProxy {
 
     /**
      * @param fornecedorId (optional) 
-     * @param threadId (optional) 
-     * @param textoMensagem (optional) 
+     * @param contexto (optional) 
+     * @param mensagem (optional) 
      * @param body (optional) 
      * @return OK
      */
-    salvarThreadTarefaComMensagem(fornecedorId: string | undefined, threadId: string | undefined, textoMensagem: string | undefined, body: SentidoMensagem | undefined): Observable<SessaoIAEntity> {
-        let url_ = this.baseUrl + "/api/services/app/Cotacao/SalvarThreadTarefaComMensagem?";
+    salvarSessaoCotacao(fornecedorId: string | undefined, contexto: string | undefined, mensagem: string | undefined, body: AgenteIA | undefined): Observable<SessaoIAEntity> {
+        let url_ = this.baseUrl + "/api/services/app/Cotacao/SalvarSessaoCotacao?";
         if (fornecedorId === null)
             throw new Error("The parameter 'fornecedorId' cannot be null.");
         else if (fornecedorId !== undefined)
             url_ += "fornecedorId=" + encodeURIComponent("" + fornecedorId) + "&";
-        if (threadId === null)
-            throw new Error("The parameter 'threadId' cannot be null.");
-        else if (threadId !== undefined)
-            url_ += "threadId=" + encodeURIComponent("" + threadId) + "&";
-        if (textoMensagem === null)
-            throw new Error("The parameter 'textoMensagem' cannot be null.");
-        else if (textoMensagem !== undefined)
-            url_ += "textoMensagem=" + encodeURIComponent("" + textoMensagem) + "&";
+        if (contexto === null)
+            throw new Error("The parameter 'contexto' cannot be null.");
+        else if (contexto !== undefined)
+            url_ += "contexto=" + encodeURIComponent("" + contexto) + "&";
+        if (mensagem === null)
+            throw new Error("The parameter 'mensagem' cannot be null.");
+        else if (mensagem !== undefined)
+            url_ += "mensagem=" + encodeURIComponent("" + mensagem) + "&";
         url_ = url_.replace(/[?&]$/, "");
 
         const content_ = JSON.stringify(body);
@@ -849,11 +849,11 @@ export class CotacaoServiceProxy {
         };
 
         return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processSalvarThreadTarefaComMensagem(response_);
+            return this.processSalvarSessaoCotacao(response_);
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processSalvarThreadTarefaComMensagem(response_ as any);
+                    return this.processSalvarSessaoCotacao(response_ as any);
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<SessaoIAEntity>;
                 }
@@ -862,7 +862,7 @@ export class CotacaoServiceProxy {
         }));
     }
 
-    protected processSalvarThreadTarefaComMensagem(response: HttpResponseBase): Observable<SessaoIAEntity> {
+    protected processSalvarSessaoCotacao(response: HttpResponseBase): Observable<SessaoIAEntity> {
         const status = response.status;
         const responseBlob =
             response instanceof HttpResponse ? response.body :
@@ -3723,45 +3723,35 @@ export class PedidoCompraServiceProxy {
 
     /**
      * @param fornecedorId (optional) 
-     * @param threadId (optional) 
-     * @param textoMensagem (optional) 
-     * @param body (optional) 
+     * @param contexto (optional) 
      * @return OK
      */
-    salvarThreadPedidoCompraComMensagem(fornecedorId: string | undefined, threadId: string | undefined, textoMensagem: string | undefined, body: SentidoMensagem | undefined): Observable<SessaoIAEntity> {
-        let url_ = this.baseUrl + "/api/services/app/PedidoCompra/SalvarThreadPedidoCompraComMensagem?";
+    salvarSessaoPedidoCompra(fornecedorId: string | undefined, contexto: string | undefined): Observable<SessaoIAEntity> {
+        let url_ = this.baseUrl + "/api/services/app/PedidoCompra/SalvarSessaoPedidoCompra?";
         if (fornecedorId === null)
             throw new Error("The parameter 'fornecedorId' cannot be null.");
         else if (fornecedorId !== undefined)
             url_ += "fornecedorId=" + encodeURIComponent("" + fornecedorId) + "&";
-        if (threadId === null)
-            throw new Error("The parameter 'threadId' cannot be null.");
-        else if (threadId !== undefined)
-            url_ += "threadId=" + encodeURIComponent("" + threadId) + "&";
-        if (textoMensagem === null)
-            throw new Error("The parameter 'textoMensagem' cannot be null.");
-        else if (textoMensagem !== undefined)
-            url_ += "textoMensagem=" + encodeURIComponent("" + textoMensagem) + "&";
+        if (contexto === null)
+            throw new Error("The parameter 'contexto' cannot be null.");
+        else if (contexto !== undefined)
+            url_ += "contexto=" + encodeURIComponent("" + contexto) + "&";
         url_ = url_.replace(/[?&]$/, "");
 
-        const content_ = JSON.stringify(body);
-
         let options_ : any = {
-            body: content_,
             observe: "response",
             responseType: "blob",
             headers: new HttpHeaders({
-                "Content-Type": "application/json",
                 "Accept": "text/plain"
             })
         };
 
         return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processSalvarThreadPedidoCompraComMensagem(response_);
+            return this.processSalvarSessaoPedidoCompra(response_);
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processSalvarThreadPedidoCompraComMensagem(response_ as any);
+                    return this.processSalvarSessaoPedidoCompra(response_ as any);
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<SessaoIAEntity>;
                 }
@@ -3770,7 +3760,7 @@ export class PedidoCompraServiceProxy {
         }));
     }
 
-    protected processSalvarThreadPedidoCompraComMensagem(response: HttpResponseBase): Observable<SessaoIAEntity> {
+    protected processSalvarSessaoPedidoCompra(response: HttpResponseBase): Observable<SessaoIAEntity> {
         const status = response.status;
         const responseBlob =
             response instanceof HttpResponse ? response.body :
@@ -6328,8 +6318,8 @@ export class TarefaDomainServiceServiceProxy {
      * @param encarregadoId (optional) 
      * @return OK
      */
-    getThreadTarefaAberta(encarregadoId: string | undefined): Observable<SessaoIAEntity> {
-        let url_ = this.baseUrl + "/api/services/app/TarefaDomainService/GetThreadTarefaAberta?";
+    getSessaoTarefaAberta(encarregadoId: string | undefined): Observable<SessaoIAEntity> {
+        let url_ = this.baseUrl + "/api/services/app/TarefaDomainService/GetSessaoTarefaAberta?";
         if (encarregadoId === null)
             throw new Error("The parameter 'encarregadoId' cannot be null.");
         else if (encarregadoId !== undefined)
@@ -6345,11 +6335,11 @@ export class TarefaDomainServiceServiceProxy {
         };
 
         return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processGetThreadTarefaAberta(response_);
+            return this.processGetSessaoTarefaAberta(response_);
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processGetThreadTarefaAberta(response_ as any);
+                    return this.processGetSessaoTarefaAberta(response_ as any);
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<SessaoIAEntity>;
                 }
@@ -6358,7 +6348,7 @@ export class TarefaDomainServiceServiceProxy {
         }));
     }
 
-    protected processGetThreadTarefaAberta(response: HttpResponseBase): Observable<SessaoIAEntity> {
+    protected processGetSessaoTarefaAberta(response: HttpResponseBase): Observable<SessaoIAEntity> {
         const status = response.status;
         const responseBlob =
             response instanceof HttpResponse ? response.body :
@@ -6382,40 +6372,45 @@ export class TarefaDomainServiceServiceProxy {
 
     /**
      * @param encarregadoId (optional) 
-     * @param threadId (optional) 
-     * @param textoMensagem (optional) 
+     * @param contexto (optional) 
+     * @param mensagemResposta (optional) 
+     * @param body (optional) 
      * @return OK
      */
-    salvarThreadTarefaComMensagem(encarregadoId: string | undefined, threadId: string | undefined, textoMensagem: string | undefined): Observable<SessaoIAEntity> {
-        let url_ = this.baseUrl + "/api/services/app/TarefaDomainService/SalvarThreadTarefaComMensagem?";
+    salvarSessaoTarefa(encarregadoId: string | undefined, contexto: string | undefined, mensagemResposta: string | undefined, body: AgenteIA | undefined): Observable<SessaoIAEntity> {
+        let url_ = this.baseUrl + "/api/services/app/TarefaDomainService/SalvarSessaoTarefa?";
         if (encarregadoId === null)
             throw new Error("The parameter 'encarregadoId' cannot be null.");
         else if (encarregadoId !== undefined)
             url_ += "encarregadoId=" + encodeURIComponent("" + encarregadoId) + "&";
-        if (threadId === null)
-            throw new Error("The parameter 'threadId' cannot be null.");
-        else if (threadId !== undefined)
-            url_ += "threadId=" + encodeURIComponent("" + threadId) + "&";
-        if (textoMensagem === null)
-            throw new Error("The parameter 'textoMensagem' cannot be null.");
-        else if (textoMensagem !== undefined)
-            url_ += "textoMensagem=" + encodeURIComponent("" + textoMensagem) + "&";
+        if (contexto === null)
+            throw new Error("The parameter 'contexto' cannot be null.");
+        else if (contexto !== undefined)
+            url_ += "contexto=" + encodeURIComponent("" + contexto) + "&";
+        if (mensagemResposta === null)
+            throw new Error("The parameter 'mensagemResposta' cannot be null.");
+        else if (mensagemResposta !== undefined)
+            url_ += "mensagemResposta=" + encodeURIComponent("" + mensagemResposta) + "&";
         url_ = url_.replace(/[?&]$/, "");
 
+        const content_ = JSON.stringify(body);
+
         let options_ : any = {
+            body: content_,
             observe: "response",
             responseType: "blob",
             headers: new HttpHeaders({
+                "Content-Type": "application/json",
                 "Accept": "text/plain"
             })
         };
 
         return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processSalvarThreadTarefaComMensagem(response_);
+            return this.processSalvarSessaoTarefa(response_);
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processSalvarThreadTarefaComMensagem(response_ as any);
+                    return this.processSalvarSessaoTarefa(response_ as any);
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<SessaoIAEntity>;
                 }
@@ -6424,7 +6419,7 @@ export class TarefaDomainServiceServiceProxy {
         }));
     }
 
-    protected processSalvarThreadTarefaComMensagem(response: HttpResponseBase): Observable<SessaoIAEntity> {
+    protected processSalvarSessaoTarefa(response: HttpResponseBase): Observable<SessaoIAEntity> {
         const status = response.status;
         const responseBlob =
             response instanceof HttpResponse ? response.body :
@@ -6555,6 +6550,462 @@ export class TarefaDomainServiceServiceProxy {
                 result200 = resultData200 ? moment(resultData200.toString()) : <any>null;
     
             return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param encarregadoId (optional) 
+     * @return OK
+     */
+    obterDecisaoEnvioParaEncarregado(encarregadoId: string | undefined): Observable<DecisaoWorkerDto> {
+        let url_ = this.baseUrl + "/api/services/app/TarefaDomainService/ObterDecisaoEnvioParaEncarregado?";
+        if (encarregadoId === null)
+            throw new Error("The parameter 'encarregadoId' cannot be null.");
+        else if (encarregadoId !== undefined)
+            url_ += "encarregadoId=" + encodeURIComponent("" + encarregadoId) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processObterDecisaoEnvioParaEncarregado(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processObterDecisaoEnvioParaEncarregado(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<DecisaoWorkerDto>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<DecisaoWorkerDto>;
+        }));
+    }
+
+    protected processObterDecisaoEnvioParaEncarregado(response: HttpResponseBase): Observable<DecisaoWorkerDto> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = DecisaoWorkerDto.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param sessaoId (optional) 
+     * @param texto (optional) 
+     * @param body (optional) 
+     * @return OK
+     */
+    adicionarMensagemASessao(sessaoId: string | undefined, texto: string | undefined, body: SentidoMensagem | undefined): Observable<SessaoIAEntity> {
+        let url_ = this.baseUrl + "/api/services/app/TarefaDomainService/AdicionarMensagemASessao?";
+        if (sessaoId === null)
+            throw new Error("The parameter 'sessaoId' cannot be null.");
+        else if (sessaoId !== undefined)
+            url_ += "sessaoId=" + encodeURIComponent("" + sessaoId) + "&";
+        if (texto === null)
+            throw new Error("The parameter 'texto' cannot be null.");
+        else if (texto !== undefined)
+            url_ += "texto=" + encodeURIComponent("" + texto) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processAdicionarMensagemASessao(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processAdicionarMensagemASessao(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<SessaoIAEntity>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<SessaoIAEntity>;
+        }));
+    }
+
+    protected processAdicionarMensagemASessao(response: HttpResponseBase): Observable<SessaoIAEntity> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = SessaoIAEntity.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param encarregadoId (optional) 
+     * @param sessaoId (optional) 
+     * @return OK
+     */
+    criarOuReutilizarFluxoTarefas(encarregadoId: string | undefined, sessaoId: string | undefined): Observable<FluxoOrquestracaoEntity> {
+        let url_ = this.baseUrl + "/api/services/app/TarefaDomainService/CriarOuReutilizarFluxoTarefas?";
+        if (encarregadoId === null)
+            throw new Error("The parameter 'encarregadoId' cannot be null.");
+        else if (encarregadoId !== undefined)
+            url_ += "encarregadoId=" + encodeURIComponent("" + encarregadoId) + "&";
+        if (sessaoId === null)
+            throw new Error("The parameter 'sessaoId' cannot be null.");
+        else if (sessaoId !== undefined)
+            url_ += "sessaoId=" + encodeURIComponent("" + sessaoId) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processCriarOuReutilizarFluxoTarefas(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processCriarOuReutilizarFluxoTarefas(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<FluxoOrquestracaoEntity>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<FluxoOrquestracaoEntity>;
+        }));
+    }
+
+    protected processCriarOuReutilizarFluxoTarefas(response: HttpResponseBase): Observable<FluxoOrquestracaoEntity> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = FluxoOrquestracaoEntity.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param encarregadoId (optional) 
+     * @return OK
+     */
+    colocarFluxoEmStandby(encarregadoId: string | undefined): Observable<FluxoOrquestracaoEntity> {
+        let url_ = this.baseUrl + "/api/services/app/TarefaDomainService/ColocarFluxoEmStandby?";
+        if (encarregadoId === null)
+            throw new Error("The parameter 'encarregadoId' cannot be null.");
+        else if (encarregadoId !== undefined)
+            url_ += "encarregadoId=" + encodeURIComponent("" + encarregadoId) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processColocarFluxoEmStandby(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processColocarFluxoEmStandby(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<FluxoOrquestracaoEntity>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<FluxoOrquestracaoEntity>;
+        }));
+    }
+
+    protected processColocarFluxoEmStandby(response: HttpResponseBase): Observable<FluxoOrquestracaoEntity> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = FluxoOrquestracaoEntity.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param encarregadoId (optional) 
+     * @return OK
+     */
+    obterFluxoEmStandby(encarregadoId: string | undefined): Observable<FluxoOrquestracaoEntity> {
+        let url_ = this.baseUrl + "/api/services/app/TarefaDomainService/ObterFluxoEmStandby?";
+        if (encarregadoId === null)
+            throw new Error("The parameter 'encarregadoId' cannot be null.");
+        else if (encarregadoId !== undefined)
+            url_ += "encarregadoId=" + encodeURIComponent("" + encarregadoId) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processObterFluxoEmStandby(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processObterFluxoEmStandby(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<FluxoOrquestracaoEntity>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<FluxoOrquestracaoEntity>;
+        }));
+    }
+
+    protected processObterFluxoEmStandby(response: HttpResponseBase): Observable<FluxoOrquestracaoEntity> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = FluxoOrquestracaoEntity.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param fluxoId (optional) 
+     * @return OK
+     */
+    reativarFluxoDeStandby(fluxoId: string | undefined): Observable<void> {
+        let url_ = this.baseUrl + "/api/services/app/TarefaDomainService/ReativarFluxoDeStandby?";
+        if (fluxoId === null)
+            throw new Error("The parameter 'fluxoId' cannot be null.");
+        else if (fluxoId !== undefined)
+            url_ += "fluxoId=" + encodeURIComponent("" + fluxoId) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processReativarFluxoDeStandby(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processReativarFluxoDeStandby(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<void>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<void>;
+        }));
+    }
+
+    protected processReativarFluxoDeStandby(response: HttpResponseBase): Observable<void> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return _observableOf(null as any);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param encarregadoId (optional) 
+     * @return OK
+     */
+    existeFluxoAtivoTarefas(encarregadoId: string | undefined): Observable<boolean> {
+        let url_ = this.baseUrl + "/api/services/app/TarefaDomainService/ExisteFluxoAtivoTarefas?";
+        if (encarregadoId === null)
+            throw new Error("The parameter 'encarregadoId' cannot be null.");
+        else if (encarregadoId !== undefined)
+            url_ += "encarregadoId=" + encodeURIComponent("" + encarregadoId) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processExisteFluxoAtivoTarefas(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processExisteFluxoAtivoTarefas(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<boolean>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<boolean>;
+        }));
+    }
+
+    protected processExisteFluxoAtivoTarefas(response: HttpResponseBase): Observable<boolean> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+                result200 = resultData200 !== undefined ? resultData200 : <any>null;
+    
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param fluxoId (optional) 
+     * @return OK
+     */
+    fecharFluxo(fluxoId: string | undefined): Observable<void> {
+        let url_ = this.baseUrl + "/api/services/app/TarefaDomainService/FecharFluxo?";
+        if (fluxoId === null)
+            throw new Error("The parameter 'fluxoId' cannot be null.");
+        else if (fluxoId !== undefined)
+            url_ += "fluxoId=" + encodeURIComponent("" + fluxoId) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processFecharFluxo(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processFecharFluxo(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<void>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<void>;
+        }));
+    }
+
+    protected processFecharFluxo(response: HttpResponseBase): Observable<void> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return _observableOf(null as any);
             }));
         } else if (status !== 200 && status !== 204) {
             return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
@@ -8056,6 +8507,436 @@ export class UserServiceProxy {
 }
 
 @Injectable()
+export class WhatsAppConfiguracaoServiceProxy {
+    private http: HttpClient;
+    private baseUrl: string;
+    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+
+    constructor(@Inject(HttpClient) http: HttpClient, @Optional() @Inject(API_BASE_URL) baseUrl?: string) {
+        this.http = http;
+        this.baseUrl = baseUrl ?? "";
+    }
+
+    /**
+     * @param id (optional) 
+     * @return OK
+     */
+    get(id: string | undefined): Observable<WhatsAppConfiguracaoDto> {
+        let url_ = this.baseUrl + "/api/services/app/WhatsAppConfiguracao/Get?";
+        if (id === null)
+            throw new Error("The parameter 'id' cannot be null.");
+        else if (id !== undefined)
+            url_ += "Id=" + encodeURIComponent("" + id) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGet(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGet(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<WhatsAppConfiguracaoDto>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<WhatsAppConfiguracaoDto>;
+        }));
+    }
+
+    protected processGet(response: HttpResponseBase): Observable<WhatsAppConfiguracaoDto> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = WhatsAppConfiguracaoDto.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param phoneNumberId (optional) 
+     * @param displayPhoneNumber (optional) 
+     * @param tenantId (optional) 
+     * @param tenantName (optional) 
+     * @param isActive (optional) 
+     * @param skipCount (optional) 
+     * @param maxResultCount (optional) 
+     * @return OK
+     */
+    getAll(phoneNumberId: string | undefined, displayPhoneNumber: string | undefined, tenantId: number | undefined, tenantName: string | undefined, isActive: boolean | undefined, skipCount: number | undefined, maxResultCount: number | undefined): Observable<WhatsAppConfiguracaoDtoPagedResultDto> {
+        let url_ = this.baseUrl + "/api/services/app/WhatsAppConfiguracao/GetAll?";
+        if (phoneNumberId === null)
+            throw new Error("The parameter 'phoneNumberId' cannot be null.");
+        else if (phoneNumberId !== undefined)
+            url_ += "PhoneNumberId=" + encodeURIComponent("" + phoneNumberId) + "&";
+        if (displayPhoneNumber === null)
+            throw new Error("The parameter 'displayPhoneNumber' cannot be null.");
+        else if (displayPhoneNumber !== undefined)
+            url_ += "DisplayPhoneNumber=" + encodeURIComponent("" + displayPhoneNumber) + "&";
+        if (tenantId === null)
+            throw new Error("The parameter 'tenantId' cannot be null.");
+        else if (tenantId !== undefined)
+            url_ += "TenantId=" + encodeURIComponent("" + tenantId) + "&";
+        if (tenantName === null)
+            throw new Error("The parameter 'tenantName' cannot be null.");
+        else if (tenantName !== undefined)
+            url_ += "TenantName=" + encodeURIComponent("" + tenantName) + "&";
+        if (isActive === null)
+            throw new Error("The parameter 'isActive' cannot be null.");
+        else if (isActive !== undefined)
+            url_ += "IsActive=" + encodeURIComponent("" + isActive) + "&";
+        if (skipCount === null)
+            throw new Error("The parameter 'skipCount' cannot be null.");
+        else if (skipCount !== undefined)
+            url_ += "SkipCount=" + encodeURIComponent("" + skipCount) + "&";
+        if (maxResultCount === null)
+            throw new Error("The parameter 'maxResultCount' cannot be null.");
+        else if (maxResultCount !== undefined)
+            url_ += "MaxResultCount=" + encodeURIComponent("" + maxResultCount) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetAll(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetAll(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<WhatsAppConfiguracaoDtoPagedResultDto>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<WhatsAppConfiguracaoDtoPagedResultDto>;
+        }));
+    }
+
+    protected processGetAll(response: HttpResponseBase): Observable<WhatsAppConfiguracaoDtoPagedResultDto> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = WhatsAppConfiguracaoDtoPagedResultDto.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param body (optional) 
+     * @return OK
+     */
+    create(body: CreateWhatsAppConfiguracaoDto | undefined): Observable<WhatsAppConfiguracaoDto> {
+        let url_ = this.baseUrl + "/api/services/app/WhatsAppConfiguracao/Create";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processCreate(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processCreate(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<WhatsAppConfiguracaoDto>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<WhatsAppConfiguracaoDto>;
+        }));
+    }
+
+    protected processCreate(response: HttpResponseBase): Observable<WhatsAppConfiguracaoDto> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = WhatsAppConfiguracaoDto.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param body (optional) 
+     * @return OK
+     */
+    update(body: UpdateWhatsAppConfiguracaoDto | undefined): Observable<WhatsAppConfiguracaoDto> {
+        let url_ = this.baseUrl + "/api/services/app/WhatsAppConfiguracao/Update";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("put", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processUpdate(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processUpdate(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<WhatsAppConfiguracaoDto>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<WhatsAppConfiguracaoDto>;
+        }));
+    }
+
+    protected processUpdate(response: HttpResponseBase): Observable<WhatsAppConfiguracaoDto> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = WhatsAppConfiguracaoDto.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param id (optional) 
+     * @return OK
+     */
+    delete(id: string | undefined): Observable<void> {
+        let url_ = this.baseUrl + "/api/services/app/WhatsAppConfiguracao/Delete?";
+        if (id === null)
+            throw new Error("The parameter 'id' cannot be null.");
+        else if (id !== undefined)
+            url_ += "Id=" + encodeURIComponent("" + id) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+            })
+        };
+
+        return this.http.request("delete", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processDelete(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processDelete(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<void>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<void>;
+        }));
+    }
+
+    protected processDelete(response: HttpResponseBase): Observable<void> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return _observableOf(null as any);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param tenantId (optional) 
+     * @return OK
+     */
+    getFullConfig(tenantId: number | undefined): Observable<WhatsAppConfiguracaoFullDto> {
+        let url_ = this.baseUrl + "/api/services/app/WhatsAppConfiguracao/GetFullConfig?";
+        if (tenantId === null)
+            throw new Error("The parameter 'tenantId' cannot be null.");
+        else if (tenantId !== undefined)
+            url_ += "tenantId=" + encodeURIComponent("" + tenantId) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetFullConfig(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetFullConfig(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<WhatsAppConfiguracaoFullDto>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<WhatsAppConfiguracaoFullDto>;
+        }));
+    }
+
+    protected processGetFullConfig(response: HttpResponseBase): Observable<WhatsAppConfiguracaoFullDto> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = WhatsAppConfiguracaoFullDto.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param phoneNumberId (optional) 
+     * @return OK
+     */
+    getByPhoneNumberId(phoneNumberId: string | undefined): Observable<WhatsAppConfiguracaoFullDto> {
+        let url_ = this.baseUrl + "/api/services/app/WhatsAppConfiguracao/GetByPhoneNumberId?";
+        if (phoneNumberId === null)
+            throw new Error("The parameter 'phoneNumberId' cannot be null.");
+        else if (phoneNumberId !== undefined)
+            url_ += "phoneNumberId=" + encodeURIComponent("" + phoneNumberId) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetByPhoneNumberId(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetByPhoneNumberId(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<WhatsAppConfiguracaoFullDto>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<WhatsAppConfiguracaoFullDto>;
+        }));
+    }
+
+    protected processGetByPhoneNumberId(response: HttpResponseBase): Observable<WhatsAppConfiguracaoFullDto> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = WhatsAppConfiguracaoFullDto.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+}
+
+@Injectable()
 export class WebhooksServiceProxy {
     private http: HttpClient;
     private baseUrl: string;
@@ -8129,21 +9010,16 @@ export class WebhooksServiceProxy {
     }
 
     /**
-     * @param body (optional) 
      * @return OK
      */
-    whatsappPost(body: WhatsAppWebhookPayload | undefined): Observable<void> {
+    whatsappPost(): Observable<void> {
         let url_ = this.baseUrl + "/api/webhooks/whatsapp";
         url_ = url_.replace(/[?&]$/, "");
 
-        const content_ = JSON.stringify(body);
-
         let options_ : any = {
-            body: content_,
             observe: "response",
             responseType: "blob",
             headers: new HttpHeaders({
-                "Content-Type": "application/json",
             })
         };
 
@@ -8193,11 +9069,26 @@ export class WhatsAppWebhookServiceProxy {
     }
 
     /**
+     * @param tenantId (optional) 
+     * @param phoneNumberId (optional) 
+     * @param accessToken (optional) 
      * @param body (optional) 
      * @return OK
      */
-    processWebhook(body: WhatsAppWebhookPayload | undefined): Observable<void> {
-        let url_ = this.baseUrl + "/api/services/app/WhatsAppWebhook/ProcessWebhook";
+    processWebhook(tenantId: number | undefined, phoneNumberId: string | undefined, accessToken: string | undefined, body: WhatsAppWebhookPayload | undefined): Observable<void> {
+        let url_ = this.baseUrl + "/api/services/app/WhatsAppWebhook/ProcessWebhook?";
+        if (tenantId === null)
+            throw new Error("The parameter 'tenantId' cannot be null.");
+        else if (tenantId !== undefined)
+            url_ += "tenantId=" + encodeURIComponent("" + tenantId) + "&";
+        if (phoneNumberId === null)
+            throw new Error("The parameter 'phoneNumberId' cannot be null.");
+        else if (phoneNumberId !== undefined)
+            url_ += "phoneNumberId=" + encodeURIComponent("" + phoneNumberId) + "&";
+        if (accessToken === null)
+            throw new Error("The parameter 'accessToken' cannot be null.");
+        else if (accessToken !== undefined)
+            url_ += "accessToken=" + encodeURIComponent("" + accessToken) + "&";
         url_ = url_.replace(/[?&]$/, "");
 
         const content_ = JSON.stringify(body);
@@ -8226,58 +9117,6 @@ export class WhatsAppWebhookServiceProxy {
     }
 
     protected processProcessWebhook(response: HttpResponseBase): Observable<void> {
-        const status = response.status;
-        const responseBlob =
-            response instanceof HttpResponse ? response.body :
-            (response as any).error instanceof Blob ? (response as any).error : undefined;
-
-        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
-        if (status === 200) {
-            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            return _observableOf(null as any);
-            }));
-        } else if (status !== 200 && status !== 204) {
-            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            }));
-        }
-        return _observableOf(null as any);
-    }
-
-    /**
-     * @param body (optional) 
-     * @return OK
-     */
-    processCombinedMessageFromJob(body: ProcessCombinedWhatsAppMessageArgs | undefined): Observable<void> {
-        let url_ = this.baseUrl + "/api/services/app/WhatsAppWebhook/ProcessCombinedMessageFromJob";
-        url_ = url_.replace(/[?&]$/, "");
-
-        const content_ = JSON.stringify(body);
-
-        let options_ : any = {
-            body: content_,
-            observe: "response",
-            responseType: "blob",
-            headers: new HttpHeaders({
-                "Content-Type": "application/json",
-            })
-        };
-
-        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processProcessCombinedMessageFromJob(response_);
-        })).pipe(_observableCatch((response_: any) => {
-            if (response_ instanceof HttpResponseBase) {
-                try {
-                    return this.processProcessCombinedMessageFromJob(response_ as any);
-                } catch (e) {
-                    return _observableThrow(e) as any as Observable<void>;
-                }
-            } else
-                return _observableThrow(response_) as any as Observable<void>;
-        }));
-    }
-
-    protected processProcessCombinedMessageFromJob(response: HttpResponseBase): Observable<void> {
         const status = response.status;
         const responseBlob =
             response instanceof HttpResponse ? response.body :
@@ -8356,6 +9195,36 @@ export class WorkerServiceProxy {
     }
 }
 
+export enum AcaoWorkerTarefas {
+    _0 = 0,
+    _1 = 1,
+    _2 = 2,
+    _3 = 3,
+    _4 = 4,
+}
+
+export enum AgenteIA {
+    _0 = 0,
+    _1 = 1,
+    _2 = 2,
+    _3 = 3,
+    _4 = 4,
+    _5 = 5,
+    _6 = 6,
+    _7 = 7,
+}
+
+export enum AgenteIANullable {
+    _0 = 0,
+    _1 = 1,
+    _2 = 2,
+    _3 = 3,
+    _4 = 4,
+    _5 = 5,
+    _6 = 6,
+    _7 = 7,
+}
+
 export class ApplicationInfoDto implements IApplicationInfoDto {
     version: string | undefined;
     releaseDate: moment.Moment;
@@ -8426,6 +9295,8 @@ export enum AssuntoMensagem {
     ProblemasObra = "ProblemasObra",
     Agradecimento = "Agradecimento",
     Cotacao = "Cotacao",
+    PedidoCompra = "PedidoCompra",
+    Cancelamento = "Cancelamento",
 }
 
 export enum AssuntoMensagemNullable {
@@ -8435,6 +9306,8 @@ export enum AssuntoMensagemNullable {
     ProblemasObra = "ProblemasObra",
     Agradecimento = "Agradecimento",
     Cotacao = "Cotacao",
+    PedidoCompra = "PedidoCompra",
+    Cancelamento = "Cancelamento",
 }
 
 export class AuthenticateModel implements IAuthenticateModel {
@@ -8836,6 +9709,7 @@ export class CompraEntity implements ICompraEntity {
     isDeleted: boolean;
     deleterUserId: number | undefined;
     deletionTime: moment.Moment | undefined;
+    tenantId: number;
     pedidoCompraId: string | undefined;
     pedidoCompra: PedidoCompraEntity;
     solicitacaoMaterialId: string | undefined;
@@ -8887,6 +9761,7 @@ export class CompraEntity implements ICompraEntity {
             this.isDeleted = _data["isDeleted"];
             this.deleterUserId = _data["deleterUserId"];
             this.deletionTime = _data["deletionTime"] ? moment(_data["deletionTime"].toString()) : <any>undefined;
+            this.tenantId = _data["tenantId"];
             this.pedidoCompraId = _data["pedidoCompraId"];
             this.pedidoCompra = _data["pedidoCompra"] ? PedidoCompraEntity.fromJS(_data["pedidoCompra"]) : <any>undefined;
             this.solicitacaoMaterialId = _data["solicitacaoMaterialId"];
@@ -8942,6 +9817,7 @@ export class CompraEntity implements ICompraEntity {
         data["isDeleted"] = this.isDeleted;
         data["deleterUserId"] = this.deleterUserId;
         data["deletionTime"] = this.deletionTime ? this.deletionTime.toISOString() : <any>undefined;
+        data["tenantId"] = this.tenantId;
         data["pedidoCompraId"] = this.pedidoCompraId;
         data["pedidoCompra"] = this.pedidoCompra ? this.pedidoCompra.toJSON() : <any>undefined;
         data["solicitacaoMaterialId"] = this.solicitacaoMaterialId;
@@ -8997,6 +9873,7 @@ export interface ICompraEntity {
     isDeleted: boolean;
     deleterUserId: number | undefined;
     deletionTime: moment.Moment | undefined;
+    tenantId: number;
     pedidoCompraId: string | undefined;
     pedidoCompra: PedidoCompraEntity;
     solicitacaoMaterialId: string | undefined;
@@ -9333,6 +10210,7 @@ export class CotacaoEntity implements ICotacaoEntity {
     isDeleted: boolean;
     deleterUserId: number | undefined;
     deletionTime: moment.Moment | undefined;
+    tenantId: number;
     solicitacaoMaterialId: string | undefined;
     solicitacaoMaterial: SolicitacaoMaterialEntity;
     orcamento: OrcamentoEntity;
@@ -9367,6 +10245,7 @@ export class CotacaoEntity implements ICotacaoEntity {
             this.isDeleted = _data["isDeleted"];
             this.deleterUserId = _data["deleterUserId"];
             this.deletionTime = _data["deletionTime"] ? moment(_data["deletionTime"].toString()) : <any>undefined;
+            this.tenantId = _data["tenantId"];
             this.solicitacaoMaterialId = _data["solicitacaoMaterialId"];
             this.solicitacaoMaterial = _data["solicitacaoMaterial"] ? SolicitacaoMaterialEntity.fromJS(_data["solicitacaoMaterial"]) : <any>undefined;
             this.orcamento = _data["orcamento"] ? OrcamentoEntity.fromJS(_data["orcamento"]) : <any>undefined;
@@ -9405,6 +10284,7 @@ export class CotacaoEntity implements ICotacaoEntity {
         data["isDeleted"] = this.isDeleted;
         data["deleterUserId"] = this.deleterUserId;
         data["deletionTime"] = this.deletionTime ? this.deletionTime.toISOString() : <any>undefined;
+        data["tenantId"] = this.tenantId;
         data["solicitacaoMaterialId"] = this.solicitacaoMaterialId;
         data["solicitacaoMaterial"] = this.solicitacaoMaterial ? this.solicitacaoMaterial.toJSON() : <any>undefined;
         data["orcamento"] = this.orcamento ? this.orcamento.toJSON() : <any>undefined;
@@ -9443,6 +10323,7 @@ export interface ICotacaoEntity {
     isDeleted: boolean;
     deleterUserId: number | undefined;
     deletionTime: moment.Moment | undefined;
+    tenantId: number;
     solicitacaoMaterialId: string | undefined;
     solicitacaoMaterial: SolicitacaoMaterialEntity;
     orcamento: OrcamentoEntity;
@@ -9871,7 +10752,6 @@ export interface ICreateMaterialPedidoCompraDto {
 export class CreateMaterialSolicitadoDto implements ICreateMaterialSolicitadoDto {
     nome: string | undefined;
     quantidade: number;
-    justificativa: string | undefined;
     unidade: string | undefined;
 
     constructor(data?: ICreateMaterialSolicitadoDto) {
@@ -9887,7 +10767,6 @@ export class CreateMaterialSolicitadoDto implements ICreateMaterialSolicitadoDto
         if (_data) {
             this.nome = _data["nome"];
             this.quantidade = _data["quantidade"];
-            this.justificativa = _data["justificativa"];
             this.unidade = _data["unidade"];
         }
     }
@@ -9903,7 +10782,6 @@ export class CreateMaterialSolicitadoDto implements ICreateMaterialSolicitadoDto
         data = typeof data === 'object' ? data : {};
         data["nome"] = this.nome;
         data["quantidade"] = this.quantidade;
-        data["justificativa"] = this.justificativa;
         data["unidade"] = this.unidade;
         return data;
     }
@@ -9919,7 +10797,6 @@ export class CreateMaterialSolicitadoDto implements ICreateMaterialSolicitadoDto
 export interface ICreateMaterialSolicitadoDto {
     nome: string | undefined;
     quantidade: number;
-    justificativa: string | undefined;
     unidade: string | undefined;
 }
 
@@ -10302,7 +11179,7 @@ export class CreateProblemaImpedimentoDto implements ICreateProblemaImpedimentoD
     descricao: string | undefined;
     local: string | undefined;
     impacto: string | undefined;
-    urgencia: NivelUrgencia;
+    urgencia: NivelUrgenciaNullable | undefined;
     prazoRetorno: string | undefined;
     observacao: string | undefined;
     obraId: string | undefined;
@@ -10371,7 +11248,7 @@ export interface ICreateProblemaImpedimentoDto {
     descricao: string | undefined;
     local: string | undefined;
     impacto: string | undefined;
-    urgencia: NivelUrgencia;
+    urgencia: NivelUrgenciaNullable | undefined;
     prazoRetorno: string | undefined;
     observacao: string | undefined;
     obraId: string | undefined;
@@ -10918,6 +11795,73 @@ export interface ICreateUserDto {
     password: string;
 }
 
+export class CreateWhatsAppConfiguracaoDto implements ICreateWhatsAppConfiguracaoDto {
+    tenantId: number;
+    phoneNumberId: string | undefined;
+    displayPhoneNumber: string | undefined;
+    accessToken: string | undefined;
+    appSecret: string | undefined;
+    verifyToken: string | undefined;
+    isActive: boolean;
+
+    constructor(data?: ICreateWhatsAppConfiguracaoDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.tenantId = _data["tenantId"];
+            this.phoneNumberId = _data["phoneNumberId"];
+            this.displayPhoneNumber = _data["displayPhoneNumber"];
+            this.accessToken = _data["accessToken"];
+            this.appSecret = _data["appSecret"];
+            this.verifyToken = _data["verifyToken"];
+            this.isActive = _data["isActive"];
+        }
+    }
+
+    static fromJS(data: any): CreateWhatsAppConfiguracaoDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new CreateWhatsAppConfiguracaoDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["tenantId"] = this.tenantId;
+        data["phoneNumberId"] = this.phoneNumberId;
+        data["displayPhoneNumber"] = this.displayPhoneNumber;
+        data["accessToken"] = this.accessToken;
+        data["appSecret"] = this.appSecret;
+        data["verifyToken"] = this.verifyToken;
+        data["isActive"] = this.isActive;
+        return data;
+    }
+
+    clone(): CreateWhatsAppConfiguracaoDto {
+        const json = this.toJSON();
+        let result = new CreateWhatsAppConfiguracaoDto();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface ICreateWhatsAppConfiguracaoDto {
+    tenantId: number;
+    phoneNumberId: string | undefined;
+    displayPhoneNumber: string | undefined;
+    accessToken: string | undefined;
+    appSecret: string | undefined;
+    verifyToken: string | undefined;
+    isActive: boolean;
+}
+
 export class CriarFluxoCompletoDto implements ICriarFluxoCompletoDto {
     solicitacaoMaterialId: string | undefined;
     obraId: string | undefined;
@@ -11051,6 +11995,61 @@ export interface ICriarFluxoCompletoDto {
     condicaoFrete: string | undefined;
     valorDesconto: number | undefined;
     condicaoDesconto: string | undefined;
+}
+
+export class DecisaoWorkerDto implements IDecisaoWorkerDto {
+    acao: AcaoWorkerTarefas;
+    fluxoExistente: FluxoOrquestracaoEntity;
+    sessaoParaUsar: SessaoIAEntity;
+    mensagemSugerida: string | undefined;
+
+    constructor(data?: IDecisaoWorkerDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.acao = _data["acao"];
+            this.fluxoExistente = _data["fluxoExistente"] ? FluxoOrquestracaoEntity.fromJS(_data["fluxoExistente"]) : <any>undefined;
+            this.sessaoParaUsar = _data["sessaoParaUsar"] ? SessaoIAEntity.fromJS(_data["sessaoParaUsar"]) : <any>undefined;
+            this.mensagemSugerida = _data["mensagemSugerida"];
+        }
+    }
+
+    static fromJS(data: any): DecisaoWorkerDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new DecisaoWorkerDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["acao"] = this.acao;
+        data["fluxoExistente"] = this.fluxoExistente ? this.fluxoExistente.toJSON() : <any>undefined;
+        data["sessaoParaUsar"] = this.sessaoParaUsar ? this.sessaoParaUsar.toJSON() : <any>undefined;
+        data["mensagemSugerida"] = this.mensagemSugerida;
+        return data;
+    }
+
+    clone(): DecisaoWorkerDto {
+        const json = this.toJSON();
+        let result = new DecisaoWorkerDto();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IDecisaoWorkerDto {
+    acao: AcaoWorkerTarefas;
+    fluxoExistente: FluxoOrquestracaoEntity;
+    sessaoParaUsar: SessaoIAEntity;
+    mensagemSugerida: string | undefined;
 }
 
 export class EncarregadoComObraDto implements IEncarregadoComObraDto {
@@ -11204,6 +12203,7 @@ export class EncarregadoEntity implements IEncarregadoEntity {
     isDeleted: boolean;
     deleterUserId: number | undefined;
     deletionTime: moment.Moment | undefined;
+    tenantId: number;
     nome: string | undefined;
     cpfOrCnpj: string | undefined;
     telefoneId: string | undefined;
@@ -11233,6 +12233,7 @@ export class EncarregadoEntity implements IEncarregadoEntity {
             this.isDeleted = _data["isDeleted"];
             this.deleterUserId = _data["deleterUserId"];
             this.deletionTime = _data["deletionTime"] ? moment(_data["deletionTime"].toString()) : <any>undefined;
+            this.tenantId = _data["tenantId"];
             this.nome = _data["nome"];
             this.cpfOrCnpj = _data["cpfOrCnpj"];
             this.telefoneId = _data["telefoneId"];
@@ -11274,6 +12275,7 @@ export class EncarregadoEntity implements IEncarregadoEntity {
         data["isDeleted"] = this.isDeleted;
         data["deleterUserId"] = this.deleterUserId;
         data["deletionTime"] = this.deletionTime ? this.deletionTime.toISOString() : <any>undefined;
+        data["tenantId"] = this.tenantId;
         data["nome"] = this.nome;
         data["cpfOrCnpj"] = this.cpfOrCnpj;
         data["telefoneId"] = this.telefoneId;
@@ -11315,6 +12317,7 @@ export interface IEncarregadoEntity {
     isDeleted: boolean;
     deleterUserId: number | undefined;
     deletionTime: moment.Moment | undefined;
+    tenantId: number;
     nome: string | undefined;
     cpfOrCnpj: string | undefined;
     telefoneId: string | undefined;
@@ -11469,6 +12472,7 @@ export class EnderecoEntity implements IEnderecoEntity {
     isDeleted: boolean;
     deleterUserId: number | undefined;
     deletionTime: moment.Moment | undefined;
+    tenantId: number;
     rua: string | undefined;
     numero: string | undefined;
     bairro: string | undefined;
@@ -11495,6 +12499,7 @@ export class EnderecoEntity implements IEnderecoEntity {
             this.isDeleted = _data["isDeleted"];
             this.deleterUserId = _data["deleterUserId"];
             this.deletionTime = _data["deletionTime"] ? moment(_data["deletionTime"].toString()) : <any>undefined;
+            this.tenantId = _data["tenantId"];
             this.rua = _data["rua"];
             this.numero = _data["numero"];
             this.bairro = _data["bairro"];
@@ -11521,6 +12526,7 @@ export class EnderecoEntity implements IEnderecoEntity {
         data["isDeleted"] = this.isDeleted;
         data["deleterUserId"] = this.deleterUserId;
         data["deletionTime"] = this.deletionTime ? this.deletionTime.toISOString() : <any>undefined;
+        data["tenantId"] = this.tenantId;
         data["rua"] = this.rua;
         data["numero"] = this.numero;
         data["bairro"] = this.bairro;
@@ -11547,6 +12553,7 @@ export interface IEnderecoEntity {
     isDeleted: boolean;
     deleterUserId: number | undefined;
     deletionTime: moment.Moment | undefined;
+    tenantId: number;
     rua: string | undefined;
     numero: string | undefined;
     bairro: string | undefined;
@@ -11772,6 +12779,7 @@ export class FluxoOrquestracaoEntity implements IFluxoOrquestracaoEntity {
     isDeleted: boolean;
     deleterUserId: number | undefined;
     deletionTime: moment.Moment | undefined;
+    tenantId: number;
     encarregadoId: string;
     encarregado: EncarregadoEntity;
     fluxoPrincipal: AssuntoMensagemNullable | undefined;
@@ -11785,6 +12793,12 @@ export class FluxoOrquestracaoEntity implements IFluxoOrquestracaoEntity {
     tarefaFluxoId: string | undefined;
     tarefaFluxo: TarefaEntity;
     primeiraPassagem: boolean;
+    aguardandoConfirmacaoTrocaFluxo: boolean;
+    fluxoPretendido: AssuntoMensagemNullable | undefined;
+    perguntaConfirmacao: string | undefined;
+    emStandby: boolean;
+    fluxoOrigemId: string | undefined;
+    dataSuspensao: moment.Moment | undefined;
 
     constructor(data?: IFluxoOrquestracaoEntity) {
         if (data) {
@@ -11805,6 +12819,7 @@ export class FluxoOrquestracaoEntity implements IFluxoOrquestracaoEntity {
             this.isDeleted = _data["isDeleted"];
             this.deleterUserId = _data["deleterUserId"];
             this.deletionTime = _data["deletionTime"] ? moment(_data["deletionTime"].toString()) : <any>undefined;
+            this.tenantId = _data["tenantId"];
             this.encarregadoId = _data["encarregadoId"];
             this.encarregado = _data["encarregado"] ? EncarregadoEntity.fromJS(_data["encarregado"]) : <any>undefined;
             this.fluxoPrincipal = _data["fluxoPrincipal"];
@@ -11818,6 +12833,12 @@ export class FluxoOrquestracaoEntity implements IFluxoOrquestracaoEntity {
             this.tarefaFluxoId = _data["tarefaFluxoId"];
             this.tarefaFluxo = _data["tarefaFluxo"] ? TarefaEntity.fromJS(_data["tarefaFluxo"]) : <any>undefined;
             this.primeiraPassagem = _data["primeiraPassagem"];
+            this.aguardandoConfirmacaoTrocaFluxo = _data["aguardandoConfirmacaoTrocaFluxo"];
+            this.fluxoPretendido = _data["fluxoPretendido"];
+            this.perguntaConfirmacao = _data["perguntaConfirmacao"];
+            this.emStandby = _data["emStandby"];
+            this.fluxoOrigemId = _data["fluxoOrigemId"];
+            this.dataSuspensao = _data["dataSuspensao"] ? moment(_data["dataSuspensao"].toString()) : <any>undefined;
         }
     }
 
@@ -11838,6 +12859,7 @@ export class FluxoOrquestracaoEntity implements IFluxoOrquestracaoEntity {
         data["isDeleted"] = this.isDeleted;
         data["deleterUserId"] = this.deleterUserId;
         data["deletionTime"] = this.deletionTime ? this.deletionTime.toISOString() : <any>undefined;
+        data["tenantId"] = this.tenantId;
         data["encarregadoId"] = this.encarregadoId;
         data["encarregado"] = this.encarregado ? this.encarregado.toJSON() : <any>undefined;
         data["fluxoPrincipal"] = this.fluxoPrincipal;
@@ -11851,6 +12873,12 @@ export class FluxoOrquestracaoEntity implements IFluxoOrquestracaoEntity {
         data["tarefaFluxoId"] = this.tarefaFluxoId;
         data["tarefaFluxo"] = this.tarefaFluxo ? this.tarefaFluxo.toJSON() : <any>undefined;
         data["primeiraPassagem"] = this.primeiraPassagem;
+        data["aguardandoConfirmacaoTrocaFluxo"] = this.aguardandoConfirmacaoTrocaFluxo;
+        data["fluxoPretendido"] = this.fluxoPretendido;
+        data["perguntaConfirmacao"] = this.perguntaConfirmacao;
+        data["emStandby"] = this.emStandby;
+        data["fluxoOrigemId"] = this.fluxoOrigemId;
+        data["dataSuspensao"] = this.dataSuspensao ? this.dataSuspensao.toISOString() : <any>undefined;
         return data;
     }
 
@@ -11871,6 +12899,7 @@ export interface IFluxoOrquestracaoEntity {
     isDeleted: boolean;
     deleterUserId: number | undefined;
     deletionTime: moment.Moment | undefined;
+    tenantId: number;
     encarregadoId: string;
     encarregado: EncarregadoEntity;
     fluxoPrincipal: AssuntoMensagemNullable | undefined;
@@ -11884,6 +12913,12 @@ export interface IFluxoOrquestracaoEntity {
     tarefaFluxoId: string | undefined;
     tarefaFluxo: TarefaEntity;
     primeiraPassagem: boolean;
+    aguardandoConfirmacaoTrocaFluxo: boolean;
+    fluxoPretendido: AssuntoMensagemNullable | undefined;
+    perguntaConfirmacao: string | undefined;
+    emStandby: boolean;
+    fluxoOrigemId: string | undefined;
+    dataSuspensao: moment.Moment | undefined;
 }
 
 export enum FormaPagamento {
@@ -12050,6 +13085,7 @@ export class FornecedorEntity implements IFornecedorEntity {
     isDeleted: boolean;
     deleterUserId: number | undefined;
     deletionTime: moment.Moment | undefined;
+    tenantId: number;
     nomeFantasia: string | undefined;
     email: string | undefined;
     razaoSocial: string | undefined;
@@ -12082,6 +13118,7 @@ export class FornecedorEntity implements IFornecedorEntity {
             this.isDeleted = _data["isDeleted"];
             this.deleterUserId = _data["deleterUserId"];
             this.deletionTime = _data["deletionTime"] ? moment(_data["deletionTime"].toString()) : <any>undefined;
+            this.tenantId = _data["tenantId"];
             this.nomeFantasia = _data["nomeFantasia"];
             this.email = _data["email"];
             this.razaoSocial = _data["razaoSocial"];
@@ -12130,6 +13167,7 @@ export class FornecedorEntity implements IFornecedorEntity {
         data["isDeleted"] = this.isDeleted;
         data["deleterUserId"] = this.deleterUserId;
         data["deletionTime"] = this.deletionTime ? this.deletionTime.toISOString() : <any>undefined;
+        data["tenantId"] = this.tenantId;
         data["nomeFantasia"] = this.nomeFantasia;
         data["email"] = this.email;
         data["razaoSocial"] = this.razaoSocial;
@@ -12178,6 +13216,7 @@ export interface IFornecedorEntity {
     isDeleted: boolean;
     deleterUserId: number | undefined;
     deletionTime: moment.Moment | undefined;
+    tenantId: number;
     nomeFantasia: string | undefined;
     email: string | undefined;
     razaoSocial: string | undefined;
@@ -12812,6 +13851,7 @@ export class MaterialCompradoEntity implements IMaterialCompradoEntity {
     isDeleted: boolean;
     deleterUserId: number | undefined;
     deletionTime: moment.Moment | undefined;
+    tenantId: number;
     compraId: string;
     compra: CompraEntity;
     nome: string | undefined;
@@ -12851,6 +13891,7 @@ export class MaterialCompradoEntity implements IMaterialCompradoEntity {
             this.isDeleted = _data["isDeleted"];
             this.deleterUserId = _data["deleterUserId"];
             this.deletionTime = _data["deletionTime"] ? moment(_data["deletionTime"].toString()) : <any>undefined;
+            this.tenantId = _data["tenantId"];
             this.compraId = _data["compraId"];
             this.compra = _data["compra"] ? CompraEntity.fromJS(_data["compra"]) : <any>undefined;
             this.nome = _data["nome"];
@@ -12890,6 +13931,7 @@ export class MaterialCompradoEntity implements IMaterialCompradoEntity {
         data["isDeleted"] = this.isDeleted;
         data["deleterUserId"] = this.deleterUserId;
         data["deletionTime"] = this.deletionTime ? this.deletionTime.toISOString() : <any>undefined;
+        data["tenantId"] = this.tenantId;
         data["compraId"] = this.compraId;
         data["compra"] = this.compra ? this.compra.toJSON() : <any>undefined;
         data["nome"] = this.nome;
@@ -12929,6 +13971,7 @@ export interface IMaterialCompradoEntity {
     isDeleted: boolean;
     deleterUserId: number | undefined;
     deletionTime: moment.Moment | undefined;
+    tenantId: number;
     compraId: string;
     compra: CompraEntity;
     nome: string | undefined;
@@ -13034,6 +14077,7 @@ export class MaterialCotadoEntity implements IMaterialCotadoEntity {
     isDeleted: boolean;
     deleterUserId: number | undefined;
     deletionTime: moment.Moment | undefined;
+    tenantId: number;
     nome: string | undefined;
     quantidade: string | undefined;
     unidade: string | undefined;
@@ -13060,6 +14104,7 @@ export class MaterialCotadoEntity implements IMaterialCotadoEntity {
             this.isDeleted = _data["isDeleted"];
             this.deleterUserId = _data["deleterUserId"];
             this.deletionTime = _data["deletionTime"] ? moment(_data["deletionTime"].toString()) : <any>undefined;
+            this.tenantId = _data["tenantId"];
             this.nome = _data["nome"];
             this.quantidade = _data["quantidade"];
             this.unidade = _data["unidade"];
@@ -13086,6 +14131,7 @@ export class MaterialCotadoEntity implements IMaterialCotadoEntity {
         data["isDeleted"] = this.isDeleted;
         data["deleterUserId"] = this.deleterUserId;
         data["deletionTime"] = this.deletionTime ? this.deletionTime.toISOString() : <any>undefined;
+        data["tenantId"] = this.tenantId;
         data["nome"] = this.nome;
         data["quantidade"] = this.quantidade;
         data["unidade"] = this.unidade;
@@ -13112,6 +14158,7 @@ export interface IMaterialCotadoEntity {
     isDeleted: boolean;
     deleterUserId: number | undefined;
     deletionTime: moment.Moment | undefined;
+    tenantId: number;
     nome: string | undefined;
     quantidade: string | undefined;
     unidade: string | undefined;
@@ -13212,6 +14259,7 @@ export class MaterialOrcadoEntity implements IMaterialOrcadoEntity {
     isDeleted: boolean;
     deleterUserId: number | undefined;
     deletionTime: moment.Moment | undefined;
+    tenantId: number;
     nome: string | undefined;
     quantidade: number;
     unidade: string | undefined;
@@ -13247,6 +14295,7 @@ export class MaterialOrcadoEntity implements IMaterialOrcadoEntity {
             this.isDeleted = _data["isDeleted"];
             this.deleterUserId = _data["deleterUserId"];
             this.deletionTime = _data["deletionTime"] ? moment(_data["deletionTime"].toString()) : <any>undefined;
+            this.tenantId = _data["tenantId"];
             this.nome = _data["nome"];
             this.quantidade = _data["quantidade"];
             this.unidade = _data["unidade"];
@@ -13282,6 +14331,7 @@ export class MaterialOrcadoEntity implements IMaterialOrcadoEntity {
         data["isDeleted"] = this.isDeleted;
         data["deleterUserId"] = this.deleterUserId;
         data["deletionTime"] = this.deletionTime ? this.deletionTime.toISOString() : <any>undefined;
+        data["tenantId"] = this.tenantId;
         data["nome"] = this.nome;
         data["quantidade"] = this.quantidade;
         data["unidade"] = this.unidade;
@@ -13317,6 +14367,7 @@ export interface IMaterialOrcadoEntity {
     isDeleted: boolean;
     deleterUserId: number | undefined;
     deletionTime: moment.Moment | undefined;
+    tenantId: number;
     nome: string | undefined;
     quantidade: number;
     unidade: string | undefined;
@@ -13426,6 +14477,7 @@ export class MaterialPedidoCompraEntity implements IMaterialPedidoCompraEntity {
     isDeleted: boolean;
     deleterUserId: number | undefined;
     deletionTime: moment.Moment | undefined;
+    tenantId: number;
     pedidoCompraId: string;
     pedidoCompra: PedidoCompraEntity;
     nome: string | undefined;
@@ -13465,6 +14517,7 @@ export class MaterialPedidoCompraEntity implements IMaterialPedidoCompraEntity {
             this.isDeleted = _data["isDeleted"];
             this.deleterUserId = _data["deleterUserId"];
             this.deletionTime = _data["deletionTime"] ? moment(_data["deletionTime"].toString()) : <any>undefined;
+            this.tenantId = _data["tenantId"];
             this.pedidoCompraId = _data["pedidoCompraId"];
             this.pedidoCompra = _data["pedidoCompra"] ? PedidoCompraEntity.fromJS(_data["pedidoCompra"]) : <any>undefined;
             this.nome = _data["nome"];
@@ -13504,6 +14557,7 @@ export class MaterialPedidoCompraEntity implements IMaterialPedidoCompraEntity {
         data["isDeleted"] = this.isDeleted;
         data["deleterUserId"] = this.deleterUserId;
         data["deletionTime"] = this.deletionTime ? this.deletionTime.toISOString() : <any>undefined;
+        data["tenantId"] = this.tenantId;
         data["pedidoCompraId"] = this.pedidoCompraId;
         data["pedidoCompra"] = this.pedidoCompra ? this.pedidoCompra.toJSON() : <any>undefined;
         data["nome"] = this.nome;
@@ -13543,6 +14597,7 @@ export interface IMaterialPedidoCompraEntity {
     isDeleted: boolean;
     deleterUserId: number | undefined;
     deletionTime: moment.Moment | undefined;
+    tenantId: number;
     pedidoCompraId: string;
     pedidoCompra: PedidoCompraEntity;
     nome: string | undefined;
@@ -13636,10 +14691,10 @@ export class MaterialSolicitadoEntity implements IMaterialSolicitadoEntity {
     isDeleted: boolean;
     deleterUserId: number | undefined;
     deletionTime: moment.Moment | undefined;
+    tenantId: number;
     nome: string | undefined;
     quantidade: number;
     unidade: string | undefined;
-    justificativa: string | undefined;
     solicitacaoMaterialId: string;
     solicitacaoMaterial: SolicitacaoMaterialEntity;
     cotacaoId: string | undefined;
@@ -13664,10 +14719,10 @@ export class MaterialSolicitadoEntity implements IMaterialSolicitadoEntity {
             this.isDeleted = _data["isDeleted"];
             this.deleterUserId = _data["deleterUserId"];
             this.deletionTime = _data["deletionTime"] ? moment(_data["deletionTime"].toString()) : <any>undefined;
+            this.tenantId = _data["tenantId"];
             this.nome = _data["nome"];
             this.quantidade = _data["quantidade"];
             this.unidade = _data["unidade"];
-            this.justificativa = _data["justificativa"];
             this.solicitacaoMaterialId = _data["solicitacaoMaterialId"];
             this.solicitacaoMaterial = _data["solicitacaoMaterial"] ? SolicitacaoMaterialEntity.fromJS(_data["solicitacaoMaterial"]) : <any>undefined;
             this.cotacaoId = _data["cotacaoId"];
@@ -13692,10 +14747,10 @@ export class MaterialSolicitadoEntity implements IMaterialSolicitadoEntity {
         data["isDeleted"] = this.isDeleted;
         data["deleterUserId"] = this.deleterUserId;
         data["deletionTime"] = this.deletionTime ? this.deletionTime.toISOString() : <any>undefined;
+        data["tenantId"] = this.tenantId;
         data["nome"] = this.nome;
         data["quantidade"] = this.quantidade;
         data["unidade"] = this.unidade;
-        data["justificativa"] = this.justificativa;
         data["solicitacaoMaterialId"] = this.solicitacaoMaterialId;
         data["solicitacaoMaterial"] = this.solicitacaoMaterial ? this.solicitacaoMaterial.toJSON() : <any>undefined;
         data["cotacaoId"] = this.cotacaoId;
@@ -13720,10 +14775,10 @@ export interface IMaterialSolicitadoEntity {
     isDeleted: boolean;
     deleterUserId: number | undefined;
     deletionTime: moment.Moment | undefined;
+    tenantId: number;
     nome: string | undefined;
     quantidade: number;
     unidade: string | undefined;
-    justificativa: string | undefined;
     solicitacaoMaterialId: string;
     solicitacaoMaterial: SolicitacaoMaterialEntity;
     cotacaoId: string | undefined;
@@ -13814,6 +14869,7 @@ export class MelhorCompraEntity implements IMelhorCompraEntity {
     isDeleted: boolean;
     deleterUserId: number | undefined;
     deletionTime: moment.Moment | undefined;
+    tenantId: number;
     solicitacaoMaterialId: string | undefined;
     solicitacaoMaterial: SolicitacaoMaterialEntity;
     obraId: string | undefined;
@@ -13844,6 +14900,7 @@ export class MelhorCompraEntity implements IMelhorCompraEntity {
             this.isDeleted = _data["isDeleted"];
             this.deleterUserId = _data["deleterUserId"];
             this.deletionTime = _data["deletionTime"] ? moment(_data["deletionTime"].toString()) : <any>undefined;
+            this.tenantId = _data["tenantId"];
             this.solicitacaoMaterialId = _data["solicitacaoMaterialId"];
             this.solicitacaoMaterial = _data["solicitacaoMaterial"] ? SolicitacaoMaterialEntity.fromJS(_data["solicitacaoMaterial"]) : <any>undefined;
             this.obraId = _data["obraId"];
@@ -13878,6 +14935,7 @@ export class MelhorCompraEntity implements IMelhorCompraEntity {
         data["isDeleted"] = this.isDeleted;
         data["deleterUserId"] = this.deleterUserId;
         data["deletionTime"] = this.deletionTime ? this.deletionTime.toISOString() : <any>undefined;
+        data["tenantId"] = this.tenantId;
         data["solicitacaoMaterialId"] = this.solicitacaoMaterialId;
         data["solicitacaoMaterial"] = this.solicitacaoMaterial ? this.solicitacaoMaterial.toJSON() : <any>undefined;
         data["obraId"] = this.obraId;
@@ -13912,6 +14970,7 @@ export interface IMelhorCompraEntity {
     isDeleted: boolean;
     deleterUserId: number | undefined;
     deletionTime: moment.Moment | undefined;
+    tenantId: number;
     solicitacaoMaterialId: string | undefined;
     solicitacaoMaterial: SolicitacaoMaterialEntity;
     obraId: string | undefined;
@@ -14034,6 +15093,7 @@ export class MensagemEntity implements IMensagemEntity {
     isDeleted: boolean;
     deleterUserId: number | undefined;
     deletionTime: moment.Moment | undefined;
+    tenantId: number;
     texto: string | undefined;
     dataHora: moment.Moment;
     sentidoMensagem: SentidoMensagem;
@@ -14065,6 +15125,7 @@ export class MensagemEntity implements IMensagemEntity {
             this.isDeleted = _data["isDeleted"];
             this.deleterUserId = _data["deleterUserId"];
             this.deletionTime = _data["deletionTime"] ? moment(_data["deletionTime"].toString()) : <any>undefined;
+            this.tenantId = _data["tenantId"];
             this.texto = _data["texto"];
             this.dataHora = _data["dataHora"] ? moment(_data["dataHora"].toString()) : <any>undefined;
             this.sentidoMensagem = _data["sentidoMensagem"];
@@ -14096,6 +15157,7 @@ export class MensagemEntity implements IMensagemEntity {
         data["isDeleted"] = this.isDeleted;
         data["deleterUserId"] = this.deleterUserId;
         data["deletionTime"] = this.deletionTime ? this.deletionTime.toISOString() : <any>undefined;
+        data["tenantId"] = this.tenantId;
         data["texto"] = this.texto;
         data["dataHora"] = this.dataHora ? this.dataHora.toISOString() : <any>undefined;
         data["sentidoMensagem"] = this.sentidoMensagem;
@@ -14127,6 +15189,7 @@ export interface IMensagemEntity {
     isDeleted: boolean;
     deleterUserId: number | undefined;
     deletionTime: moment.Moment | undefined;
+    tenantId: number;
     texto: string | undefined;
     dataHora: moment.Moment;
     sentidoMensagem: SentidoMensagem;
@@ -14201,7 +15264,7 @@ export enum NaturezaLancamentoNullable {
     _1 = 1,
 }
 
-export enum NivelUrgencia {
+export enum NivelUrgenciaNullable {
     Baixa = "Baixa",
     Media = "Media",
     Alta = "Alta",
@@ -14578,6 +15641,7 @@ export class ObraEntity implements IObraEntity {
     isDeleted: boolean;
     deleterUserId: number | undefined;
     deletionTime: moment.Moment | undefined;
+    tenantId: number;
     nome: string | undefined;
     descricao: string | undefined;
     dataInicio: moment.Moment;
@@ -14610,6 +15674,7 @@ export class ObraEntity implements IObraEntity {
             this.isDeleted = _data["isDeleted"];
             this.deleterUserId = _data["deleterUserId"];
             this.deletionTime = _data["deletionTime"] ? moment(_data["deletionTime"].toString()) : <any>undefined;
+            this.tenantId = _data["tenantId"];
             this.nome = _data["nome"];
             this.descricao = _data["descricao"];
             this.dataInicio = _data["dataInicio"] ? moment(_data["dataInicio"].toString()) : <any>undefined;
@@ -14662,6 +15727,7 @@ export class ObraEntity implements IObraEntity {
         data["isDeleted"] = this.isDeleted;
         data["deleterUserId"] = this.deleterUserId;
         data["deletionTime"] = this.deletionTime ? this.deletionTime.toISOString() : <any>undefined;
+        data["tenantId"] = this.tenantId;
         data["nome"] = this.nome;
         data["descricao"] = this.descricao;
         data["dataInicio"] = this.dataInicio ? this.dataInicio.toISOString() : <any>undefined;
@@ -14714,6 +15780,7 @@ export interface IObraEntity {
     isDeleted: boolean;
     deleterUserId: number | undefined;
     deletionTime: moment.Moment | undefined;
+    tenantId: number;
     nome: string | undefined;
     descricao: string | undefined;
     dataInicio: moment.Moment;
@@ -15157,6 +16224,7 @@ export class OrcamentoEntity implements IOrcamentoEntity {
     isDeleted: boolean;
     deleterUserId: number | undefined;
     deletionTime: moment.Moment | undefined;
+    tenantId: number;
     cotacaoId: string;
     cotacao: CotacaoEntity;
     solicitacaoMaterialId: string | undefined;
@@ -15197,6 +16265,7 @@ export class OrcamentoEntity implements IOrcamentoEntity {
             this.isDeleted = _data["isDeleted"];
             this.deleterUserId = _data["deleterUserId"];
             this.deletionTime = _data["deletionTime"] ? moment(_data["deletionTime"].toString()) : <any>undefined;
+            this.tenantId = _data["tenantId"];
             this.cotacaoId = _data["cotacaoId"];
             this.cotacao = _data["cotacao"] ? CotacaoEntity.fromJS(_data["cotacao"]) : <any>undefined;
             this.solicitacaoMaterialId = _data["solicitacaoMaterialId"];
@@ -15241,6 +16310,7 @@ export class OrcamentoEntity implements IOrcamentoEntity {
         data["isDeleted"] = this.isDeleted;
         data["deleterUserId"] = this.deleterUserId;
         data["deletionTime"] = this.deletionTime ? this.deletionTime.toISOString() : <any>undefined;
+        data["tenantId"] = this.tenantId;
         data["cotacaoId"] = this.cotacaoId;
         data["cotacao"] = this.cotacao ? this.cotacao.toJSON() : <any>undefined;
         data["solicitacaoMaterialId"] = this.solicitacaoMaterialId;
@@ -15285,6 +16355,7 @@ export interface IOrcamentoEntity {
     isDeleted: boolean;
     deleterUserId: number | undefined;
     deletionTime: moment.Moment | undefined;
+    tenantId: number;
     cotacaoId: string;
     cotacao: CotacaoEntity;
     solicitacaoMaterialId: string | undefined;
@@ -15730,6 +16801,7 @@ export class PedidoCompraEntity implements IPedidoCompraEntity {
     isDeleted: boolean;
     deleterUserId: number | undefined;
     deletionTime: moment.Moment | undefined;
+    tenantId: number;
     compra: CompraEntity;
     solicitacaoMaterialId: string | undefined;
     solicitacaoMaterial: SolicitacaoMaterialEntity;
@@ -15779,6 +16851,7 @@ export class PedidoCompraEntity implements IPedidoCompraEntity {
             this.isDeleted = _data["isDeleted"];
             this.deleterUserId = _data["deleterUserId"];
             this.deletionTime = _data["deletionTime"] ? moment(_data["deletionTime"].toString()) : <any>undefined;
+            this.tenantId = _data["tenantId"];
             this.compra = _data["compra"] ? CompraEntity.fromJS(_data["compra"]) : <any>undefined;
             this.solicitacaoMaterialId = _data["solicitacaoMaterialId"];
             this.solicitacaoMaterial = _data["solicitacaoMaterial"] ? SolicitacaoMaterialEntity.fromJS(_data["solicitacaoMaterial"]) : <any>undefined;
@@ -15832,6 +16905,7 @@ export class PedidoCompraEntity implements IPedidoCompraEntity {
         data["isDeleted"] = this.isDeleted;
         data["deleterUserId"] = this.deleterUserId;
         data["deletionTime"] = this.deletionTime ? this.deletionTime.toISOString() : <any>undefined;
+        data["tenantId"] = this.tenantId;
         data["compra"] = this.compra ? this.compra.toJSON() : <any>undefined;
         data["solicitacaoMaterialId"] = this.solicitacaoMaterialId;
         data["solicitacaoMaterial"] = this.solicitacaoMaterial ? this.solicitacaoMaterial.toJSON() : <any>undefined;
@@ -15885,6 +16959,7 @@ export interface IPedidoCompraEntity {
     isDeleted: boolean;
     deleterUserId: number | undefined;
     deletionTime: moment.Moment | undefined;
+    tenantId: number;
     compra: CompraEntity;
     solicitacaoMaterialId: string | undefined;
     solicitacaoMaterial: SolicitacaoMaterialEntity;
@@ -16035,7 +17110,7 @@ export class ProblemaImpedimentoDto implements IProblemaImpedimentoDto {
     descricao: string | undefined;
     local: string | undefined;
     impacto: string | undefined;
-    urgencia: NivelUrgencia;
+    urgencia: NivelUrgenciaNullable | undefined;
     prazoRetorno: string | undefined;
     observacao: string | undefined;
     obraId: string | undefined;
@@ -16122,7 +17197,7 @@ export interface IProblemaImpedimentoDto {
     descricao: string | undefined;
     local: string | undefined;
     impacto: string | undefined;
-    urgencia: NivelUrgencia;
+    urgencia: NivelUrgenciaNullable | undefined;
     prazoRetorno: string | undefined;
     observacao: string | undefined;
     obraId: string | undefined;
@@ -16195,53 +17270,6 @@ export enum ProblemaImpedimentoStatus {
     CONCLUIDO = "CONCLUIDO",
 }
 
-export class ProcessCombinedWhatsAppMessageArgs implements IProcessCombinedWhatsAppMessageArgs {
-    fromNumber: string | undefined;
-    version: string;
-
-    constructor(data?: IProcessCombinedWhatsAppMessageArgs) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.fromNumber = _data["fromNumber"];
-            this.version = _data["version"];
-        }
-    }
-
-    static fromJS(data: any): ProcessCombinedWhatsAppMessageArgs {
-        data = typeof data === 'object' ? data : {};
-        let result = new ProcessCombinedWhatsAppMessageArgs();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["fromNumber"] = this.fromNumber;
-        data["version"] = this.version;
-        return data;
-    }
-
-    clone(): ProcessCombinedWhatsAppMessageArgs {
-        const json = this.toJSON();
-        let result = new ProcessCombinedWhatsAppMessageArgs();
-        result.init(json);
-        return result;
-    }
-}
-
-export interface IProcessCombinedWhatsAppMessageArgs {
-    fromNumber: string | undefined;
-    version: string;
-}
-
 export class ProprietarioDto implements IProprietarioDto {
     id: string;
     nome: string | undefined;
@@ -16302,6 +17330,7 @@ export class ProprietarioEntity implements IProprietarioEntity {
     isDeleted: boolean;
     deleterUserId: number | undefined;
     deletionTime: moment.Moment | undefined;
+    tenantId: number;
     nome: string | undefined;
     email: string | undefined;
     cpfOrCnpj: string | undefined;
@@ -16328,6 +17357,7 @@ export class ProprietarioEntity implements IProprietarioEntity {
             this.isDeleted = _data["isDeleted"];
             this.deleterUserId = _data["deleterUserId"];
             this.deletionTime = _data["deletionTime"] ? moment(_data["deletionTime"].toString()) : <any>undefined;
+            this.tenantId = _data["tenantId"];
             this.nome = _data["nome"];
             this.email = _data["email"];
             this.cpfOrCnpj = _data["cpfOrCnpj"];
@@ -16358,6 +17388,7 @@ export class ProprietarioEntity implements IProprietarioEntity {
         data["isDeleted"] = this.isDeleted;
         data["deleterUserId"] = this.deleterUserId;
         data["deletionTime"] = this.deletionTime ? this.deletionTime.toISOString() : <any>undefined;
+        data["tenantId"] = this.tenantId;
         data["nome"] = this.nome;
         data["email"] = this.email;
         data["cpfOrCnpj"] = this.cpfOrCnpj;
@@ -16388,6 +17419,7 @@ export interface IProprietarioEntity {
     isDeleted: boolean;
     deleterUserId: number | undefined;
     deletionTime: moment.Moment | undefined;
+    tenantId: number;
     nome: string | undefined;
     email: string | undefined;
     cpfOrCnpj: string | undefined;
@@ -17072,6 +18104,7 @@ export enum SentidoMensagem {
     ENVIADO = "ENVIADO",
     RECEBIDO = "RECEBIDO",
     INICIAL_PROMPT = "INICIAL_PROMPT",
+    CONTEXTO = "CONTEXTO",
 }
 
 export class SessaoIADto implements ISessaoIADto {
@@ -17150,14 +18183,14 @@ export class SessaoIAEntity implements ISessaoIAEntity {
     isDeleted: boolean;
     deleterUserId: number | undefined;
     deletionTime: moment.Moment | undefined;
-    threadId: string | undefined;
+    tenantId: number;
     assunto: AssuntoMensagem;
     threadStatus: ThreadStatus;
+    agenteAtual: AgenteIANullable | undefined;
     encarregadoId: string | undefined;
     encarregado: EncarregadoEntity;
     fornecedorId: string | undefined;
     fornecedor: FornecedorEntity;
-    assistantId: string | undefined;
     mensagens: MensagemEntity[] | undefined;
 
     constructor(data?: ISessaoIAEntity) {
@@ -17179,14 +18212,14 @@ export class SessaoIAEntity implements ISessaoIAEntity {
             this.isDeleted = _data["isDeleted"];
             this.deleterUserId = _data["deleterUserId"];
             this.deletionTime = _data["deletionTime"] ? moment(_data["deletionTime"].toString()) : <any>undefined;
-            this.threadId = _data["threadId"];
+            this.tenantId = _data["tenantId"];
             this.assunto = _data["assunto"];
             this.threadStatus = _data["threadStatus"];
+            this.agenteAtual = _data["agenteAtual"];
             this.encarregadoId = _data["encarregadoId"];
             this.encarregado = _data["encarregado"] ? EncarregadoEntity.fromJS(_data["encarregado"]) : <any>undefined;
             this.fornecedorId = _data["fornecedorId"];
             this.fornecedor = _data["fornecedor"] ? FornecedorEntity.fromJS(_data["fornecedor"]) : <any>undefined;
-            this.assistantId = _data["assistantId"];
             if (Array.isArray(_data["mensagens"])) {
                 this.mensagens = [] as any;
                 for (let item of _data["mensagens"])
@@ -17212,14 +18245,14 @@ export class SessaoIAEntity implements ISessaoIAEntity {
         data["isDeleted"] = this.isDeleted;
         data["deleterUserId"] = this.deleterUserId;
         data["deletionTime"] = this.deletionTime ? this.deletionTime.toISOString() : <any>undefined;
-        data["threadId"] = this.threadId;
+        data["tenantId"] = this.tenantId;
         data["assunto"] = this.assunto;
         data["threadStatus"] = this.threadStatus;
+        data["agenteAtual"] = this.agenteAtual;
         data["encarregadoId"] = this.encarregadoId;
         data["encarregado"] = this.encarregado ? this.encarregado.toJSON() : <any>undefined;
         data["fornecedorId"] = this.fornecedorId;
         data["fornecedor"] = this.fornecedor ? this.fornecedor.toJSON() : <any>undefined;
-        data["assistantId"] = this.assistantId;
         if (Array.isArray(this.mensagens)) {
             data["mensagens"] = [];
             for (let item of this.mensagens)
@@ -17245,14 +18278,14 @@ export interface ISessaoIAEntity {
     isDeleted: boolean;
     deleterUserId: number | undefined;
     deletionTime: moment.Moment | undefined;
-    threadId: string | undefined;
+    tenantId: number;
     assunto: AssuntoMensagem;
     threadStatus: ThreadStatus;
+    agenteAtual: AgenteIANullable | undefined;
     encarregadoId: string | undefined;
     encarregado: EncarregadoEntity;
     fornecedorId: string | undefined;
     fornecedor: FornecedorEntity;
-    assistantId: string | undefined;
     mensagens: MensagemEntity[] | undefined;
 }
 
@@ -17659,6 +18692,7 @@ export class SolicitacaoMaterialEntity implements ISolicitacaoMaterialEntity {
     isDeleted: boolean;
     deleterUserId: number | undefined;
     deletionTime: moment.Moment | undefined;
+    tenantId: number;
     dataHora: moment.Moment;
     descricao: string | undefined;
     resolucao: string | undefined;
@@ -17692,6 +18726,7 @@ export class SolicitacaoMaterialEntity implements ISolicitacaoMaterialEntity {
             this.isDeleted = _data["isDeleted"];
             this.deleterUserId = _data["deleterUserId"];
             this.deletionTime = _data["deletionTime"] ? moment(_data["deletionTime"].toString()) : <any>undefined;
+            this.tenantId = _data["tenantId"];
             this.dataHora = _data["dataHora"] ? moment(_data["dataHora"].toString()) : <any>undefined;
             this.descricao = _data["descricao"];
             this.resolucao = _data["resolucao"];
@@ -17733,6 +18768,7 @@ export class SolicitacaoMaterialEntity implements ISolicitacaoMaterialEntity {
         data["isDeleted"] = this.isDeleted;
         data["deleterUserId"] = this.deleterUserId;
         data["deletionTime"] = this.deletionTime ? this.deletionTime.toISOString() : <any>undefined;
+        data["tenantId"] = this.tenantId;
         data["dataHora"] = this.dataHora ? this.dataHora.toISOString() : <any>undefined;
         data["descricao"] = this.descricao;
         data["resolucao"] = this.resolucao;
@@ -17774,6 +18810,7 @@ export interface ISolicitacaoMaterialEntity {
     isDeleted: boolean;
     deleterUserId: number | undefined;
     deletionTime: moment.Moment | undefined;
+    tenantId: number;
     dataHora: moment.Moment;
     descricao: string | undefined;
     resolucao: string | undefined;
@@ -18051,6 +19088,7 @@ export class TarefaEntity implements ITarefaEntity {
     isDeleted: boolean;
     deleterUserId: number | undefined;
     deletionTime: moment.Moment | undefined;
+    tenantId: number;
     descricao: string | undefined;
     status: TarefaStatus;
     ultimaAtualizacao: moment.Moment;
@@ -18083,6 +19121,7 @@ export class TarefaEntity implements ITarefaEntity {
             this.isDeleted = _data["isDeleted"];
             this.deleterUserId = _data["deleterUserId"];
             this.deletionTime = _data["deletionTime"] ? moment(_data["deletionTime"].toString()) : <any>undefined;
+            this.tenantId = _data["tenantId"];
             this.descricao = _data["descricao"];
             this.status = _data["status"];
             this.ultimaAtualizacao = _data["ultimaAtualizacao"] ? moment(_data["ultimaAtualizacao"].toString()) : <any>undefined;
@@ -18115,6 +19154,7 @@ export class TarefaEntity implements ITarefaEntity {
         data["isDeleted"] = this.isDeleted;
         data["deleterUserId"] = this.deleterUserId;
         data["deletionTime"] = this.deletionTime ? this.deletionTime.toISOString() : <any>undefined;
+        data["tenantId"] = this.tenantId;
         data["descricao"] = this.descricao;
         data["status"] = this.status;
         data["ultimaAtualizacao"] = this.ultimaAtualizacao ? this.ultimaAtualizacao.toISOString() : <any>undefined;
@@ -18147,6 +19187,7 @@ export interface ITarefaEntity {
     isDeleted: boolean;
     deleterUserId: number | undefined;
     deletionTime: moment.Moment | undefined;
+    tenantId: number;
     descricao: string | undefined;
     status: TarefaStatus;
     ultimaAtualizacao: moment.Moment;
@@ -18447,6 +19488,7 @@ export class TelefoneEntity implements ITelefoneEntity {
     isDeleted: boolean;
     deleterUserId: number | undefined;
     deletionTime: moment.Moment | undefined;
+    tenantId: number;
     numero: string | undefined;
     ddd: string | undefined;
     idd: string | undefined;
@@ -18471,6 +19513,7 @@ export class TelefoneEntity implements ITelefoneEntity {
             this.isDeleted = _data["isDeleted"];
             this.deleterUserId = _data["deleterUserId"];
             this.deletionTime = _data["deletionTime"] ? moment(_data["deletionTime"].toString()) : <any>undefined;
+            this.tenantId = _data["tenantId"];
             this.numero = _data["numero"];
             this.ddd = _data["ddd"];
             this.idd = _data["idd"];
@@ -18495,6 +19538,7 @@ export class TelefoneEntity implements ITelefoneEntity {
         data["isDeleted"] = this.isDeleted;
         data["deleterUserId"] = this.deleterUserId;
         data["deletionTime"] = this.deletionTime ? this.deletionTime.toISOString() : <any>undefined;
+        data["tenantId"] = this.tenantId;
         data["numero"] = this.numero;
         data["ddd"] = this.ddd;
         data["idd"] = this.idd;
@@ -18519,6 +19563,7 @@ export interface ITelefoneEntity {
     isDeleted: boolean;
     deleterUserId: number | undefined;
     deletionTime: moment.Moment | undefined;
+    tenantId: number;
     numero: string | undefined;
     ddd: string | undefined;
     idd: string | undefined;
@@ -18695,6 +19740,7 @@ export interface ITenantLoginInfoDto {
 export enum ThreadStatus {
     ABERTA = "ABERTA",
     FECHADA = "FECHADA",
+    EMSTANDBY = "EMSTANDBY",
 }
 
 export class UpdateCompraDto implements IUpdateCompraDto {
@@ -19269,7 +20315,7 @@ export class UpdateProblemaImpedimentoDto implements IUpdateProblemaImpedimentoD
     descricao: string | undefined;
     local: string | undefined;
     impacto: string | undefined;
-    urgencia: NivelUrgencia;
+    urgencia: NivelUrgenciaNullable | undefined;
     prazoRetorno: string | undefined;
     observacao: string | undefined;
     obraId: string | undefined;
@@ -19344,7 +20390,7 @@ export interface IUpdateProblemaImpedimentoDto {
     descricao: string | undefined;
     local: string | undefined;
     impacto: string | undefined;
-    urgencia: NivelUrgencia;
+    urgencia: NivelUrgenciaNullable | undefined;
     prazoRetorno: string | undefined;
     observacao: string | undefined;
     obraId: string | undefined;
@@ -19612,6 +20658,77 @@ export interface IUpdateTarefaInternaDto {
     obra: ObraDto;
     userId: number | undefined;
     user: UserDto;
+}
+
+export class UpdateWhatsAppConfiguracaoDto implements IUpdateWhatsAppConfiguracaoDto {
+    id: string;
+    tenantId: number;
+    phoneNumberId: string | undefined;
+    displayPhoneNumber: string | undefined;
+    accessToken: string | undefined;
+    appSecret: string | undefined;
+    verifyToken: string | undefined;
+    isActive: boolean;
+
+    constructor(data?: IUpdateWhatsAppConfiguracaoDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.tenantId = _data["tenantId"];
+            this.phoneNumberId = _data["phoneNumberId"];
+            this.displayPhoneNumber = _data["displayPhoneNumber"];
+            this.accessToken = _data["accessToken"];
+            this.appSecret = _data["appSecret"];
+            this.verifyToken = _data["verifyToken"];
+            this.isActive = _data["isActive"];
+        }
+    }
+
+    static fromJS(data: any): UpdateWhatsAppConfiguracaoDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new UpdateWhatsAppConfiguracaoDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["tenantId"] = this.tenantId;
+        data["phoneNumberId"] = this.phoneNumberId;
+        data["displayPhoneNumber"] = this.displayPhoneNumber;
+        data["accessToken"] = this.accessToken;
+        data["appSecret"] = this.appSecret;
+        data["verifyToken"] = this.verifyToken;
+        data["isActive"] = this.isActive;
+        return data;
+    }
+
+    clone(): UpdateWhatsAppConfiguracaoDto {
+        const json = this.toJSON();
+        let result = new UpdateWhatsAppConfiguracaoDto();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IUpdateWhatsAppConfiguracaoDto {
+    id: string;
+    tenantId: number;
+    phoneNumberId: string | undefined;
+    displayPhoneNumber: string | undefined;
+    accessToken: string | undefined;
+    appSecret: string | undefined;
+    verifyToken: string | undefined;
+    isActive: boolean;
 }
 
 export class User implements IUser {
@@ -20481,6 +21598,203 @@ export class WhatsAppChange implements IWhatsAppChange {
 export interface IWhatsAppChange {
     field: string | undefined;
     value: WhatsAppValue;
+}
+
+export class WhatsAppConfiguracaoDto implements IWhatsAppConfiguracaoDto {
+    id: string;
+    tenantId: number;
+    tenantName: string | undefined;
+    phoneNumberId: string | undefined;
+    displayPhoneNumber: string | undefined;
+    isActive: boolean;
+    creationTime: moment.Moment;
+    lastModificationTime: moment.Moment | undefined;
+
+    constructor(data?: IWhatsAppConfiguracaoDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.tenantId = _data["tenantId"];
+            this.tenantName = _data["tenantName"];
+            this.phoneNumberId = _data["phoneNumberId"];
+            this.displayPhoneNumber = _data["displayPhoneNumber"];
+            this.isActive = _data["isActive"];
+            this.creationTime = _data["creationTime"] ? moment(_data["creationTime"].toString()) : <any>undefined;
+            this.lastModificationTime = _data["lastModificationTime"] ? moment(_data["lastModificationTime"].toString()) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): WhatsAppConfiguracaoDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new WhatsAppConfiguracaoDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["tenantId"] = this.tenantId;
+        data["tenantName"] = this.tenantName;
+        data["phoneNumberId"] = this.phoneNumberId;
+        data["displayPhoneNumber"] = this.displayPhoneNumber;
+        data["isActive"] = this.isActive;
+        data["creationTime"] = this.creationTime ? this.creationTime.toISOString() : <any>undefined;
+        data["lastModificationTime"] = this.lastModificationTime ? this.lastModificationTime.toISOString() : <any>undefined;
+        return data;
+    }
+
+    clone(): WhatsAppConfiguracaoDto {
+        const json = this.toJSON();
+        let result = new WhatsAppConfiguracaoDto();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IWhatsAppConfiguracaoDto {
+    id: string;
+    tenantId: number;
+    tenantName: string | undefined;
+    phoneNumberId: string | undefined;
+    displayPhoneNumber: string | undefined;
+    isActive: boolean;
+    creationTime: moment.Moment;
+    lastModificationTime: moment.Moment | undefined;
+}
+
+export class WhatsAppConfiguracaoDtoPagedResultDto implements IWhatsAppConfiguracaoDtoPagedResultDto {
+    items: WhatsAppConfiguracaoDto[] | undefined;
+    totalCount: number;
+
+    constructor(data?: IWhatsAppConfiguracaoDtoPagedResultDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            if (Array.isArray(_data["items"])) {
+                this.items = [] as any;
+                for (let item of _data["items"])
+                    this.items.push(WhatsAppConfiguracaoDto.fromJS(item));
+            }
+            this.totalCount = _data["totalCount"];
+        }
+    }
+
+    static fromJS(data: any): WhatsAppConfiguracaoDtoPagedResultDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new WhatsAppConfiguracaoDtoPagedResultDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        if (Array.isArray(this.items)) {
+            data["items"] = [];
+            for (let item of this.items)
+                data["items"].push(item.toJSON());
+        }
+        data["totalCount"] = this.totalCount;
+        return data;
+    }
+
+    clone(): WhatsAppConfiguracaoDtoPagedResultDto {
+        const json = this.toJSON();
+        let result = new WhatsAppConfiguracaoDtoPagedResultDto();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IWhatsAppConfiguracaoDtoPagedResultDto {
+    items: WhatsAppConfiguracaoDto[] | undefined;
+    totalCount: number;
+}
+
+export class WhatsAppConfiguracaoFullDto implements IWhatsAppConfiguracaoFullDto {
+    id: string;
+    tenantId: number;
+    phoneNumberId: string | undefined;
+    displayPhoneNumber: string | undefined;
+    accessToken: string | undefined;
+    appSecret: string | undefined;
+    verifyToken: string | undefined;
+    isActive: boolean;
+
+    constructor(data?: IWhatsAppConfiguracaoFullDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.tenantId = _data["tenantId"];
+            this.phoneNumberId = _data["phoneNumberId"];
+            this.displayPhoneNumber = _data["displayPhoneNumber"];
+            this.accessToken = _data["accessToken"];
+            this.appSecret = _data["appSecret"];
+            this.verifyToken = _data["verifyToken"];
+            this.isActive = _data["isActive"];
+        }
+    }
+
+    static fromJS(data: any): WhatsAppConfiguracaoFullDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new WhatsAppConfiguracaoFullDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["tenantId"] = this.tenantId;
+        data["phoneNumberId"] = this.phoneNumberId;
+        data["displayPhoneNumber"] = this.displayPhoneNumber;
+        data["accessToken"] = this.accessToken;
+        data["appSecret"] = this.appSecret;
+        data["verifyToken"] = this.verifyToken;
+        data["isActive"] = this.isActive;
+        return data;
+    }
+
+    clone(): WhatsAppConfiguracaoFullDto {
+        const json = this.toJSON();
+        let result = new WhatsAppConfiguracaoFullDto();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IWhatsAppConfiguracaoFullDto {
+    id: string;
+    tenantId: number;
+    phoneNumberId: string | undefined;
+    displayPhoneNumber: string | undefined;
+    accessToken: string | undefined;
+    appSecret: string | undefined;
+    verifyToken: string | undefined;
+    isActive: boolean;
 }
 
 export class WhatsAppContact implements IWhatsAppContact {

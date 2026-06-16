@@ -21,7 +21,9 @@
             "@app/*": ["./app/*"],
             "@shared/*": ["./shared/*"],
             "@node_modules/*": ["../node_modules/*"]
-        }
+        },
+        "strictPropertyInitialization": false,
+        "strictNullChecks": false
     },
     "files": ["main.ts", "polyfills.ts"],
     "include": ["src/**/*.d.ts", "typings.d.ts"]

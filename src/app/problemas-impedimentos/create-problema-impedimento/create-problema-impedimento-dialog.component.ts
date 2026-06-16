@@ -8,7 +8,7 @@ import { AbpModalFooterComponent } from '../../../shared/components/modal/abp-mo
 import { AbpValidationSummaryComponent } from '../../../shared/components/validation/abp-validation.summary.component';
 import { LocalizePipe } from '@shared/pipes/localize.pipe';
 import { AppComponentBase } from '@shared/app-component-base';
-import { ProblemaImpedimentoServiceProxy, CreateProblemaImpedimentoDto, EncarregadoComObraDto, NivelUrgencia } from '../../../shared/service-proxies/service-proxies';
+import { ProblemaImpedimentoServiceProxy, CreateProblemaImpedimentoDto, EncarregadoComObraDto, NivelUrgenciaNullable } from '../../../shared/service-proxies/service-proxies';
 
 @Component({
     templateUrl: './create-problema-impedimento-dialog.component.html',
@@ -32,7 +32,7 @@ export class CreateProblemaImpedimentoDialogComponent extends AppComponentBase i
     problema = new CreateProblemaImpedimentoDto();
     selectedEncarregado?: EncarregadoComObraDto;
     encarregadosComObras: EncarregadoComObraDto[] = [];
-    urgencias = Object.values(NivelUrgencia);
+    urgencias = Object.values(NivelUrgenciaNullable);
 
     constructor(
         injector: Injector,
