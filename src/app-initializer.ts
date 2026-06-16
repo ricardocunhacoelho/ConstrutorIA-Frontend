@@ -23,7 +23,7 @@ export class AppInitializer {
         private _injector: Injector,
         private _platformLocation: PlatformLocation,
         private _httpClient: HttpClient
-    ) {}
+    ) { }
 
     init(): () => Promise<boolean> {
         return () => {
@@ -40,16 +40,7 @@ export class AppInitializer {
                             (result) => {
                                 abp.ui.clearBusy();
                                 if (this.shouldLoadLocale()) {
-                                    const angularLocale = this.convertAbpLocaleToAngularLocale(
-                                        abp.localization.currentLanguage.name
-                                    );
-                                    import(`../node_modules/@angular/common/locales/${angularLocale}.mjs`).then(
-                                        (module) => {
-                                            registerLocaleData(module.default);
-                                            resolve(result);
-                                        },
-                                        reject
-                                    );
+                                    resolve(result);
                                 } else {
                                     resolve(result);
                                 }
