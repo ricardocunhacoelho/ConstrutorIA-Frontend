@@ -4,6 +4,7 @@
     "private": true,
     "license": "MIT",
     "scripts": {
+        "build": "ng build --configuration production",
         "pree2e": "webdriver-manager update --standalone false --gecko false",
         "e2e": "protractor",
         "hmr": "ng serve --host 0.0.0.0 --port 4200",
@@ -50,9 +51,9 @@
     },
     "devDependencies": {
         "@angular-devkit/build-angular": "19.2.14",
-        "@angular-eslint/builder": "19.2.14",
-        "@angular-eslint/eslint-plugin": "19.2.14",
-        "@angular-eslint/schematics": "19.2.14",
+        "@angular-eslint/builder": "19.2.1",
+        "@angular-eslint/eslint-plugin": "19.2.1",
+        "@angular-eslint/schematics": "19.2.1",
         "@angular/cli": "19.2.14",
         "@angular/compiler-cli": "19.2.14",
         "@angular/language-service": "19.2.14",
