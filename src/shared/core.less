@@ -101,3 +101,24 @@ table.table {
 .brand-link .brand-image {
   color: #ffffff;
 }
+
+/* Centraliza o modal horizontal e verticalmente */
+.modal-dialog.modal-xlg {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100% - 3.5rem); /* respeita o padding do modal */
+    margin: 0 auto;
+}
+
+.modal-dialog.modal-xlg .modal-content {
+    width: 100%;
+    margin: 0 auto;
+}
+
+/* Em telas pequenas, reduz o padding e a largura máxima */
+@media (max-width: 768px) {
+    .modal-dialog.modal-xlg .modal-content {
+        max-width: 95vw;
+    }
+}
