@@ -1,6 +1,6 @@
 {
     "remoteServiceBaseUrl": "https://api.construtoria.com",
-    "appBaseUrl": "http://localhost:4200",
+    "appBaseUrl": "https://app.construtoria.com",
     "localeMappings": [
         {
             "from": "pt-BR",
