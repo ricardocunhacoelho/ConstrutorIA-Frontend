@@ -104,6 +104,8 @@ export class CreateLancamentoDialogComponent extends AppComponentBase implements
     }
 
     salvar(): void {
+        abp.ui.setBusy();
+
         this.saving = true;
 
         if (this.dataLancamentoStr) {

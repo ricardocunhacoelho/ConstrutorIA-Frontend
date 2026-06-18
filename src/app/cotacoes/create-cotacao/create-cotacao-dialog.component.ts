@@ -74,6 +74,7 @@ export class CreateCotacaoDialogComponent extends AppComponentBase implements On
 
 
     carregarSolicitacao(): void {
+        abp.ui.setBusy();
         this._solicitacaoService.get(this.solicitacaoId!).subscribe((result) => {
             this.solicitacao = result;
             this.cotacao.solicitacaoMaterialId = result.id;
@@ -85,6 +86,7 @@ export class CreateCotacaoDialogComponent extends AppComponentBase implements On
                 return mat;
             });
             this.cd.detectChanges();
+            abp.ui.clearBusy();
         });
     }
 
@@ -92,6 +94,7 @@ export class CreateCotacaoDialogComponent extends AppComponentBase implements On
         this._cotacaoService.getFornecedoresLookup().subscribe((result) => {
             this.fornecedoresDisponiveis = result;
             this.cd.detectChanges();
+            abp.ui.clearBusy();
         });
     }
 
@@ -162,13 +165,18 @@ export class CreateCotacaoDialogComponent extends AppComponentBase implements On
     }
 
     private salvarCotacoes(cotacoes: CreateCotacaoDto[]): void {
+        abp.ui.setBusy();
+        this.saving = true;
         this._cotacaoService.createMultiple(cotacoes)
             .subscribe(() => {
                 this.notify.info('Cotações criadas com sucesso');
                 this.bsModalRef.hide();
                 this.onSave.emit();
+                this.saving = false;
+                abp.ui.clearBusy();
             }, () => {
                 this.saving = false;
+                abp.ui.clearBusy();
             });
     }
 

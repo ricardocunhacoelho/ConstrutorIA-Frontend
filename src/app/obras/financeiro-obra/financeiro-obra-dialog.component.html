@@ -1,5 +1,6 @@
 <div class="financeiro-dialog">
 
+    <!-- ===== HEADER ===== -->
     <div class="dialog-header">
         <div class="dialog-titulo">
             <i class="fa fa-credit-card"></i>
@@ -35,7 +36,6 @@
         </div>
 
     </div>
-
 
     <!-- ===== FILTROS ===== -->
     <div class="filtros">
@@ -91,6 +91,7 @@
 
             </div>
 
+            <!-- BOTÕES -->
             <div class="grupo-botoes">
                 <button class="btn btn-sm bg-blue" (click)="list()">
                     <i class="fa fa-search"></i>
@@ -129,12 +130,11 @@
 
     </div>
 
-
     <!-- ===== TABELA ===== -->
     <div class="tabela-container">
 
         <p-table #dataTable [value]="lancamentos" [lazy]="true" (onLazyLoad)="list($event)" [scrollable]="true"
-            scrollHeight="300px" [paginator]="false">
+            scrollHeight="flex" [paginator]="false">
 
             <ng-template pTemplate="header">
                 <tr>
@@ -196,14 +196,12 @@
 
     </div>
 
-
     <!-- ===== RODAPÉ ===== -->
     <div class="rodape">
 
         <p-paginator #paginator (onPageChange)="list($event)" [totalRecords]="totalCount" [rows]="10"
             [rowsPerPageOptions]="[10,50,100,500,10000]">
         </p-paginator>
-
 
         <button class="btn bg-green" (click)="createLancamento()">
             <i class="fa fa-plus"></i>
