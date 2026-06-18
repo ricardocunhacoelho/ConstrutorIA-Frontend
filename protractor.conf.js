@@ -11,7 +11,7 @@ exports.config = {
         browserName: 'chrome',
     },
     directConnect: true,
-    baseUrl: 'http://localhost:4200/',
+    baseUrl: 'https://app.construtoria.com/',
     framework: 'jasmine',
     jasmineNodeOpts: {
         showColors: true,
